@@ -1,0 +1,21 @@
+[package]
+name = "pyra"
+version = "0.1.0"
+description = "A lightweight Python IDE built with Tauri"
+authors = ["Pyra Team"]
+edition = "2021"
+rust-version = "1.60"
+
+[build-dependencies]
+tauri-build = { version = "1.0", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.0", features = [ "fs-copy-file", "shell-open", "fs-exists", "dialog-open", "path-all", "fs-remove-dir", "process-relaunch", "fs-read-file", "process-exit", "fs-read-dir", "dialog-save", "fs-write-file", "fs-remove-file", "fs-rename-file", "fs-create-dir"] }
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+
+[features]
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]
