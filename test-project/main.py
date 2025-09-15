@@ -16,7 +16,7 @@ try:
     # This will work
     division = result / 2
     print(f"Division result: {division}")
-    
+
     # Uncomment this line to test error display
     # error_result = 1 / 0
 except Exception as e:

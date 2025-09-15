@@ -12,6 +12,15 @@ export interface Project {
   hasVenv: boolean;
 }
 
+export interface ProjectConfig {
+  name: string;
+  path: string;
+  pythonVersion?: string;
+  dependencies: string[];
+  createdAt: string;
+  lastOpened: string;
+}
+
 export interface ConsoleMessage {
   id: string;
   content: string;
