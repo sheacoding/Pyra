@@ -2,12 +2,399 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Catppuccin Theme CSS Variables */
+:root {
+  /* Default to Catppuccin Mocha Colors */
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+  --ctp-text: #cdd6f4;
+  --ctp-subtext1: #bac2de;
+  --ctp-subtext0: #a6adc8;
+  --ctp-surface2: #585b70;
+  --ctp-surface1: #45475a;
+  --ctp-surface0: #313244;
+  --ctp-overlay2: #9399b2;
+  --ctp-overlay1: #7f849c;
+  --ctp-overlay0: #6c7086;
+  --ctp-rosewater: #f5e0dc;
+  --ctp-flamingo: #f2cdcd;
+  --ctp-pink: #f5c2e7;
+  --ctp-mauve: #cba6f7;
+  --ctp-red: #f38ba8;
+  --ctp-maroon: #eba0ac;
+  --ctp-peach: #fab387;
+  --ctp-yellow: #f9e2af;
+  --ctp-green: #a6e3a1;
+  --ctp-teal: #94e2d5;
+  --ctp-sky: #89dceb;
+  --ctp-sapphire: #74c7ec;
+  --ctp-blue: #87ceeb;
+  --ctp-lavender: #b4befe;
+}
+
+/* Catppuccin Latte (Light) Theme */
+[data-theme="catppuccin-latte"] {
+  --ctp-base: #eff1f5;
+  --ctp-mantle: #e6e9ef;
+  --ctp-crust: #dce0e8;
+  --ctp-text: #4c4f69;
+  --ctp-subtext1: #5c5f77;
+  --ctp-subtext0: #6c6f85;
+  --ctp-surface2: #acb0be;
+  --ctp-surface1: #bcc0cc;
+  --ctp-surface0: #ccd0da;
+  --ctp-overlay2: #7c7f93;
+  --ctp-overlay1: #8c8fa1;
+  --ctp-overlay0: #9ca0b0;
+  --ctp-rosewater: #dc8a78;
+  --ctp-flamingo: #dd7878;
+  --ctp-pink: #ea76cb;
+  --ctp-mauve: #8839ef;
+  --ctp-red: #d20f39;
+  --ctp-maroon: #e64553;
+  --ctp-peach: #fe640b;
+  --ctp-yellow: #df8e1d;
+  --ctp-green: #40a02b;
+  --ctp-teal: #179299;
+  --ctp-sky: #04a5e5;
+  --ctp-sapphire: #209fb5;
+  --ctp-blue: #1e66f5;
+  --ctp-lavender: #7287fd;
+}
+
 @layer base {
   body {
-    @apply bg-gray-900 text-gray-100 font-mono;
+    @apply font-mono;
+    background-color: var(--ctp-base);
+    color: var(--ctp-text);
+  }
+  
+  /* ENSURE PROPER THEME APPLICATION */
+  html[data-theme="catppuccin-mocha"],
+  body[data-theme="catppuccin-mocha"] {
+    background-color: #1e1e2e !important;
+    color: #cdd6f4 !important;
+  }
+  
+  html[data-theme="catppuccin-latte"],
+  body[data-theme="catppuccin-latte"] {
+    background-color: #eff1f5 !important;
+    color: #4c4f69 !important;
   }
   
   * {
-    @apply border-gray-700;
+    border-color: var(--ctp-surface1);
   }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--ctp-mantle);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--ctp-surface2);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ctp-overlay0);
+  }
+
+  /* Titlebar styling */
+  .titlebar {
+    background-image: linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0));
+    box-shadow: 0 1px 0 0 var(--ctp-surface1), 0 4px 10px rgba(0,0,0,0.15);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .window-controls button {
+    width: 26px;
+    height: 22px;
+    line-height: 18px;
+    padding: 0;
+    text-align: center;
+  }
+
+  /* Exclude interactive regions from drag */
+  .no-drag { -webkit-app-region: no-drag; }
+}
+
+@layer components {
+  /* Button styles */
+  .btn-primary {
+    @apply px-4 py-2 rounded font-medium transition-colors;
+    background-color: var(--ctp-mauve);
+    color: var(--ctp-base);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--ctp-lavender);
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 rounded font-medium transition-colors;
+    background-color: var(--ctp-surface0);
+    color: var(--ctp-text);
+    border: 1px solid var(--ctp-surface1);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--ctp-surface1);
+    border-color: var(--ctp-surface2);
+  }
+
+  .btn-success {
+    @apply px-4 py-2 rounded font-medium transition-colors;
+    background-color: var(--ctp-green);
+    color: var(--ctp-base);
+  }
+  
+  .btn-success:hover {
+    background-color: var(--ctp-teal);
+  }
+
+  .btn-warning {
+    @apply px-4 py-2 rounded font-medium transition-colors;
+    background-color: var(--ctp-yellow);
+    color: var(--ctp-base);
+  }
+  
+  .btn-warning:hover {
+    background-color: var(--ctp-peach);
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 rounded font-medium transition-colors;
+    background-color: var(--ctp-red);
+    color: var(--ctp-base);
+  }
+  
+  .btn-danger:hover {
+    background-color: var(--ctp-maroon);
+  }
+
+  /* Input styles */
+  .input-primary {
+    @apply px-3 py-2 rounded border transition-colors;
+    background-color: var(--ctp-surface0);
+    border-color: var(--ctp-surface1);
+    color: var(--ctp-text);
+  }
+  
+  .input-primary:focus {
+    outline: none;
+    border-color: var(--ctp-mauve);
+    box-shadow: 0 0 0 2px rgba(203, 166, 247, 0.2);
+  }
+  
+  .input-primary::placeholder {
+    color: var(--ctp-overlay0);
+  }
+
+  /* Panel styles */
+  .panel {
+    background-color: var(--ctp-mantle);
+    border: 1px solid var(--ctp-surface1);
+  }
+  
+  .panel-header {
+    @apply px-4 py-3 border-b;
+    background-color: var(--ctp-surface0);
+    border-color: var(--ctp-surface1);
+    color: var(--ctp-subtext1);
+  }
+}
+
+/* Monaco editor custom decorations for Ruff diagnostics */
+
+/* Error styles (red) */
+.ruff-error-decoration {
+  background-color: rgba(243, 139, 168, 0.15) !important;
+  border-bottom: 2px wavy var(--ctp-red) !important;
+  text-decoration: underline wavy var(--ctp-red) !important;
+}
+
+.ruff-error-glyph {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23f38ba8' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4h2v5H7V4zm0 6h2v2H7v-2z'/%3E%3C/svg%3E") center center no-repeat !important;
+  background-size: 14px 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+}
+
+.ruff-error-line {
+  background-color: rgba(243, 139, 168, 0.1) !important;
+  border-left: 3px solid var(--ctp-red) !important;
+  width: 3px !important;
+  margin-left: 3px !important;
+}
+
+/* Warning styles (yellow/peach) */
+.ruff-warning-decoration {
+  background-color: rgba(249, 226, 175, 0.15) !important;
+  border-bottom: 2px wavy var(--ctp-yellow) !important;
+  text-decoration: underline wavy var(--ctp-yellow) !important;
+}
+
+.ruff-warning-glyph {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23f9e2af' viewBox='0 0 16 16'%3E%3Cpath d='M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.746 12.8a1.13 1.13 0 0 0 .982 1.7h12.544a1.13 1.13 0 0 0 .982-1.7L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.553.553 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z'/%3E%3C/svg%3E") center center no-repeat !important;
+  background-size: 14px 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+}
+
+.ruff-warning-line {
+  background-color: rgba(249, 226, 175, 0.1) !important;
+  border-left: 3px solid var(--ctp-yellow) !important;
+  width: 3px !important;
+  margin-left: 3px !important;
+}
+
+/* Info styles (blue) */
+.ruff-info-decoration {
+  background-color: rgba(135, 206, 235, 0.15) !important;
+  border-bottom: 2px wavy var(--ctp-blue) !important;
+  text-decoration: underline wavy var(--ctp-blue) !important;
+}
+
+.ruff-info-glyph {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2387ceeb' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 4H7v2h2V5zM7 7h2v6H7V7z'/%3E%3C/svg%3E") center center no-repeat !important;
+  background-size: 14px 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+}
+
+.ruff-info-line {
+  background-color: rgba(135, 206, 235, 0.1) !important;
+  border-left: 3px solid var(--ctp-blue) !important;
+  width: 3px !important;
+  margin-left: 3px !important;
+}
+
+/* Hover tooltip enhancement */
+.monaco-hover-content {
+  max-width: 400px !important;
+  background-color: var(--ctp-surface0) !important;
+  color: var(--ctp-text) !important;
+  border: 1px solid var(--ctp-surface1) !important;
+}
+
+.monaco-hover .hover-row .contents {
+  padding: 8px 12px !important;
+}
+
+/* Problems widget styling */
+.monaco-editor .zone-widget .zone-widget-container {
+  border: 1px solid var(--ctp-surface1) !important;
+  background-color: var(--ctp-surface0) !important;
+}
+
+.monaco-editor .zone-widget .zone-widget-container.error {
+  border-color: var(--ctp-red) !important;
+}
+
+.monaco-editor .zone-widget .zone-widget-container.warning {
+  border-color: var(--ctp-yellow) !important;
+}
+
+.monaco-editor .zone-widget .zone-widget-container.info {
+  border-color: var(--ctp-blue) !important;
+}
+
+/* COMPLETE Monaco Editor CSS-Only Theme Override */
+
+/* CATPPUCCIN MOCHA THEME - TARGETED Monaco Editor BACKGROUNDS */
+[data-theme="catppuccin-mocha"] .monaco-editor,
+[data-theme="catppuccin-mocha"] .monaco-editor .monaco-editor-background,
+[data-theme="catppuccin-mocha"] .monaco-editor .view-lines,
+[data-theme="catppuccin-mocha"] .monaco-editor .monaco-scrollable-element,
+[data-theme="catppuccin-mocha"] .monaco-editor .overflow-guard,
+[data-theme="catppuccin-mocha"] .monaco-editor .editor-scrollable,
+[data-theme="catppuccin-mocha"] .monaco-editor .margin,
+[data-theme="catppuccin-mocha"] .monaco-editor .margin-view-overlays,
+[data-theme="catppuccin-mocha"] .monaco-editor .glyph-margin,
+body[data-theme="catppuccin-mocha"] .monaco-editor,
+body[data-theme="catppuccin-mocha"] .monaco-editor .monaco-editor-background,
+body[data-theme="catppuccin-mocha"] .monaco-editor .view-lines,
+body[data-theme="catppuccin-mocha"] .monaco-editor .monaco-scrollable-element,
+body[data-theme="catppuccin-mocha"] .monaco-editor .overflow-guard {
+  background-color: #1e1e2e !important;
+  background: #1e1e2e !important;
+}
+
+/* NOTE: Do not force generic token colors on spans; rely on Monaco theme rules */
+
+/* Avoid binding to volatile mtk classes; Monaco theme handles token colors */
+
+/* CATPPUCCIN LATTE THEME */
+/* CATPPUCCIN LATTE THEME - TARGETED Monaco Editor BACKGROUNDS */
+[data-theme="catppuccin-latte"] .monaco-editor,
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-editor-background,
+[data-theme="catppuccin-latte"] .monaco-editor .view-lines,
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-scrollable-element,
+[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard,
+body[data-theme="catppuccin-latte"] .monaco-editor,
+body[data-theme="catppuccin-latte"] .monaco-editor .monaco-editor-background,
+body[data-theme="catppuccin-latte"] .monaco-editor .view-lines,
+body[data-theme="catppuccin-latte"] .monaco-editor .monaco-scrollable-element,
+body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
+  background-color: #eff1f5 !important;
+  background: #eff1f5 !important;
+}
+
+/* Do not force text color in Latte; rely on theme */
+
+/* Avoid binding to volatile mtk classes in Latte */
+
+/* LINE NUMBERS */
+[data-theme="catppuccin-mocha"] .monaco-editor .line-numbers {
+  color: #6c7086 !important;
+  background-color: #1e1e2e !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .line-numbers {
+  color: #9ca0b0 !important;
+  background-color: #eff1f5 !important;
+}
+
+/* SELECTION AND CURSOR COLORS */
+[data-theme="catppuccin-mocha"] .monaco-editor .selected-text,
+[data-theme="catppuccin-mocha"] .monaco-editor .focused .selected-text,
+[data-theme="catppuccin-mocha"] .monaco-editor .view-line span.inline-selected-text {
+  background-color: #585b70 !important;
+}
+
+[data-theme="catppuccin-mocha"] .monaco-editor .cursor {
+  background-color: #f5e0dc !important;
+  border-color: #f5e0dc !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .selected-text,
+[data-theme="catppuccin-latte"] .monaco-editor .focused .selected-text,
+[data-theme="catppuccin-latte"] .monaco-editor .view-line span.inline-selected-text {
+  background-color: #acb0be !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .cursor {
+  background-color: #dc8a78 !important;
+  border-color: #dc8a78 !important;
+}
+
+
+/* FORCE REMOVAL OF ANY WHITE/LIGHT BACKGROUNDS */
+.monaco-editor [style*="background-color: rgb(255, 255, 255)"],
+.monaco-editor [style*="background-color: #ffffff"],
+.monaco-editor [style*="background: rgb(255, 255, 255)"],
+.monaco-editor [style*="background: #ffffff"] {
+  background-color: inherit !important;
+  background: inherit !important;
 }

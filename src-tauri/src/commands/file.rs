@@ -1,6 +1,6 @@
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct FileItem {
@@ -22,15 +22,15 @@ pub async fn write_file(path: String, content: String) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn list_directory(path: String) -> Result<Vec<FileItem>, String> {
-    let entries = fs::read_dir(&path)
-        .map_err(|e| e.to_string())?;
+    let entries = fs::read_dir(&path).map_err(|e| e.to_string())?;
 
     let mut files = Vec::new();
-    
+
     for entry in entries {
         let entry = entry.map_err(|e| e.to_string())?;
         let file_path = entry.path();
-        let name = file_path.file_name()
+        let name = file_path
+            .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("Unknown")
             .to_string();
@@ -49,14 +49,12 @@ pub async fn list_directory(path: String) -> Result<Vec<FileItem>, String> {
             size,
         });
     }
-    
+
     // Sort directories first, then files
-    files.sort_by(|a, b| {
-        match (a.is_directory, b.is_directory) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        }
+    files.sort_by(|a, b| match (a.is_directory, b.is_directory) {
+        (true, false) => std::cmp::Ordering::Less,
+        (false, true) => std::cmp::Ordering::Greater,
+        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
     });
 
     Ok(files)
