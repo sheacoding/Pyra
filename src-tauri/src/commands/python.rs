@@ -233,12 +233,13 @@ pub async fn get_dependency_tree(project_path: String) -> Result<DependencyTree,
         let mut total_count = 0;
 
         for line in stdout.lines() {
-            let depth = line.chars().take_while(|c| *c == '鈹? || *c == '鈹? || *c == '鈹? || *c == '鈹€' || *c == ' ').count() / 4;
+            let prefix_len = line.chars().take_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' ')).count();
+            let depth = prefix_len / 4;
             
             // Clean the line from tree characters
             let cleaned_line = line
                 .chars()
-                .skip_while(|&c| c == '鈹? || c == '鈹? || c == '鈹? || c == '鈹€' || c == ' ')
+                .skip_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' '))
                 .collect::<String>();
 
             if cleaned_line.contains(" v") {
@@ -307,7 +308,7 @@ pub async fn list_packages(project_path: String) -> Result<Vec<Package>, String>
                     // Remove tree characters and extract package info
                     let cleaned_line = line
                         .chars()
-                        .skip_while(|&c| c == '鈹? || c == '鈹? || c == '鈹? || c == '鈹€' || c == ' ')
+                        .skip_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' '))
                         .collect::<String>();
 
                     if let Some(version_pos) = cleaned_line.find(" v") {
