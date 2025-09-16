@@ -10,9 +10,11 @@ import { ProjectPanel } from './components/ProjectPanel'
 import { SettingsPanel } from './components/SettingsPanel'
 import type { IDESettings } from './components/SettingsPanel'
 import { ProjectTemplateDialog } from './components/ProjectTemplateDialog'
+import { TabsBar } from './components/TabsBar'
 
 function App() {
   const [currentFile, setCurrentFile] = useState<string | null>(null)
+  const [openTabs, setOpenTabs] = useState<string[]>([])
   const [projectPath, setProjectPath] = useState<string>('E:\\Code\\Pyra\\test-project')
   const [consoleMessages, setConsoleMessages] = useState<Array<{id: string, content: string, type: 'stdout' | 'stderr' | 'error' | 'info', timestamp: Date}>>([])
   const [showProjectPanel, setShowProjectPanel] = useState(false)
@@ -96,11 +98,16 @@ function App() {
     setConsoleMessages(prev => [...prev, message])
   }
 
-  const handleToggleProjectPanel = () => {
+  const handleToggleProjectPanel = (e?: React.MouseEvent) => {
+    // 确保阻止事件冒泡和默认行为
+    e?.preventDefault()
+    e?.stopPropagation()
+
     console.log('Toggle project panel clicked, current state:', showProjectPanel)
     setShowProjectPanel(prev => {
-      console.log('Setting showProjectPanel to:', !prev)
-      return !prev
+      const newState = !prev
+      console.log('Setting showProjectPanel to:', newState)
+      return newState
     })
   }
 
@@ -125,6 +132,28 @@ function App() {
   const editorStop = () => editorRef.current?.stop()
   const editorFormat = () => editorRef.current?.format()
   const editorLint = () => editorRef.current?.lint()
+
+  // Tab management
+  const openFileInTab = (path: string) => {
+    setOpenTabs(prev => (prev.includes(path) ? prev : [...prev, path]))
+    setCurrentFile(path)
+  }
+
+  const closeTab = (path: string) => {
+    setOpenTabs(prev => prev.filter(p => p !== path))
+    if (currentFile === path) {
+      // Choose a sensible next active tab
+      setCurrentFile(() => {
+        const currentIndex = openTabs.indexOf(path)
+        const remaining = openTabs.filter(p => p !== path)
+        if (remaining.length === 0) return null
+        const nextIndex = Math.max(0, Math.min(currentIndex - 1, remaining.length - 1))
+        return remaining[nextIndex]
+      })
+    }
+  }
+
+  const selectTab = (path: string) => setCurrentFile(path)
 
   const handleSettingsChange = (settings: IDESettings) => {
     setIdeSettings(settings)
@@ -256,17 +285,16 @@ function App() {
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
             type="button">{isMaximized ? '📂 Open Project' : '📂'}</button>
           <button data-tauri-drag-region="false"
-            onClick={handleToggleProjectPanel}
+            onClick={(e) => handleToggleProjectPanel(e)}
+            onMouseDown={(e) => e.stopPropagation()}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
             style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }}
             type="button"
             aria-pressed={showProjectPanel}
+            title={showProjectPanel ? 'Hide Project Panel' : 'Show Project Panel'}
           >{isMaximized ? (showProjectPanel ? 'Hide Panel' : 'Show Panel') : '📋'}</button>
-          <div className="text-xs" style={{ color: 'var(--ctp-overlay0)' }}>
-            {currentFile ? (currentFile.split('\\').pop() || currentFile.split('/').pop()) : 'No file selected'}
-          </div>
           <button data-tauri-drag-region="false"
             onClick={handleOpenSettings}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
@@ -274,6 +302,9 @@ function App() {
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
             type="button">{isMaximized ? '⚙️ Settings' : '⚙️'}</button>
+          <div className="text-xs px-2 select-none pointer-events-none" style={{ color: 'var(--ctp-overlay0)' }}>
+            {currentFile ? (currentFile.split('\\').pop() || currentFile.split('/').pop()) : 'No file selected'}
+          </div>
 
           {/* Window controls */}
           <div className="window-controls ml-2 flex items-center gap-1 no-drag" data-tauri-drag-region="false">
@@ -314,12 +345,19 @@ function App() {
           <FileTree 
             ref={fileTreeRef}
             projectPath={projectPath}
-            onFileSelect={setCurrentFile}
+            onFileSelect={openFileInTab}
           />
         </div>
 
         {/* Editor Area */}
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Tabs Bar for multi-file editing */}
+          <TabsBar
+            tabs={openTabs.map(p => ({ path: p }))}
+            activePath={currentFile}
+            onSelect={selectTab}
+            onClose={closeTab}
+          />
           <div className="flex-1 min-h-0">
             <Editor 
               ref={editorRef}
