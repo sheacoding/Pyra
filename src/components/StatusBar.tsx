@@ -1,8 +1,10 @@
 interface StatusBarProps {
   currentFile: string | null
+  uvReady?: boolean
+  uvInstalling?: boolean
 }
 
-export function StatusBar({ currentFile }: StatusBarProps) {
+export function StatusBar({ currentFile, uvReady = true, uvInstalling = false }: StatusBarProps) {
   const getFileInfo = (filePath: string | null) => {
     if (!filePath) return { name: 'No file selected', language: '' }
     
@@ -33,7 +35,11 @@ export function StatusBar({ currentFile }: StatusBarProps) {
       
       <div className="flex items-center gap-4">
         <span>Pyra IDE v0.1.0</span>
-        <span>Ready</span>
+        {uvInstalling ? (
+          <span>Preparing environment…</span>
+        ) : (
+          <span>{uvReady ? 'Ready' : 'Setting up…'}</span>
+        )}
       </div>
     </div>
   )

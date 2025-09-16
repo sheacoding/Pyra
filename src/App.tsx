@@ -24,6 +24,8 @@ function App() {
   const [, setVenvExists] = useState(false)
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
+  const [uvReady, setUvReady] = useState(false)
+  const [uvInstalling, setUvInstalling] = useState(false)
   const editorRef = useRef<EditorHandle | null>(null)
   const fileTreeRef = useRef<FileTreeHandle | null>(null)
 
@@ -34,7 +36,18 @@ function App() {
         const { TauriAPI } = await import('./lib/tauri')
         const hasUv = await TauriAPI.checkUvInstalled()
         if (!hasUv) {
-          await TauriAPI.ensureUvInstalled().catch((e: any) => console.error('Failed to ensure uv installed:', e))
+          setUvInstalling(true)
+          try {
+            await TauriAPI.ensureUvInstalled()
+            setUvReady(true)
+          } catch (e) {
+            console.error('Failed to ensure uv installed:', e)
+            setUvReady(false)
+          } finally {
+            setUvInstalling(false)
+          }
+        } else {
+          setUvReady(true)
         }
       } catch (e) {
         console.error('UV ensure step failed:', e)
@@ -273,10 +286,10 @@ function App() {
 
         {/* Center segment: editor actions */}
         <div className="flex-1 flex items-center px-2 gap-2 no-drag" data-tauri-drag-region="false">
-          <button onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py')} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button">{isMaximized ? '▶️ Run' : '▶️'}</button>
+          <button onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button">{isMaximized ? '▶️ Run' : '▶️'}</button>
           <button onClick={editorStop} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button">{isMaximized ? '⏹️ Stop' : '⏹️'}</button>
-          <button onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py')} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button">{isMaximized ? '🎨 Format' : '🎨'}</button>
-          <button onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py')} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button">{isMaximized ? '🔍 Lint' : '🔍'}</button>
+          <button onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button">{isMaximized ? '🎨 Format' : '🎨'}</button>
+          <button onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="px-3 py-1 text-xs rounded font-medium transition-colors" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button">{isMaximized ? '🔍 Lint' : '🔍'}</button>
           {/* Right segment separator inside center area */}
           <div className="h-6 w-px mx-2" style={{ backgroundColor: 'var(--ctp-surface2)' }}></div>
 
@@ -388,8 +401,8 @@ function App() {
 
         {/* Project Panel */}
         {showProjectPanel && (
-          <div className="w-80 bg-gray-900 border-l border-gray-700 flex-shrink-0">
-            <ProjectPanel 
+          <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-base)', borderColor: 'var(--ctp-surface1)' }}>
+            <ProjectPanel
               projectPath={projectPath}
               onConsoleOutput={handleConsoleOutput}
               onConsoleError={handleConsoleError}
@@ -400,7 +413,7 @@ function App() {
 
       {/* Status Bar */}
       <div className="flex-shrink-0">
-        <StatusBar currentFile={currentFile} />
+        <StatusBar currentFile={currentFile} uvReady={uvReady} uvInstalling={uvInstalling} />
       </div>
 
       {/* Settings Panel */}
