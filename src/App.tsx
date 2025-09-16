@@ -302,9 +302,6 @@ function App() {
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
             type="button">{isMaximized ? '⚙️ Settings' : '⚙️'}</button>
-          <div className="text-xs px-2 select-none pointer-events-none" style={{ color: 'var(--ctp-overlay0)' }}>
-            {currentFile ? (currentFile.split('\\').pop() || currentFile.split('/').pop()) : 'No file selected'}
-          </div>
 
           {/* Window controls */}
           <div className="window-controls ml-2 flex items-center gap-1 no-drag" data-tauri-drag-region="false">
