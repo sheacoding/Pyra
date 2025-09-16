@@ -27,8 +27,20 @@ function App() {
   const editorRef = useRef<EditorHandle | null>(null)
   const fileTreeRef = useRef<FileTreeHandle | null>(null)
 
-  // Check if virtual environment exists when project loads
+  // Ensure uv exists and then check venv when project loads
   useEffect(() => {
+    (async () => {
+      try {
+        const { TauriAPI } = await import('./lib/tauri')
+        const hasUv = await TauriAPI.checkUvInstalled()
+        if (!hasUv) {
+          await TauriAPI.ensureUvInstalled().catch((e: any) => console.error('Failed to ensure uv installed:', e))
+        }
+      } catch (e) {
+        console.error('UV ensure step failed:', e)
+      }
+    })()
+
     const checkVenv = async () => {
       if (!projectPath) return
 

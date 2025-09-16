@@ -113,6 +113,10 @@ export class TauriAPI {
     return invoke('check_uv_installed');
   }
 
+  static async ensureUvInstalled(): Promise<string> {
+    return invoke('ensure_uv_installed');
+  }
+
   static async listPythonVersions(): Promise<string[]> {
     return invoke('list_python_versions');
   }

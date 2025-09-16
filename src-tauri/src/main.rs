@@ -31,6 +31,7 @@ fn main() {
             commands::file::delete_file,
             commands::file::file_exists,
             commands::python::check_uv_installed,
+            commands::python::ensure_uv_installed,
             commands::python::list_python_versions,
             commands::python::install_python_version,
             commands::python::create_venv,
