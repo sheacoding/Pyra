@@ -240,23 +240,22 @@ function App() {
           <div className="h-6 w-px mx-2" style={{ backgroundColor: 'var(--ctp-surface2)' }}></div>
 
           {/* Project actions + Settings on right */}
-          <div className="ml-auto flex items-center gap-3 no-drag" data-tauri-drag-region="false"
-               onMouseDown={(e) => { e.stopPropagation() }} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
-          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+          <div className="ml-auto flex items-center gap-3 no-drag" data-tauri-drag-region="false">
+          <button data-tauri-drag-region="false"
             onClick={() => setShowTemplateDialog(true)}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
             style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }}
             type="button">{isMaximized ? '🚀 New Project' : '🚀'}</button>
-          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+          <button data-tauri-drag-region="false"
             onClick={handleOpenProject}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
             style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
             type="button">{isMaximized ? '📂 Open Project' : '📂'}</button>
-          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+          <button data-tauri-drag-region="false"
             onClick={handleToggleProjectPanel}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
             style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }}
@@ -268,7 +267,7 @@ function App() {
           <div className="text-xs" style={{ color: 'var(--ctp-overlay0)' }}>
             {currentFile ? (currentFile.split('\\').pop() || currentFile.split('/').pop()) : 'No file selected'}
           </div>
-          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+          <button data-tauri-drag-region="false"
             onClick={handleOpenSettings}
             className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
             style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }}
