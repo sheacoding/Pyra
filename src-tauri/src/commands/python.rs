@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+﻿use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
@@ -233,12 +233,12 @@ pub async fn get_dependency_tree(project_path: String) -> Result<DependencyTree,
         let mut total_count = 0;
 
         for line in stdout.lines() {
-            let depth = line.chars().take_while(|c| *c == '�? || *c == '�? || *c == '�? || *c == '─' || *c == ' ').count() / 4;
+            let depth = line.chars().take_while(|c| *c == '鈹? || *c == '鈹? || *c == '鈹? || *c == '鈹€' || *c == ' ').count() / 4;
             
             // Clean the line from tree characters
             let cleaned_line = line
                 .chars()
-                .skip_while(|&c| c == '�? || c == '�? || c == '�? || c == '─' || c == ' ')
+                .skip_while(|&c| c == '鈹? || c == '鈹? || c == '鈹? || c == '鈹€' || c == ' ')
                 .collect::<String>();
 
             if cleaned_line.contains(" v") {
@@ -302,12 +302,12 @@ pub async fn list_packages(project_path: String) -> Result<Vec<Package>, String>
         let packages: Vec<Package> = stdout
             .lines()
             .filter_map(|line| {
-                // Match lines like "├── requests v2.31.0" or "└── urllib3 v2.0.4"
+                // Match lines like "鈹溾攢鈹€ requests v2.31.0" or "鈹斺攢鈹€ urllib3 v2.0.4"
                 if line.contains(" v") {
                     // Remove tree characters and extract package info
                     let cleaned_line = line
                         .chars()
-                        .skip_while(|&c| c == '�? || c == '�? || c == '�? || c == '─' || c == ' ')
+                        .skip_while(|&c| c == '鈹? || c == '鈹? || c == '鈹? || c == '鈹€' || c == ' ')
                         .collect::<String>();
 
                     if let Some(version_pos) = cleaned_line.find(" v") {
@@ -758,5 +758,6 @@ pub async fn run_script_with_uv_streaming(
     // Return immediately so UI stays responsive
     Ok("UV run started successfully".to_string())
 }
+
 
 
