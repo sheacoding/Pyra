@@ -6,8 +6,36 @@
     "devUrl": "http://localhost:5173"
   },
   "bundle": {
-    "active": false,
-    "targets": "all"
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "../scripts/**"
+    ],
+    "windows": {
+      "nsis": {
+        "allowToChangeInstallationDirectory": true,
+        "customInstallCommands": [
+          "DetailPrint \"Checking Python and uv environment...\"",
+          "nsExec::ExecToLog \"powershell -NoProfile -ExecutionPolicy Bypass -File \\\\\\\\\\$INSTDIR\\\\resources\\\\scripts\\\\check_env.ps1\"",
+          "Pop $0",
+          "; If return code is 0, both are present; skip install",
+          "StrCmp $0 \"0\" done_check 0",
+          "DetailPrint \"Missing dependencies detected. Installing Python and uv...\"",
+          "nsExec::ExecToLog \"powershell -NoProfile -ExecutionPolicy Bypass -File \\\\\\\\$INSTDIR\\\\resources\\\\scripts\\\\install_python_uv.ps1\"",
+          "done_check:"
+        ]
+      },
+      "wix": {
+        "allowToChangeInstallationDirectory": true
+      }
+    },
+    "linux": {
+      "deb": { "depends": ["python3", "curl"] },
+      "rpm": { "depends": ["python3", "curl"] }
+    }
   },
   "productName": "Pyra",
   "mainBinaryName": "Pyra",
