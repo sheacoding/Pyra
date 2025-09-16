@@ -1,0 +1,32 @@
+{
+  "identifier": "migrated",
+  "description": "permissions that were migrated from v1",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    "fs:allow-copy-file",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-exists",
+    "shell:allow-open",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "process:allow-restart",
+    "process:allow-exit",
+    "process:default",
+    "shell:default",
+    "fs:default",
+    "dialog:default"
+  ]
+}
