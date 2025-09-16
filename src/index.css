@@ -125,7 +125,10 @@
   /* Exclude interactive regions from drag
      Note: -webkit-app-region is not inherited. Ensure descendants are also excluded
      so clicks inside toolbar buttons reliably register instead of starting a drag. */
-  .no-drag, .no-drag * { -webkit-app-region: no-drag; }
+  .no-drag, .no-drag * {
+    -webkit-app-region: no-drag !important;
+    pointer-events: auto;
+  }
 }
 
 @layer components {

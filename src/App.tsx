@@ -240,14 +240,41 @@ function App() {
           <div className="h-6 w-px mx-2" style={{ backgroundColor: 'var(--ctp-surface2)' }}></div>
 
           {/* Project actions + Settings on right */}
-          <div className="ml-auto flex items-center gap-3 no-drag" data-tauri-drag-region="false">
-          <button onClick={() => setShowTemplateDialog(true)} className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button">{isMaximized ? '🚀 New Project' : '🚀'}</button>
-          <button onClick={handleOpenProject} className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button">{isMaximized ? '📂 Open Project' : '📂'}</button>
-          <button onClick={handleToggleProjectPanel} className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none" style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }} type="button">{isMaximized ? (showProjectPanel ? 'Hide Panel' : 'Show Panel') : '📋'}</button>
+          <div className="ml-auto flex items-center gap-3 no-drag" data-tauri-drag-region="false"
+               onMouseDown={(e) => { e.stopPropagation() }} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onClick={() => setShowTemplateDialog(true)}
+            className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
+            style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }}
+            type="button">{isMaximized ? '🚀 New Project' : '🚀'}</button>
+          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onClick={handleOpenProject}
+            className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
+            style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
+            type="button">{isMaximized ? '📂 Open Project' : '📂'}</button>
+          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onClick={handleToggleProjectPanel}
+            className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
+            style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }}
+            type="button"
+            aria-pressed={showProjectPanel}
+          >{isMaximized ? (showProjectPanel ? 'Hide Panel' : 'Show Panel') : '📋'}</button>
           <div className="text-xs" style={{ color: 'var(--ctp-overlay0)' }}>
             {currentFile ? (currentFile.split('\\').pop() || currentFile.split('/').pop()) : 'No file selected'}
           </div>
-          <button onClick={handleOpenSettings} className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button">{isMaximized ? '⚙️ Settings' : '⚙️'}</button>
+          <button data-tauri-drag-region="false" onMouseDown={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onClick={handleOpenSettings}
+            className="px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer select-none"
+            style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
+            type="button">{isMaximized ? '⚙️ Settings' : '⚙️'}</button>
 
           {/* Window controls */}
           <div className="window-controls ml-2 flex items-center gap-1 no-drag" data-tauri-drag-region="false">
