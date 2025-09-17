@@ -6,12 +6,14 @@
 
 - **🚀 轻量快速**: 基于 Rust 后端，性能卓越
 - **🎨 Monaco 编辑器**: 专业代码编辑体验，支持 Python 语法高亮
-- **🐍 Python 环境管理**: 集成 `uv` 支持，管理 Python 版本和虚拟环境
+- **📑 多文件编辑**: 基于标签页的界面，支持同时编辑多个文件
+- **🐍 智能环境管理**: 自动安装 `uv` 并智能跟踪环境状态
 - **📦 包管理**: 可视化包安装和依赖管理
 - **🔧 代码质量工具**: 内置 Ruff 集成，支持代码检查和格式化
-- **🌈 现代化界面**: Catppuccin 主题，支持亮色/暗色模式
+- **🌈 现代化界面**: Catppuccin 主题，支持亮色/暗色模式并保持统一设计风格
 - **⚡ 实时控制台**: 实时脚本输出和错误报告
 - **🔄 项目模板**: 预定义模板快速创建项目
+- **🛠️ 跨平台安装器**: 自动化环境设置脚本，支持所有平台
 - **🖥️ 跨平台**: 支持 Windows、macOS 和 Linux
 
 ## 🚀 快速开始
@@ -20,13 +22,13 @@
 
 - Node.js (16+)
 - Rust 和 Cargo
-- `uv` (Python 包管理器)
+- `uv` (Python 包管理器) - *如果不存在，首次运行时会自动安装*
 
 ### 安装
 
 1. 克隆仓库:
 ```bash
-git clone https://github.com/your-username/pyra.git
+git clone https://github.com/sheacoding/Pyra.git
 cd pyra
 ```
 
@@ -39,6 +41,8 @@ npm install
 ```bash
 npm run tauri dev
 ```
+
+> **注意**: Pyra 在首次启动时会自动检测并安装必需的 Python 工具（`uv`），如果系统中还没有的话。
 
 ### 生产环境构建
 
@@ -69,13 +73,15 @@ npx tsc --noEmit     # 类型检查（不生成文件）
 ## 🏗️ 架构设计
 
 ### 前端 (React + TypeScript)
-- **主应用**: `src/App.tsx` - 中央应用组件，统一的标题栏/工具栏
+- **主应用**: `src/App.tsx` - 中央应用组件，统一的标题栏/工具栏和多标签页支持
 - **核心组件**:
   - `FileTree.tsx` - 文件系统浏览器
-  - `Editor.tsx` - Monaco 编辑器集成
+  - `Editor.tsx` - Monaco 编辑器集成，支持多文件编辑
+  - `TabsBar.tsx` - 多文件标签页管理
   - `Console.tsx` - 实时脚本输出
-  - `ProjectPanel.tsx` - Python 环境管理
+  - `ProjectPanel.tsx` - Python 环境管理，智能 uv 集成
   - `SettingsPanel.tsx` - IDE 配置和主题设置
+  - `StatusBar.tsx` - 环境状态和系统信息
 
 ### 后端 (Rust + Tauri)
 - **入口点**: `src-tauri/src/main.rs`
@@ -86,10 +92,12 @@ npx tsc --noEmit     # 类型检查（不生成文件）
   - `ruff.rs` - 代码格式化和检查
 
 ### Python 集成
-- **环境管理**: 使用 `uv` 管理 Python 版本和虚拟环境
+- **智能环境设置**: 首次运行时通过官方脚本自动安装 `uv`
+- **环境管理**: 使用 `uv` 管理 Python 版本和虚拟环境，并进行状态跟踪
 - **包管理**: 使用 `uv pip` 进行依赖安装
 - **代码质量**: 使用 Ruff 进行代码检查和格式化
 - **脚本执行**: 虚拟环境隔离执行
+- **跨平台支持**: 为 Windows、macOS 和 Linux 提供环境设置脚本
 
 ## 🎨 主题系统
 
