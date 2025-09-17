@@ -1,4 +1,4 @@
-import React from 'react'
+// No explicit React import needed with React 17+ JSX transform
 
 export interface TabItem {
   path: string
@@ -49,4 +49,3 @@ export function TabsBar({ tabs, activePath, onSelect, onClose }: TabsBarProps) {
     </div>
   )
 }
-

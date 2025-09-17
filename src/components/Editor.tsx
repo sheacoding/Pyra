@@ -21,6 +21,7 @@ export interface EditorHandle {
   stop: () => void
   format: () => void
   lint: () => void
+  getContent: () => string
 }
 
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ filePath, projectPath, settings, onConsoleOutput, onConsoleError, onScriptStart, onScriptStop }: EditorProps, ref) {
@@ -76,7 +77,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   const runRuffLinting = async (currentFilePath: string) => {
     if (!currentFilePath.endsWith('.py') || !projectPath) return
 
-    console.log('🔍 Starting Ruff linting for:', currentFilePath)
+    console.log('[LINT] Starting Ruff linting for:', currentFilePath)
     setIsLinting(true)
     try {
       const result: RuffCheckResult = await TauriAPI.ruffCheckFile(projectPath, currentFilePath)
@@ -138,7 +139,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   }
 
   const updateEditorMarkers = (diagnostics: RuffDiagnostic[]) => {
-    console.log('🎯 Updating editor markers with diagnostics:', diagnostics)
+    console.log('[LINT] Updating editor markers with diagnostics:', diagnostics)
     
     const m = monacoRef.current
     if (!editorRef.current || !m?.editor) {
@@ -156,7 +157,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     if (decorationIdsRef.current.length > 0) {
       editorRef.current.deltaDecorations(decorationIdsRef.current, [])
       decorationIdsRef.current = []
-      console.log('🧹 Cleared existing decorations')
+      console.log('[LINT] Cleared existing decorations')
     }
 
     // Clear existing markers
@@ -180,7 +181,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       return acc
     }, { errors: 0, warnings: 0, info: 0 })
 
-    console.log(`📊 Diagnostics breakdown: ${severityGroups.errors} errors, ${severityGroups.warnings} warnings, ${severityGroups.info} info`)
+    console.log(`[LINT] Diagnostics breakdown: ${severityGroups.errors} errors, ${severityGroups.warnings} warnings, ${severityGroups.info} info`)
 
     // Create decorations with severity-based styling
     const decorations = diagnostics.map((diagnostic) => {
@@ -233,7 +234,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     })
 
     m.editor.setModelMarkers(model, 'ruff', markers)
-    console.log(`📍 Set ${markers.length} traditional markers with severity mapping`)
+    console.log(`[LINT] Set ${markers.length} traditional markers with severity mapping`)
     
     // Force editor to refresh
     editorRef.current.layout()
@@ -245,7 +246,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     
     if (firstDiagnostic && decorations.length > 0) {
       editorRef.current.revealLineInCenter(firstDiagnostic.line)
-      console.log(`🎯 Revealed line ${firstDiagnostic.line} (${firstDiagnostic.severity}: ${firstDiagnostic.rule})`)
+      console.log(`[LINT] Revealed line ${firstDiagnostic.line} (${firstDiagnostic.severity}: ${firstDiagnostic.rule})`)
     }
   }
 
@@ -261,7 +262,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     }
     
     quickDebounceRef.current = setTimeout(() => {
-      console.log('🚀 Running quick syntax check for:', currentFilePath)
+      console.log('[LINT] Running quick syntax check for:', currentFilePath)
       runRuffLinting(currentFilePath)
     }, 300) // 300ms delay for quick feedback
   }
@@ -272,7 +273,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       clearTimeout(debounceRef.current)
     }
     debounceRef.current = setTimeout(() => {
-      console.log('🔍 Running full lint check for:', currentFilePath)
+      console.log('[LINT] Running full lint check for:', currentFilePath)
       runRuffLinting(currentFilePath)
     }, 1000) // 1 second delay for full analysis
   }
@@ -284,8 +285,8 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     }
 
     setIsFormatting(true)
-    onConsoleOutput?.('🔧 Formatting with Ruff...\n')
-    console.log('🎨 Starting Ruff format for:', filePath)
+    onConsoleOutput?.('[FORMAT] Formatting with Ruff...\n')
+    console.log('[FORMAT] Starting Ruff format for:', filePath)
     
     try {
       const result = await TauriAPI.ruffFormatFile(projectPath, filePath)
@@ -293,7 +294,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       
       // Reload the file to show formatted content
       const fileContent = await TauriAPI.readFile(filePath)
-      console.log('📄 Reloaded file content length:', fileContent.length)
+      console.log('[EDITOR] Reloaded file content length:', fileContent.length)
       
       setContent(fileContent)
       if (editorRef.current) {
@@ -428,12 +429,12 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     editorRef.current = editor
     monacoRef.current = m || monacoRef.current
 
-    console.log('🎨 Monaco Editor mounted')
+    console.log('[EDITOR] Monaco Editor mounted')
 
     try {
       // Apply the current theme
       const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
-      console.log('🎯 Applying theme:', targetTheme)
+      console.log('[THEME] Applying theme:', targetTheme)
       monacoRef.current?.editor?.setTheme(targetTheme)
 
       // Debug: Check what tokens are actually generated
@@ -442,7 +443,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
         if (model) {
           const content = model.getValue()
           const tokens = monacoRef.current?.editor?.tokenize(content.substring(0, 500), 'python')
-          console.log('🔍 Python tokens for current file:', tokens)
+          console.log('[THEME] Python tokens for current file:', tokens)
         }
       }
 
@@ -477,19 +478,19 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
 
   // Update theme when settings change
   useEffect(() => {
-    if (!editorRef.current || !settings?.theme?.editorTheme) return
+    if (!editorRef.current) return
 
-    const targetTheme = settings.theme.editorTheme
-    console.log('🔄 Settings changed - applying theme:', targetTheme)
+    const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
+    console.log('[SETTINGS] Settings changed - applying theme:', targetTheme)
 
     try {
-      // Register custom themes if needed
-      if (targetTheme.startsWith('catppuccin')) {
-        const mochaTheme = createMonacoCatppuccinTheme('mocha')
-        const latteTheme = createMonacoCatppuccinTheme('latte')
-        const m = monacoRef.current
-        m?.editor?.defineTheme('catppuccin-mocha', mochaTheme)
-        m?.editor?.defineTheme('catppuccin-latte', latteTheme)
+      // Always register custom themes to ensure they're available
+      const mochaTheme = createMonacoCatppuccinTheme('mocha')
+      const latteTheme = createMonacoCatppuccinTheme('latte')
+      const m = monacoRef.current
+      if (m?.editor) {
+        m.editor.defineTheme('catppuccin-mocha', mochaTheme)
+        m.editor.defineTheme('catppuccin-latte', latteTheme)
       }
 
       // Apply the theme
@@ -536,14 +537,15 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     run: () => { runCurrentFile() },
     stop: () => { stopRunning() },
     format: () => { formatCurrentFile() },
-    lint: () => { if (filePath) runRuffLinting(filePath) }
-  }), [filePath, projectPath, isRunning, settings])
+    lint: () => { if (filePath) runRuffLinting(filePath) },
+    getContent: () => { return editorRef.current?.getValue() || content }
+  }), [filePath, projectPath, isRunning, settings, content])
 
   if (!filePath) {
     return (
       <div className="h-full flex items-center justify-center" style={{ color: 'var(--ctp-overlay0)' }}>
         <div className="text-center">
-          <div className="text-6xl mb-4">🐍</div>
+          <div className="text-6xl mb-4"><i className="fab fa-python text-blue-500"></i></div>
           <div className="text-xl mb-2" style={{ color: 'var(--ctp-text)' }}>Welcome to Pyra IDE</div>
           <div className="text-sm" style={{ color: 'var(--ctp-subtext1)' }}>Open a file to start editing</div>
         </div>
@@ -594,7 +596,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
             fontSize: settings?.editor?.fontSize || 14,
             fontFamily: settings?.editor?.fontFamily || 'JetBrains Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, monospace',
             minimap: { enabled: settings?.editor?.minimap || false },
-            lineNumbers: settings?.editor?.lineNumbers ? 'on' : 'off',
+            lineNumbers: settings?.editor?.lineNumbers !== false ? 'on' : 'off',
             folding: true,
             wordWrap: settings?.editor?.wordWrap ? 'on' : 'off',
             automaticLayout: true,
@@ -602,6 +604,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
             insertSpaces: settings?.editor?.insertSpaces ?? true,
             renderWhitespace: settings?.editor?.renderWhitespace ? 'all' : 'selection',
             scrollBeyondLastLine: false,
+            // Line number styling
+            lineNumbersMinChars: 3,
+            glyphMargin: true,
             // Enable hover for markers
             hover: {
               enabled: true,
@@ -612,6 +617,18 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
               other: true,
               comments: true,
               strings: true
+            },
+            // Better visual experience
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
+            cursorSmoothCaretAnimation: 'on',
+            // Theme-related settings
+            bracketPairColorization: {
+              enabled: true
+            },
+            guides: {
+              bracketPairs: true,
+              indentation: true
             }
           }}
         />

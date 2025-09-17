@@ -8,9 +8,24 @@ yarn-error.log*
 dist/
 build/
 
-# Tauri artifacts
+# Tauri artifacts and build output
 src-tauri/target/
 src-tauri/Cargo.lock
+src-tauri/gen/
+
+# Tauri bundle and installer output
+src-tauri/target/release/bundle/
+src-tauri/target/debug/bundle/
+*.dmg
+*.exe
+*.deb
+*.rpm
+*.AppImage
+*.msi
+
+# WiX installer files (Windows)
+src-tauri/target/release/bundle/wix/
+src-tauri/target/debug/bundle/wix/
 
 # Environment variables
 .env

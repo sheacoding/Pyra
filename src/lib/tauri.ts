@@ -257,4 +257,13 @@ export class TauriAPI {
   static async checkPyProjectExists(projectPath: string): Promise<boolean> {
     return invoke('check_pyproject_exists', { projectPath });
   }
+
+  // File dialog operations
+  static async openFileDialog(): Promise<string | null> {
+    return invoke('open_file_dialog');
+  }
+
+  static async saveFileDialog(): Promise<string | null> {
+    return invoke('save_file_dialog');
+  }
 }

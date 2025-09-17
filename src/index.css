@@ -1,3 +1,4 @@
+@import '@fortawesome/fontawesome-free/css/all.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -112,6 +113,7 @@
     box-shadow: 0 1px 0 0 var(--ctp-surface1), 0 4px 10px rgba(0,0,0,0.15);
     -webkit-user-select: none;
     user-select: none;
+    -webkit-app-region: drag;
   }
 
   .window-controls button {

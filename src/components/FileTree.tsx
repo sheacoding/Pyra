@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { TauriAPI, FileItem } from '../lib/tauri'
+import { ask, message } from '@tauri-apps/plugin-dialog'
 
 interface FileTreeProps {
   projectPath: string
@@ -153,18 +154,30 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
 
   const handleDeleteFile = async (filePath: string) => {
     const fileName = filePath.split(/[/\\]/).pop() || 'this file'
-    if (confirm(`Are you sure you want to delete "${fileName}"?`)) {
-      try {
-        await TauriAPI.deleteFile(filePath)
-        await refreshFiles()
-        // If the deleted file was selected, clear selection
-        if (selectedFile === filePath) {
-          setSelectedFile(null)
+    try {
+      const confirmed = await ask(`Are you sure you want to delete "${fileName}"?`, {
+        title: 'Confirm Delete',
+        kind: 'warning'
+      })
+
+      if (confirmed) {
+        try {
+          await TauriAPI.deleteFile(filePath)
+          await refreshFiles()
+          // If the deleted file was selected, clear selection
+          if (selectedFile === filePath) {
+            setSelectedFile(null)
+          }
+        } catch (error) {
+          console.error('Failed to delete file:', error)
+          await message('Failed to delete file: ' + error, {
+            title: 'Error',
+            kind: 'error'
+          })
         }
-      } catch (error) {
-        console.error('Failed to delete file:', error)
-        alert('Failed to delete file: ' + error)
       }
+    } catch (error) {
+      console.error('Failed to show delete confirmation:', error)
     }
     setContextMenu(null)
   }
@@ -200,7 +213,10 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       setContextMenuData(null)
     } catch (error) {
       console.error('Failed to create file:', error)
-      alert('Failed to create file: ' + error)
+      await message('Failed to create file: ' + error, {
+        title: 'Error',
+        kind: 'error'
+      })
     }
   }
 
@@ -235,27 +251,30 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       setContextMenuData(null)
     } catch (error) {
       console.error('Failed to create folder:', error)
-      alert('Failed to create folder: ' + error)
+      await message('Failed to create folder: ' + error, {
+        title: 'Error',
+        kind: 'error'
+      })
     }
   }
 
   const getFileIcon = (fileName: string, isDirectory: boolean, isExpanded?: boolean) => {
     if (isDirectory) {
-      return isExpanded ? '📂' : '📁'
+      return isExpanded ? <i className="fas fa-folder-open text-yellow-600"></i> : <i className="fas fa-folder text-yellow-600"></i>
     }
-    
+
     const ext = fileName.split('.').pop()?.toLowerCase()
     switch (ext) {
-      case 'py': return '🐍'
-      case 'js': return '📜'
-      case 'ts': return '📘'
-      case 'json': return '📋'
-      case 'md': return '📝'
-      case 'txt': return '📄'
-      case 'toml': return '⚙️'
+      case 'py': return <i className="fab fa-python text-blue-500"></i>
+      case 'js': return <i className="fab fa-js-square text-yellow-500"></i>
+      case 'ts': return <i className="fas fa-code text-blue-600"></i>
+      case 'json': return <i className="fas fa-file-code text-orange-500"></i>
+      case 'md': return <i className="fab fa-markdown text-gray-600"></i>
+      case 'txt': return <i className="fas fa-file-alt text-gray-500"></i>
+      case 'toml': return <i className="fas fa-cog text-gray-600"></i>
       case 'yml':
-      case 'yaml': return '📝'
-      default: return '📄'
+      case 'yaml': return <i className="fas fa-file-alt text-red-500"></i>
+      default: return <i className="fas fa-file text-gray-500"></i>
     }
   }
 
@@ -384,26 +403,26 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
             onClick={() => { refreshFiles(); setContextMenu(null) }}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            🔄 Refresh
+            <i className="fas fa-sync-alt"></i> Refresh
           </button>
           <button
             onClick={handleCreateNewFile}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            📄 New File
+            <i className="fas fa-file-plus"></i> New File
           </button>
           <button
             onClick={handleCreateNewFolder}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            📁 New Folder
+            <i className="fas fa-folder-plus"></i> New Folder
           </button>
           <div className="border-t border-gray-600 my-1"></div>
           <button
             onClick={() => handleDeleteFile(contextMenu.targetPath)}
             className="w-full text-left px-3 py-1 text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"
           >
-            🗑️ Delete
+            <i className="fas fa-trash"></i> Delete
           </button>
         </div>
       )}

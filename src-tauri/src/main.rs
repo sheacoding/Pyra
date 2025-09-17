@@ -30,6 +30,8 @@ fn main() {
             commands::file::create_directory,
             commands::file::delete_file,
             commands::file::file_exists,
+            commands::file::open_file_dialog,
+            commands::file::save_file_dialog,
             commands::python::check_uv_installed,
             commands::python::ensure_uv_installed,
             commands::python::list_python_versions,

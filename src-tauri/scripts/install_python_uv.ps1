@@ -10,7 +10,6 @@ function Ensure-Winget {
     $tmp = Join-Path $env:TEMP "AppInstaller.msixbundle"
     $ProgressPreference = 'SilentlyContinue'
     Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/getwinget" -OutFile $tmp
-    # Try to install. This may require dependencies on older systems.
     Add-AppxPackage -Path $tmp -ErrorAction Stop
   } catch {
     Write-Host "Failed to install winget via App Installer bundle: $_" -ForegroundColor Red
@@ -44,7 +43,6 @@ if (-not $pm) {
   Write-Host "No package manager available (winget/choco). Please install Python manually from https://www.python.org/downloads/" -ForegroundColor Red
 }
 
-# Install Python
 if (-not (Test-Command 'py') -and -not (Test-Command 'python') -and -not (Test-Command 'python3')) {
   if ($pm -eq 'winget') {
     Write-Host "Installing Python via winget..." -ForegroundColor Yellow
@@ -55,10 +53,8 @@ if (-not (Test-Command 'py') -and -not (Test-Command 'python') -and -not (Test-C
   }
 }
 
-# Refresh PATH for current session
 $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('PATH','User')
 
-# Install uv
 if (-not (Test-Command 'uv')) {
   Write-Host "Installing uv from official script..." -ForegroundColor Yellow
   try {
@@ -72,3 +68,4 @@ if (-not (Test-Command 'uv')) {
 
 Write-Host "Dependency installation steps completed." -ForegroundColor Green
 exit 0
+
