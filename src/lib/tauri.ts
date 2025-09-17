@@ -113,6 +113,10 @@ export class TauriAPI {
     return invoke('check_uv_installed');
   }
 
+  static async ensureUvInstalled(): Promise<string> {
+    return invoke('ensure_uv_installed');
+  }
+
   static async listPythonVersions(): Promise<string[]> {
     return invoke('list_python_versions');
   }
@@ -252,5 +256,14 @@ export class TauriAPI {
 
   static async checkPyProjectExists(projectPath: string): Promise<boolean> {
     return invoke('check_pyproject_exists', { projectPath });
+  }
+
+  // File dialog operations
+  static async openFileDialog(): Promise<string | null> {
+    return invoke('open_file_dialog');
+  }
+
+  static async saveFileDialog(): Promise<string | null> {
+    return invoke('save_file_dialog');
   }
 }

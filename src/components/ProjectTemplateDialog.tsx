@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TauriAPI, ProjectTemplate } from '../lib/tauri'
+import { message } from '@tauri-apps/plugin-dialog'
 
 interface ProjectTemplateDialogProps {
   isOpen: boolean
@@ -39,7 +40,10 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
 
   const handleCreateProject = async () => {
     if (!selectedTemplate || !projectName.trim() || !projectPath.trim()) {
-      alert('Please fill in all fields')
+      await message('Please fill in all fields', {
+        title: 'Missing Information',
+        kind: 'warning'
+      })
       return
     }
 
@@ -51,7 +55,10 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
       handleClose()
     } catch (error) {
       console.error('Failed to create project:', error)
-      alert(`Failed to create project: ${error}`)
+      await message(`Failed to create project: ${error}`, {
+        title: 'Error',
+        kind: 'error'
+      })
     } finally {
       setCreating(false)
     }
@@ -82,7 +89,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
       <div className="bg-gray-800 rounded-lg shadow-xl w-5/6 max-w-6xl h-5/6 max-h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white">🚀 Create New Project</h2>
+          <h2 className="text-xl font-bold text-white"><i className="fas fa-rocket"></i> Create New Project</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-white p-1 rounded"
@@ -162,7 +169,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
               {/* Template Preview */}
               {selectedTemplateObj && (
                 <div className="mb-6 p-4 bg-gray-700/50 rounded-lg">
-                  <h4 className="font-medium text-white mb-2">📋 {selectedTemplateObj.name}</h4>
+                  <h4 className="font-medium text-white mb-2"><i className="fas fa-clipboard-list"></i> {selectedTemplateObj.name}</h4>
                   <p className="text-sm text-gray-300 mb-3">{selectedTemplateObj.description}</p>
                   
                   <div className="mb-3">
@@ -173,7 +180,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                         .slice(0, 8)
                         .map((file, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <span>📄</span>
+                            <span><i className="fas fa-file"></i></span>
                             <span>{file.path}</span>
                           </div>
                         ))}
@@ -236,7 +243,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                       className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded"
                       disabled={creating}
                     >
-                      📁
+                      <i className="fas fa-folder"></i>
                     </button>
                   </div>
                   {projectName && projectPath && (
@@ -288,7 +295,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
               </>
             ) : (
               <>
-                🚀 Create Project
+                <i className="fas fa-rocket"></i> Create Project
               </>
             )}
           </button>

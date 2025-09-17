@@ -147,7 +147,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
               title="View on PyPI"
             >
-              🔗
+              <i className="fas fa-external-link-alt"></i>
             </button>
             <button
               onClick={() => handleUninstallPackage(pkg.name)}
@@ -155,7 +155,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded transition-colors"
               title="Uninstall package"
             >
-              🗑️
+              <i className="fas fa-trash"></i>
             </button>
           </div>
         </div>
@@ -174,7 +174,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                     className="px-1 py-0.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
                     title="View on PyPI"
                   >
-                    🔗
+                    <i className="fas fa-external-link-alt"></i>
                   </button>
                 </div>
               </div>
@@ -201,7 +201,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                     : 'text-gray-300 hover:text-white hover:bg-gray-600'
                 }`}
               >
-                📋 List
+                <i className="fas fa-list"></i> List
               </button>
               <button
                 onClick={() => setViewMode('tree')}
@@ -211,7 +211,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                     : 'text-gray-300 hover:text-white hover:bg-gray-600'
                 }`}
               >
-                🌳 Tree
+                <i className="fas fa-sitemap"></i> Tree
               </button>
             </div>
             <button
@@ -253,7 +253,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="🔍 Search packages..."
+              placeholder="Search packages..."
               className="w-full px-3 py-2 bg-gray-700 text-gray-300 text-sm rounded border border-gray-600 focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -287,7 +287,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
             disabled={isInstalling || !installInput.trim()}
             className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded transition-colors"
           >
-            {isInstalling ? '⏳ Installing...' : '📥 Install'}
+            {isInstalling ? <><i className="fas fa-spinner fa-spin"></i> Installing...</> : <><i className="fas fa-download"></i> Install</>}
           </button>
         </form>
         
@@ -323,7 +323,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         
         {/* Installation tips */}
         <div className="text-xs text-gray-500 bg-gray-800 p-2 rounded">
-          💡 Tips: Use <code className="bg-gray-700 px-1 rounded">==version</code> for exact versions, 
+          <i className="fas fa-lightbulb"></i> Tips: Use <code className="bg-gray-700 px-1 rounded">==version</code> for exact versions, 
           <code className="bg-gray-700 px-1 rounded">&gt;=version</code> for minimum versions, 
           or <code className="bg-gray-700 px-1 rounded">git+https://...</code> for git repositories
         </div>
@@ -335,7 +335,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
           <div className="p-4 text-center text-gray-400">Loading packages...</div>
         ) : packages.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
-            <div className="text-6xl mb-4">📦</div>
+            <div className="text-6xl mb-4"><i className="fas fa-box text-brown-600"></i></div>
             <div className="text-lg mb-2">No packages installed</div>
             <div className="text-sm">Install your first package using the form above</div>
           </div>
@@ -347,7 +347,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                 filteredDependencyTree.packages.map(renderPackageTree)
               ) : (
                 <div className="p-4 text-center text-gray-500">
-                  <div className="text-4xl mb-4">🔍</div>
+                  <div className="text-4xl mb-4"><i className="fas fa-search text-gray-500"></i></div>
                   <div className="text-lg mb-2">No matching packages found</div>
                   <div className="text-sm">Try adjusting your search filter</div>
                 </div>
@@ -370,7 +370,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                         className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                         title="View on PyPI"
                       >
-                        🔗
+                        <i className="fas fa-external-link-alt"></i>
                       </button>
                       <button
                         onClick={() => handleUninstallPackage(pkg.name)}
@@ -378,14 +378,14 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                         className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded transition-colors"
                         title="Uninstall package"
                       >
-                        🗑️
+                        <i className="fas fa-trash"></i>
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="p-4 text-center text-gray-500">
-                  <div className="text-4xl mb-4">🔍</div>
+                  <div className="text-4xl mb-4"><i className="fas fa-search text-gray-500"></i></div>
                   <div className="text-lg mb-2">No matching packages found</div>
                   <div className="text-sm">Try adjusting your search filter</div>
                 </div>
@@ -398,7 +398,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
       {/* Footer Info */}
       <div className="px-4 py-2 bg-gray-800 border-t border-gray-700 text-xs text-gray-400">
         <div className="flex items-center justify-between">
-          <span>⚡ Using UV for fast package management</span>
+          <span><i className="fas fa-bolt text-yellow-500"></i> Using UV for fast package management</span>
           <div className="flex items-center gap-2">
             <span>{packages.length} package{packages.length !== 1 ? 's' : ''} installed</span>
             {viewMode === 'tree' && dependencyTree && (
@@ -410,7 +410,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         </div>
         {packages.length > 0 && (
           <div className="mt-1 text-xs text-gray-500">
-            💡 Tip: {viewMode === 'tree' ? 'Click ▶ to expand dependencies' : 'Switch to Tree view to see dependencies'}
+            <i className="fas fa-lightbulb"></i> Tip: {viewMode === 'tree' ? 'Click ▶ to expand dependencies' : 'Switch to Tree view to see dependencies'}
           </div>
         )}
       </div>

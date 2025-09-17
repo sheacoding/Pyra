@@ -102,24 +102,39 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
 
   const getMessageColor = (type: ConsoleMessage['type']) => {
     switch (type) {
-      case 'stdout': return 'text-green-400'
-      case 'stderr': return 'text-red-400'
-      case 'error': return 'text-red-400'
-      case 'info': return 'text-blue-400'
-      default: return 'text-gray-300'
+      case 'stdout': return { color: 'var(--ctp-green)' }
+      case 'stderr': return { color: 'var(--ctp-red)' }
+      case 'error': return { color: 'var(--ctp-red)' }
+      case 'info': return { color: 'var(--ctp-blue)' }
+      default: return { color: 'var(--ctp-text)' }
     }
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-900">
+    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--ctp-base)' }}>
       {/* Console Header */}
-      <div className="px-4 py-2 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
-        <div className="text-sm font-semibold text-gray-300">Console</div>
+      <div className="px-4 py-2 border-b flex items-center justify-between"
+           style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
+        <div className="text-sm font-semibold" style={{ color: 'var(--ctp-subtext1)' }}>Console</div>
         <div className="flex gap-2">
           <button
             onClick={createVirtualEnv}
             disabled={isRunning || !projectPath}
-            className="px-2 py-1 text-xs bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded"
+            className="px-2 py-1 text-xs rounded transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: isRunning || !projectPath ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)',
+              color: isRunning || !projectPath ? 'var(--ctp-subtext0)' : 'var(--ctp-base)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isRunning && projectPath) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isRunning && projectPath) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)'
+              }
+            }}
           >
             Create venv
           </button>
@@ -128,7 +143,10 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
               setLocalMessages([])
               onClearMessages?.()
             }}
-            className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded"
+            className="px-2 py-1 text-xs rounded transition-colors"
+            style={{ backgroundColor: 'var(--ctp-surface2)', color: 'var(--ctp-text)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-overlay0)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-surface2)' }}
           >
             Clear
           </button>
@@ -136,21 +154,23 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
       </div>
 
       {/* Console Messages */}
-      <div 
+      <div
         ref={consoleRef}
         className="flex-1 overflow-y-auto p-4 font-mono text-sm"
+        style={{ backgroundColor: 'var(--ctp-base)' }}
       >
         {allMessages.length === 0 ? (
-          <div className="text-gray-500">
+          <div style={{ color: 'var(--ctp-overlay0)' }}>
             Console ready. Type commands or use buttons above.
           </div>
         ) : (
           allMessages.map((message) => (
             <div
               key={message.id}
-              className={`mb-1 ${getMessageColor(message.type)}`}
+              className="mb-1"
+              style={getMessageColor(message.type)}
             >
-              <span className="text-gray-500 mr-2">
+              <span className="mr-2" style={{ color: 'var(--ctp-overlay0)' }}>
                 {message.timestamp.toLocaleTimeString()}
               </span>
               <span className="whitespace-pre-wrap">{message.content}</span>
@@ -158,23 +178,27 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
           ))
         )}
         {isRunning && (
-          <div className="text-yellow-400 animate-pulse">
+          <div className="animate-pulse" style={{ color: 'var(--ctp-yellow)' }}>
             Running command...
           </div>
         )}
       </div>
 
       {/* Console Input */}
-      <div className="border-t border-gray-700 p-2">
+      <div className="border-t p-2" style={{ borderColor: 'var(--ctp-surface1)' }}>
         <form onSubmit={handleInputSubmit} className="flex">
-          <span className="text-gray-400 mr-2 font-mono">{'>'}</span>
+          <span className="mr-2 font-mono" style={{ color: 'var(--ctp-overlay1)' }}>{'>'}</span>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isRunning}
             placeholder="Enter command (e.g., 'run main.py', 'create-venv', 'clear')"
-            className="flex-1 bg-transparent text-gray-300 font-mono text-sm focus:outline-none disabled:text-gray-500"
+            className="flex-1 bg-transparent font-mono text-sm focus:outline-none disabled:opacity-50"
+            style={{
+              color: isRunning ? 'var(--ctp-overlay0)' : 'var(--ctp-text)',
+              caretColor: 'var(--ctp-text)'
+            }}
           />
         </form>
       </div>

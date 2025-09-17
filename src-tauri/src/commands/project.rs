@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use tauri_plugin_dialog::DialogExt;
+use tauri::Manager;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ProjectConfig {
@@ -191,26 +192,36 @@ build-backend = "setuptools.build_meta"
 pub async fn open_project_dialog(app: tauri::AppHandle) -> Result<String, String> {
     use std::sync::{Arc, Mutex};
     use tokio::time::{sleep, Duration};
-    
+
     let result = Arc::new(Mutex::new(None));
     let result_clone = Arc::clone(&result);
-    
+
+    // Get the main window to use as parent for the dialog
+    let main_window = app.get_webview_window("main");
+
+    let mut dialog = app.dialog().file();
+
+    // Set parent window if available to prevent blank popup
+    if let Some(window) = main_window {
+        dialog = dialog.set_parent(&window);
+    }
+
     // Use Tauri v2 dialog API with callback
-    app.dialog().file().pick_folder(move |folder_path| {
+    dialog.pick_folder(move |folder_path| {
         let mut res = result_clone.lock().unwrap();
         *res = folder_path;
     });
-    
+
     // Wait for the dialog to complete with polling
     for _ in 0..100 { // Wait up to 10 seconds (100 * 100ms)
         sleep(Duration::from_millis(100)).await;
-        
+
         let res = result.lock().unwrap();
         if let Some(path) = res.as_ref() {
             return Ok(path.to_string());
         }
     }
-    
+
     // If no selection was made, return current directory as fallback
     if let Ok(path) = std::env::current_dir() {
         Ok(path.to_string_lossy().to_string())

@@ -117,7 +117,6 @@ pyra/
 
 ## 🌍 Language Support
 
-- **English**: This README
 - **中文**: [中文文档](./docs/README.md)
 
 ## 📖 Documentation

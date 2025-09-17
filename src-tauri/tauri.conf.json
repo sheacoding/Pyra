@@ -1,37 +1,49 @@
 {
-  "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173"
-  },
-  "bundle": {
-    "active": false,
-    "targets": "all"
-  },
-  "productName": "Pyra",
-  "mainBinaryName": "Pyra",
-  "version": "0.1.0",
-  "identifier": "com.pyra.ide",
-  "plugins": {},
-  "app": {
-    "withGlobalTauri": false,
-    "windows": [
-      {
-        "label": "main",
-        "fullscreen": false,
-        "resizable": true,
-        "title": "Pyra IDE",
-        "decorations": false,
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600,
-        "useHttpsScheme": true
-      }
-    ],
-    "security": {
-      "csp": null
-    }
-  }
+    "build":  {
+                  "beforeBuildCommand":  "npm run build",
+                  "beforeDevCommand":  "npm run dev",
+                  "frontendDist":  "../dist",
+                  "devUrl":  "http://localhost:5173"
+              },
+    "bundle":  {
+                   "active":  true,
+                   "targets":  "all",
+                   "icon":  [
+                                "icons/icon.ico"
+                            ],
+                   "resources":  [
+
+                                 ]
+               },
+    "productName":  "Pyra",
+    "mainBinaryName":  "Pyra",
+    "version":  "0.1.0",
+    "identifier":  "com.pyra.ide",
+    "plugins":  {
+
+                },
+    "app":  {
+                "withGlobalTauri":  false,
+                "windows":  [
+                                {
+                                    "label":  "main",
+                                    "fullscreen":  false,
+                                    "resizable":  true,
+                                    "title":  "Pyra IDE",
+                                    "decorations":  false,
+                                    "width":  1200,
+                                    "height":  800,
+                                    "minWidth":  800,
+                                    "minHeight":  600,
+                                    "center": true,
+                                    "visible": true,
+                                    "maximized": false,
+                                    "focus": true,
+                                    "useHttpsScheme":  true
+                                }
+                            ],
+                "security":  {
+                                 "csp":  null
+                             }
+            }
 }

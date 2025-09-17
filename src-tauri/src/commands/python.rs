@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+﻿use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
@@ -50,6 +50,52 @@ pub async fn check_uv_installed() -> Result<bool, String> {
     }
 }
 
+#[tauri::command]
+pub async fn ensure_uv_installed() -> Result<String, String> {
+    if let Ok(true) = check_uv_installed().await {
+        return Ok("uv already installed".to_string());
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let status = Command::new("powershell")
+            .args(&[
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-WindowStyle",
+                "Hidden",
+                "-Command",
+                "try { $p=Join-Path $env:TEMP 'uv_install.ps1'; Invoke-WebRequest -UseBasicParsing https://astral.sh/uv/install.ps1 -OutFile $p; Start-Process -WindowStyle Hidden -FilePath powershell -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File', $p, '-Force' -Wait; exit 0 } catch { exit 1 }",
+            ])
+            .status()
+            .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
+        if !status.success() {
+            return Err("uv install script failed".to_string());
+        }
+        if let Ok(true) = check_uv_installed().await {
+            return Ok("uv installed".to_string());
+        } else {
+            return Err("Failed to install uv".to_string());
+        }
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        let status = Command::new("sh")
+            .args(["-c", "curl -fsSL https://astral.sh/uv/install.sh | sh >/dev/null 2>&1"])
+            .status()
+            .map_err(|e| format!("Failed to run shell: {}", e))?;
+        if !status.success() {
+            return Err("uv install script failed".to_string());
+        }
+        if let Ok(true) = check_uv_installed().await {
+            Ok("uv installed".to_string())
+        } else {
+            Err("Failed to install uv".to_string())
+        }
+    }
+}
 #[tauri::command]
 pub async fn list_python_versions() -> Result<Vec<String>, String> {
     let output = Command::new("uv")
@@ -187,12 +233,13 @@ pub async fn get_dependency_tree(project_path: String) -> Result<DependencyTree,
         let mut total_count = 0;
 
         for line in stdout.lines() {
-            let depth = line.chars().take_while(|c| *c == '├' || *c == '│' || *c == '└' || *c == '─' || *c == ' ').count() / 4;
+            let prefix_len = line.chars().take_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' ')).count();
+            let depth = prefix_len / 4;
             
             // Clean the line from tree characters
             let cleaned_line = line
                 .chars()
-                .skip_while(|&c| c == '├' || c == '└' || c == '│' || c == '─' || c == ' ')
+                .skip_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' '))
                 .collect::<String>();
 
             if cleaned_line.contains(" v") {
@@ -256,12 +303,12 @@ pub async fn list_packages(project_path: String) -> Result<Vec<Package>, String>
         let packages: Vec<Package> = stdout
             .lines()
             .filter_map(|line| {
-                // Match lines like "├── requests v2.31.0" or "└── urllib3 v2.0.4"
+                // Match lines like "鈹溾攢鈹€ requests v2.31.0" or "鈹斺攢鈹€ urllib3 v2.0.4"
                 if line.contains(" v") {
                     // Remove tree characters and extract package info
                     let cleaned_line = line
                         .chars()
-                        .skip_while(|&c| c == '├' || c == '└' || c == '│' || c == '─' || c == ' ')
+                        .skip_while(|c| matches!(c, '│' | '├' | '└' | '─' | ' '))
                         .collect::<String>();
 
                     if let Some(version_pos) = cleaned_line.find(" v") {
@@ -712,3 +759,6 @@ pub async fn run_script_with_uv_streaming(
     // Return immediately so UI stays responsive
     Ok("UV run started successfully".to_string())
 }
+
+
+

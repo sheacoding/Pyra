@@ -87,13 +87,26 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
   const NavButton = ({ view, label, icon }: { view: PanelView; label: string; icon: string }) => (
     <button
       onClick={() => setActiveView(view)}
-      className={`flex flex-col items-center justify-center gap-1 px-2 py-2 text-xs rounded transition-colors min-w-[60px] ${
-        activeView === view
-          ? 'bg-blue-600 text-white shadow-lg'
-          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-      }`}
+      className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-xs rounded transition-colors min-w-[60px]"
+      style={{
+        backgroundColor: activeView === view ? 'var(--ctp-blue)' : 'transparent',
+        color: activeView === view ? 'var(--ctp-base)' : 'var(--ctp-overlay1)',
+        boxShadow: activeView === view ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+      }}
+      onMouseEnter={(e) => {
+        if (activeView !== view) {
+          e.currentTarget.style.color = 'var(--ctp-text)'
+          e.currentTarget.style.backgroundColor = 'var(--ctp-surface0)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (activeView !== view) {
+          e.currentTarget.style.color = 'var(--ctp-overlay1)'
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }
+      }}
     >
-      <span className="text-sm">{icon}</span>
+      <i className={`${icon} text-sm`}></i>
       <span className="font-medium">{label}</span>
     </button>
   )
@@ -105,45 +118,68 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
           <div className="p-4">
             <div className="space-y-4">
               {/* Project Info */}
-              <div className="bg-gray-800 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-200 mb-3">Project Overview</h3>
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                  <i className="fas fa-info-circle text-blue-400"></i>
+                  Project Overview
+                </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Project Path:</span>
-                    <span className="text-gray-300 font-mono text-xs">{projectPath}</span>
+                    <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
+                      <i className="fas fa-folder text-xs"></i>
+                      Project Path:
+                    </span>
+                    <span className="font-mono text-xs" style={{ color: 'var(--ctp-text)' }}>{projectPath}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Virtual Environment:</span>
-                    <span className={venvExists ? 'text-green-400' : 'text-red-400'}>
-                      {venvExists ? '✅ Active' : '❌ Not Found'}
+                    <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
+                      <i className="fas fa-cube text-xs"></i>
+                      Virtual Environment:
+                    </span>
+                    <span style={{ color: venvExists ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
+                      <i className={venvExists ? 'fas fa-check' : 'fas fa-times'}></i>
+                      {venvExists ? 'Active' : 'Not Found'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">UV Package Manager:</span>
-                    <span className={uvInstalled ? 'text-green-400' : 'text-red-400'}>
-                      {uvInstalled ? '✅ Installed' : '❌ Not Found'}
+                    <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
+                      <i className="fas fa-package text-xs"></i>
+                      UV Package Manager:
+                    </span>
+                    <span style={{ color: uvInstalled ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
+                      <i className={uvInstalled ? 'fas fa-check' : 'fas fa-times'}></i>
+                      {uvInstalled ? 'Installed' : 'Not Found'}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-gray-800 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-200 mb-3">Quick Actions</h3>
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                  <i className="fas fa-bolt text-yellow-400"></i>
+                  Quick Actions
+                </h3>
                 <div className="space-y-2">
                   {!venvExists && (
                     <button
                       onClick={() => handleCreateVenv()}
-                      className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm"
+                      className="w-full px-4 py-2 rounded text-sm transition-colors"
+                      style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
                     >
-                      🚀 Initialize UV Project
+                      <i className="fas fa-rocket"></i> Initialize UV Project
                     </button>
                   )}
                   {!uvInstalled && (
-                    <div className="p-3 bg-yellow-900/20 border border-yellow-700/50 rounded text-yellow-200 text-sm">
-                      <div className="font-semibold mb-1">UV not installed</div>
+                    <div className="p-3 border rounded text-sm" style={{ backgroundColor: 'var(--ctp-yellow)' + '20', borderColor: 'var(--ctp-yellow)' + '50', color: 'var(--ctp-yellow)' }}>
+                      <div className="font-semibold mb-1 flex items-center gap-2">
+                        <i className="fas fa-exclamation-triangle"></i>
+                        UV not installed
+                      </div>
                       <div>Install UV for faster Python package management:</div>
-                      <code className="block mt-2 p-2 bg-gray-800 rounded">curl -LsSf https://astral.sh/uv/install.sh | sh</code>
+                      <code className="block mt-2 p-2 rounded" style={{ backgroundColor: 'var(--ctp-surface0)' }}>curl -LsSf https://astral.sh/uv/install.sh | sh</code>
                     </div>
                   )}
                 </div>
@@ -151,9 +187,12 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
 
               {/* Project Stats */}
               {venvExists && (
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-200 mb-3">Environment Status</h3>
-                  <div className="text-sm text-gray-300">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                    <i className="fas fa-server text-green-400"></i>
+                    Environment Status
+                  </h3>
+                  <div className="text-sm" style={{ color: 'var(--ctp-text)' }}>
                     Click on "Packages" tab to manage installed packages
                   </div>
                 </div>
@@ -174,31 +213,49 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
       case 'python':
         return (
           <div className="p-4">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-200 mb-3">Python Version Management</h3>
-              
+            <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                <i className="fab fa-python text-blue-400"></i>
+                Python Version Management
+              </h3>
+
               {!uvInstalled ? (
-                <div className="text-center py-8 text-gray-400">
-                  <div className="text-4xl mb-4">🐍</div>
+                <div className="text-center py-8" style={{ color: 'var(--ctp-overlay1)' }}>
+                  <div className="text-4xl mb-4"><i className="fab fa-python text-blue-500"></i></div>
                   <div>UV is required for Python version management</div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: 'var(--ctp-text)' }}>
+                      <i className="fas fa-list-ul text-sm"></i>
                       Available Python Versions:
                     </label>
                     {pythonVersions.length === 0 ? (
-                      <div className="text-gray-400 text-sm">No Python versions found via UV</div>
+                      <div className="text-sm" style={{ color: 'var(--ctp-overlay1)' }}>No Python versions found via UV</div>
                     ) : (
                       <div className="space-y-2">
                         {pythonVersions.map((version) => (
-                          <div key={version} className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                            <span className="text-gray-300 font-mono text-sm">{version}</span>
+                          <div key={version} className="flex items-center justify-between p-2 rounded" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
+                            <span className="font-mono text-sm" style={{ color: 'var(--ctp-text)' }}>{version}</span>
                             <button
                               onClick={() => handleCreateVenv(version)}
                               disabled={venvExists}
-                              className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded"
+                              className="px-3 py-1 text-xs rounded transition-colors"
+                              style={{
+                                backgroundColor: venvExists ? 'var(--ctp-surface2)' : 'var(--ctp-blue)',
+                                color: venvExists ? 'var(--ctp-overlay0)' : 'var(--ctp-base)'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!venvExists) {
+                                  e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!venvExists) {
+                                  e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                                }
+                              }}
                             >
                               {venvExists ? 'In Use' : 'Use'}
                             </button>
@@ -228,14 +285,14 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-900">
+    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--ctp-base)' }}>
       {/* Navigation */}
-      <div className="px-3 py-3 bg-gray-800 border-b border-gray-700">
+      <div className="px-3 py-3 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <div className="flex justify-between gap-1">
-          <NavButton view="overview" label="Overview" icon="🏠" />
-          <NavButton view="packages" label="Packages" icon="📦" />
-          <NavButton view="python" label="Python" icon="🐍" />
-          <NavButton view="settings" label="Settings" icon="⚙️" />
+          <NavButton view="overview" label="Overview" icon="fas fa-home" />
+          <NavButton view="packages" label="Packages" icon="fas fa-box" />
+          <NavButton view="python" label="Python" icon="fab fa-python" />
+          <NavButton view="settings" label="Settings" icon="fas fa-cog" />
         </div>
       </div>
 
