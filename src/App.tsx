@@ -24,7 +24,6 @@ function App() {
   const [showVenvDialog, setShowVenvDialog] = useState(false)
   const [, setVenvExists] = useState(false)
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
-  const [isMaximized, setIsMaximized] = useState(false)
   const [uvReady, setUvReady] = useState(false)
   const [uvInstalling, setUvInstalling] = useState(false)
   const editorRef = useRef<EditorHandle | null>(null)
@@ -178,8 +177,8 @@ function App() {
     const checkWindowState = async () => {
       try {
         const window = getCurrentWindow()
-        const maximized = await window.isMaximized()
-        setIsMaximized(maximized)
+        await window.isMaximized()
+        // maximized state not currently used
       } catch (error) {
         console.error('Failed to check window state:', error)
       }
@@ -403,8 +402,8 @@ function App() {
     try {
       await getCurrentWindow().toggleMaximize()
       // Update state immediately after toggle
-      const maximized = await getCurrentWindow().isMaximized()
-      setIsMaximized(maximized)
+      await getCurrentWindow().isMaximized()
+      // maximized state not currently used
     } catch (e) { console.error('Toggle maximize failed', e) }
   }
   const closeWindow = async () => {
@@ -422,21 +421,21 @@ function App() {
             <span className="text-xs font-semibold select-none" style={{ color: 'var(--ctp-text)' }}>Pyra</span>
           </div>
           <div className="flex items-center gap-1 ml-1">
-            <button data-tauri-drag-region="false" onClick={explorerNewFile} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-yellow)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }} type="button" title="New File"><i className="fas fa-plus text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerNewFolder} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-sapphire)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} type="button" title="New Folder"><i className="fas fa-folder-plus text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleOpenFile} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Open File"><i className="fas fa-folder-open text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleSaveFile} disabled={!currentFile} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-blue)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Save"><i className="fas fa-save text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleSaveAsFile} disabled={!currentFile} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Save As"><i className="fas fa-copy text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerRefresh} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-teal)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} type="button" title="Refresh"><i className="fas fa-sync-alt text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerNewFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-yellow)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }} type="button" title="New File"><i className="fas fa-plus text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerNewFolder} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-sapphire)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} type="button" title="New Folder"><i className="fas fa-folder-plus text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleOpenFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Open File"><i className="fas fa-folder-open text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleSaveFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-blue)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Save"><i className="fas fa-save text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleSaveAsFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Save As"><i className="fas fa-copy text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerRefresh} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-teal)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} type="button" title="Refresh"><i className="fas fa-sync-alt text-sm"></i></button>
           </div>
         </div>
 
         {/* Center segment: editor actions */}
         <div className="flex-1 flex items-center px-2 gap-2">
-          <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Run"><i className="fas fa-play text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorStop} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title="Stop"><i className="fas fa-stop text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Format"><i className="fas fa-palette text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="w-7 h-7 rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Lint"><i className="fas fa-search text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Run"><i className="fas fa-play text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorStop} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title="Stop"><i className="fas fa-stop text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Format"><i className="fas fa-palette text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Lint"><i className="fas fa-search text-sm"></i></button>
 
           {/* 拖拽区域 - 中央空白区域 */}
           <div className="flex-1 min-w-[100px] h-full" title="拖拽此区域移动窗口"></div>
@@ -448,7 +447,7 @@ function App() {
           <div className="ml-auto flex items-center gap-2">
           <button data-tauri-drag-region="false"
             onClick={() => setShowTemplateDialog(true)}
-            className="w-7 h-7 rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
+            className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
             style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }}
@@ -456,7 +455,7 @@ function App() {
             title="New Project"><i className="fas fa-rocket text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={handleOpenProject}
-            className="w-7 h-7 rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
+            className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
             style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
@@ -464,7 +463,7 @@ function App() {
             title="Open Project"><i className="fas fa-folder-open text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={(e) => handleToggleProjectPanel(e)}
-            className="w-7 h-7 rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
+            className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
             style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }}
@@ -474,7 +473,7 @@ function App() {
           ><i className="fas fa-clipboard-list text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={handleOpenSettings}
-            className="w-7 h-7 rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
+            className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
             style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)' }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
@@ -486,7 +485,7 @@ function App() {
             <button
               data-tauri-drag-region="false"
               onClick={minimizeWindow}
-              className="w-7 h-7 rounded font-medium transition-colors no-drag flex items-center justify-center"
+              className="toolbar-button rounded font-medium transition-colors no-drag flex items-center justify-center"
               style={{ backgroundColor: 'var(--ctp-lavender)', color: 'var(--ctp-base)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
@@ -496,7 +495,7 @@ function App() {
             <button
               data-tauri-drag-region="false"
               onClick={toggleMaximizeWindow}
-              className="w-7 h-7 rounded font-medium transition-colors no-drag flex items-center justify-center"
+              className="toolbar-button rounded font-medium transition-colors no-drag flex items-center justify-center"
               style={{ backgroundColor: 'var(--ctp-sky)', color: 'var(--ctp-base)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }}
@@ -506,7 +505,7 @@ function App() {
             <button
               data-tauri-drag-region="false"
               onClick={closeWindow}
-              className="w-7 h-7 rounded font-medium transition-colors no-drag flex items-center justify-center"
+              className="toolbar-button rounded font-medium transition-colors no-drag flex items-center justify-center"
               style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }}
