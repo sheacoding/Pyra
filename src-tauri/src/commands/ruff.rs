@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::process::Command;
+use std::process::{Command, Stdio};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 #[derive(Serialize, Deserialize)]
 pub struct RuffDiagnostic {
@@ -22,9 +24,17 @@ pub struct RuffCheckResult {
 
 #[tauri::command]
 pub async fn check_ruff_installed() -> Result<bool, String> {
-    let output = Command::new("uv")
-        .args(&["run", "ruff", "--version"])
-        .output();
+    let mut cmd = Command::new("uv");
+    cmd.args(&["run", "ruff", "--version"]) 
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        // CREATE_NO_WINDOW to avoid flashing console windows in release
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output();
 
     match output {
         Ok(output) => Ok(output.status.success()),
@@ -34,9 +44,17 @@ pub async fn check_ruff_installed() -> Result<bool, String> {
 
 #[tauri::command]
 pub async fn install_ruff_with_uv(project_path: String) -> Result<String, String> {
-    let output = Command::new("uv")
-        .args(&["add", "--dev", "ruff"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["add", "--dev", "ruff"]) 
         .current_dir(&project_path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd
         .output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
@@ -56,8 +74,8 @@ pub async fn ruff_check_file(
     println!("🔍 [RUFF] project_path: {}", project_path);
     println!("🔍 [RUFF] file_path: {}", file_path);
 
-    let output = Command::new("uv")
-        .args(&[
+    let mut cmd = Command::new("uv");
+    cmd.args(&[
             "run",
             "ruff",
             "check",
@@ -66,7 +84,14 @@ pub async fn ruff_check_file(
             "--no-cache",
         ])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| {
             let error_msg = format!("Failed to execute uv run ruff check: {}", e);
             println!("❌ [RUFF] {}", error_msg);
@@ -173,8 +198,8 @@ pub async fn ruff_check_file(
 
 #[tauri::command]
 pub async fn ruff_check_project(project_path: String) -> Result<RuffCheckResult, String> {
-    let output = Command::new("uv")
-        .args(&[
+    let mut cmd = Command::new("uv");
+    cmd.args(&[
             "run",
             "ruff",
             "check",
@@ -183,7 +208,14 @@ pub async fn ruff_check_project(project_path: String) -> Result<RuffCheckResult,
             "--no-cache",
         ])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv run ruff check: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -267,10 +299,17 @@ pub async fn ruff_check_project(project_path: String) -> Result<RuffCheckResult,
 
 #[tauri::command]
 pub async fn ruff_format_file(project_path: String, file_path: String) -> Result<String, String> {
-    let output = Command::new("uv")
-        .args(&["run", "ruff", "format", &file_path, "--no-cache"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["run", "ruff", "format", &file_path, "--no-cache"])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv run ruff format: {}", e))?;
 
     if output.status.success() {
@@ -283,10 +322,17 @@ pub async fn ruff_format_file(project_path: String, file_path: String) -> Result
 
 #[tauri::command]
 pub async fn ruff_format_project(project_path: String) -> Result<String, String> {
-    let output = Command::new("uv")
-        .args(&["run", "ruff", "format", ".", "--no-cache"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["run", "ruff", "format", ".", "--no-cache"])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv run ruff format: {}", e))?;
 
     if output.status.success() {
@@ -304,8 +350,8 @@ pub async fn ruff_fix_file(
     project_path: String,
     file_path: String,
 ) -> Result<RuffCheckResult, String> {
-    let output = Command::new("uv")
-        .args(&[
+    let mut cmd = Command::new("uv");
+    cmd.args(&[
             "run",
             "ruff",
             "check",
@@ -315,7 +361,14 @@ pub async fn ruff_fix_file(
             "--no-cache",
         ])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv run ruff fix: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);

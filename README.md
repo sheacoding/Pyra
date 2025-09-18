@@ -6,12 +6,14 @@ A lightweight, modern Python IDE built with **Tauri (Rust backend) + React (Type
 
 - **🚀 Lightweight & Fast**: Built with Rust backend for optimal performance
 - **🎨 Monaco Editor**: Professional code editing with Python syntax highlighting
-- **🐍 Python Environment Management**: Integrated `uv` support for Python versions and virtual environments
+- **📑 Multi-file Editing**: Tab-based interface for editing multiple files simultaneously
+- **🐍 Smart Environment Management**: Automatic `uv` installation and intelligent environment status tracking
 - **📦 Package Management**: Visual package installation and dependency management
 - **🔧 Code Quality Tools**: Built-in Ruff integration for linting and formatting
-- **🌈 Modern UI**: Catppuccin theme with light/dark mode support
+- **🌈 Modern UI**: Catppuccin theme with light/dark mode support and unified design consistency
 - **⚡ Real-time Console**: Live script output and error reporting
 - **🔄 Project Templates**: Quick project setup with predefined templates
+- **🛠️ Cross-platform Installer**: Automated environment setup scripts for all platforms
 - **🖥️ Cross-platform**: Windows, macOS, and Linux support
 
 ## 🚀 Quick Start
@@ -20,13 +22,13 @@ A lightweight, modern Python IDE built with **Tauri (Rust backend) + React (Type
 
 - Node.js (16+)
 - Rust and Cargo
-- `uv` (Python package manager)
+- `uv` (Python package manager) - *Automatically installed on first run if not present*
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/pyra.git
+git clone https://github.com/sheacoding/Pyra.git
 cd pyra
 ```
 
@@ -39,6 +41,8 @@ npm install
 ```bash
 npm run tauri dev
 ```
+
+> **Note**: Pyra will automatically detect and install required Python tools (`uv`) on first launch if they're not already available on your system.
 
 ### Building for Production
 
@@ -69,13 +73,15 @@ npx tsc --noEmit     # Type check without emitting files
 ## 🏗️ Architecture
 
 ### Frontend (React + TypeScript)
-- **Main App**: `src/App.tsx` - Central application with unified header/toolbar
+- **Main App**: `src/App.tsx` - Central application with unified header/toolbar and multi-tab support
 - **Core Components**:
   - `FileTree.tsx` - File system browser
-  - `Editor.tsx` - Monaco Editor integration
+  - `Editor.tsx` - Monaco Editor integration with multi-file support
+  - `TabsBar.tsx` - Multi-file tab management
   - `Console.tsx` - Real-time script output
-  - `ProjectPanel.tsx` - Python environment management
+  - `ProjectPanel.tsx` - Python environment management with smart uv integration
   - `SettingsPanel.tsx` - IDE configuration and theming
+  - `StatusBar.tsx` - Environment status and system information
 
 ### Backend (Rust + Tauri)
 - **Entry Point**: `src-tauri/src/main.rs`
@@ -86,10 +92,12 @@ npx tsc --noEmit     # Type check without emitting files
   - `ruff.rs` - Code formatting and linting
 
 ### Python Integration
-- **Environment Management**: `uv` for Python versions and virtual environments
+- **Smart Environment Setup**: Automatic `uv` installation via official scripts on first run
+- **Environment Management**: `uv` for Python versions and virtual environments with status tracking
 - **Package Management**: `uv pip` for dependency installation
 - **Code Quality**: Ruff for linting and formatting
 - **Script Execution**: Virtual environment isolation
+- **Cross-platform Support**: Environment setup scripts for Windows, macOS, and Linux
 
 ## 🎨 Theming
 

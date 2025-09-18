@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri::Manager;
 
@@ -124,24 +126,33 @@ See `requirements.txt` for project dependencies.
         uv_args.push(version);
     }
 
-    let uv_init_success = match Command::new("uv")
-        .args(&uv_args)
-        .current_dir(&project_path)
-        .output()
-    {
-        Ok(output) if output.status.success() => {
-            true // UV init succeeded
+    let uv_init_success = {
+        let mut cmd = Command::new("uv");
+        cmd.args(&uv_args)
+            .current_dir(&project_path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        #[cfg(target_os = "windows")]
+        {
+            cmd.creation_flags(0x08000000);
         }
-        Ok(output) => {
-            eprintln!(
-                "UV init failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            false
-        }
-        Err(e) => {
-            eprintln!("UV not available: {}", e);
-            false
+
+        match cmd.output() {
+            Ok(output) if output.status.success() => {
+                true // UV init succeeded
+            }
+            Ok(output) => {
+                eprintln!(
+                    "UV init failed: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                false
+            }
+            Err(e) => {
+                eprintln!("UV not available: {}", e);
+                false
+            }
         }
     };
 

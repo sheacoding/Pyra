@@ -2,6 +2,8 @@
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::sync::Arc;
 use tauri::{Emitter, State, Window};
 use tokio::sync::Mutex;
@@ -42,7 +44,16 @@ pub struct DependencyTree {
 
 #[tauri::command]
 pub async fn check_uv_installed() -> Result<bool, String> {
-    let output = Command::new("uv").arg("--version").output();
+    let mut cmd = Command::new("uv");
+    cmd.arg("--version")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output();
 
     match output {
         Ok(output) => Ok(output.status.success()),
@@ -58,8 +69,8 @@ pub async fn ensure_uv_installed() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
-        let status = Command::new("powershell")
-            .args(&[
+        let mut cmd = Command::new("powershell");
+        cmd.args(&[
                 "-NoProfile",
                 "-ExecutionPolicy",
                 "Bypass",
@@ -68,7 +79,11 @@ pub async fn ensure_uv_installed() -> Result<String, String> {
                 "-Command",
                 "try { $p=Join-Path $env:TEMP 'uv_install.ps1'; Invoke-WebRequest -UseBasicParsing https://astral.sh/uv/install.ps1 -OutFile $p; Start-Process -WindowStyle Hidden -FilePath powershell -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File', $p, '-Force' -Wait; exit 0 } catch { exit 1 }",
             ])
-            .status()
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .creation_flags(0x08000000);
+        let status = cmd.status()
             .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
         if !status.success() {
             return Err("uv install script failed".to_string());
@@ -82,9 +97,12 @@ pub async fn ensure_uv_installed() -> Result<String, String> {
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
-        let status = Command::new("sh")
-            .args(["-c", "curl -fsSL https://astral.sh/uv/install.sh | sh >/dev/null 2>&1"])
-            .status()
+        let mut cmd = Command::new("sh");
+        cmd.args(["-c", "curl -fsSL https://astral.sh/uv/install.sh | sh >/dev/null 2>&1"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        let status = cmd.status()
             .map_err(|e| format!("Failed to run shell: {}", e))?;
         if !status.success() {
             return Err("uv install script failed".to_string());
@@ -98,9 +116,16 @@ pub async fn ensure_uv_installed() -> Result<String, String> {
 }
 #[tauri::command]
 pub async fn list_python_versions() -> Result<Vec<String>, String> {
-    let output = Command::new("uv")
-        .args(&["python", "list"])
-        .output()
+    let mut cmd = Command::new("uv");
+    cmd.args(&["python", "list"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -124,9 +149,16 @@ pub async fn list_python_versions() -> Result<Vec<String>, String> {
 
 #[tauri::command]
 pub async fn install_python_version(version: String) -> Result<String, String> {
-    let output = Command::new("uv")
-        .args(&["python", "install", &version])
-        .output()
+    let mut cmd = Command::new("uv");
+    cmd.args(&["python", "install", &version])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -150,10 +182,17 @@ pub async fn create_venv(
         args.push(&python_arg);
     }
 
-    let output = Command::new("uv")
-        .args(&args)
+    let mut cmd = Command::new("uv");
+    cmd.args(&args)
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -177,10 +216,17 @@ pub async fn install_package(project_path: String, package: String) -> Result<St
         return Err("This is not a UV project. Please initialize with 'uv init' first or create a pyproject.toml file.".to_string());
     }
 
-    let output = Command::new("uv")
-        .args(&["add", &package])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["add", &package])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -198,10 +244,17 @@ pub async fn uninstall_package(project_path: String, package: String) -> Result<
         return Err("This is not a UV project. Please initialize with 'uv init' first or create a pyproject.toml file.".to_string());
     }
 
-    let output = Command::new("uv")
-        .args(&["remove", &package])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["remove", &package])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -220,10 +273,17 @@ pub async fn get_dependency_tree(project_path: String) -> Result<DependencyTree,
     }
 
     // Use uv tree to show detailed dependencies
-    let output = Command::new("uv")
-        .args(&["tree", "--depth", "3"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["tree", "--depth", "3"])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -290,10 +350,17 @@ pub async fn list_packages(project_path: String) -> Result<Vec<Package>, String>
     }
 
     // Use uv tree to show dependencies
-    let output = Command::new("uv")
-        .args(&["tree"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["tree"])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv: {}", e))?;
 
     if output.status.success() {
@@ -381,10 +448,17 @@ pub async fn run_script(project_path: String, script_path: String) -> Result<Str
         format!("{}/.venv/bin/python", project_path)
     };
 
-    let output = Command::new(python_exe)
-        .arg(script_path)
+    let mut cmd = Command::new(python_exe);
+    cmd.arg(script_path)
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute Python script: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -424,11 +498,16 @@ pub async fn run_script_with_output_streaming(
         cmd = Command::new("python");
     }
 
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
     let mut child = cmd
         .arg(&script_path)
         .current_dir(&project_path)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .stdin(Stdio::null())
         .spawn()
         .map_err(|e| format!("Failed to start Python script: {}", e))?;
 
@@ -540,13 +619,21 @@ pub async fn stop_running_script(
             use std::process::Command;
 
             // Try to kill any remaining UV or Python processes
-            let _ = Command::new("taskkill")
-                .args(&["/F", "/IM", "uv.exe"])
-                .output();
+            let mut cmd1 = Command::new("taskkill");
+            cmd1.args(&["/F", "/IM", "uv.exe"])
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .creation_flags(0x08000000);
+            let _ = cmd1.output();
 
-            let _ = Command::new("taskkill")
-                .args(&["/F", "/IM", "python.exe"])
-                .output();
+            let mut cmd2 = Command::new("taskkill");
+            cmd2.args(&["/F", "/IM", "python.exe"])
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .creation_flags(0x08000000);
+            let _ = cmd2.output();
 
             println!("Attempted forceful termination of UV and Python processes");
         }
@@ -578,9 +665,16 @@ pub async fn run_script_simple(
         cmd = Command::new("python");
     }
 
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
     let output = cmd
         .arg(script_path)
         .current_dir(&project_path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .output()
         .map_err(|e| format!("Failed to execute Python script: {}", e))?;
 
@@ -605,10 +699,17 @@ pub async fn init_uv_project(
         args.push(version);
     }
 
-    let output = Command::new("uv")
-        .args(&args)
+    let mut cmd = Command::new("uv");
+    cmd.args(&args)
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv init: {}", e))?;
 
     if output.status.success() {
@@ -621,10 +722,17 @@ pub async fn init_uv_project(
 #[tauri::command]
 pub async fn sync_uv_project(project_path: String) -> Result<String, String> {
     // Sync dependencies based on pyproject.toml and uv.lock
-    let output = Command::new("uv")
-        .args(&["sync"])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["sync"])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv sync: {}", e))?;
 
     if output.status.success() {
@@ -640,10 +748,17 @@ pub async fn run_script_with_uv(
     script_path: String,
 ) -> Result<String, String> {
     // Use 'uv run' to execute script with project dependencies
-    let output = Command::new("uv")
-        .args(&["run", "python", &script_path])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["run", "python", &script_path])
         .current_dir(&project_path)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let output = cmd.output()
         .map_err(|e| format!("Failed to execute uv run: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -669,12 +784,17 @@ pub async fn run_script_with_uv_streaming(
     }
 
     // Use 'uv run' to execute script with streaming output
-    let mut child = Command::new("uv")
-        .args(&["run", "python", &script_path])
+    let mut cmd = Command::new("uv");
+    cmd.args(&["run", "python", &script_path])
         .current_dir(&project_path)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn()
+        .stdin(Stdio::null());
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000);
+    }
+    let mut child = cmd.spawn()
         .map_err(|e| format!("Failed to start uv run: {}", e))?;
 
     let stdout = child.stdout.take().unwrap();

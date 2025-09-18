@@ -116,7 +116,8 @@
     -webkit-app-region: drag;
   }
 
-  .window-controls button {
+  /* Unified button sizing for all toolbar and window control buttons */
+  .toolbar-button, .window-controls button {
     width: 26px;
     height: 22px;
     line-height: 18px;
