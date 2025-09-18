@@ -2,21 +2,21 @@
 
 A lightweight, modern Python IDE built with **Tauri (Rust backend) + React (TypeScript frontend)**. Pyra emphasizes modern tooling, cross-platform compatibility, and seamless integration with `uv` for Python environment management.
 
-## ✨ Features
+## <i class="fas fa-star"></i> Features
 
-- **🚀 Lightweight & Fast**: Built with Rust backend for optimal performance
-- **🎨 Monaco Editor**: Professional code editing with Python syntax highlighting
-- **📑 Multi-file Editing**: Tab-based interface for editing multiple files simultaneously
-- **🐍 Smart Environment Management**: Automatic `uv` installation and intelligent environment status tracking
-- **📦 Package Management**: Visual package installation and dependency management
-- **🔧 Code Quality Tools**: Built-in Ruff integration for linting and formatting
-- **🌈 Modern UI**: Catppuccin theme with light/dark mode support and unified design consistency
-- **⚡ Real-time Console**: Live script output and error reporting
-- **🔄 Project Templates**: Quick project setup with predefined templates
-- **🛠️ Cross-platform Installer**: Automated environment setup scripts for all platforms
-- **🖥️ Cross-platform**: Windows, macOS, and Linux support
+- **<i class="fas fa-rocket"></i> Lightweight & Fast**: Built with Rust backend for optimal performance
+- **<i class="fas fa-palette"></i> Monaco Editor**: Professional code editing with Python syntax highlighting
+- **<i class="fas fa-file-alt"></i> Multi-file Editing**: Tab-based interface for editing multiple files simultaneously
+- **<i class="fab fa-python"></i> Smart Environment Management**: Automatic `uv` installation and intelligent environment status tracking
+- **<i class="fas fa-box"></i> Package Management**: Visual package installation and dependency management
+- **<i class="fas fa-wrench"></i> Code Quality Tools**: Built-in Ruff integration for linting and formatting
+- **<i class="fas fa-palette"></i> Modern UI**: Catppuccin theme with light/dark mode support and unified design consistency
+- **<i class="fas fa-bolt"></i> Real-time Console**: Live script output and error reporting
+- **<i class="fas fa-sync-alt"></i> Project Templates**: Quick project setup with predefined templates
+- **<i class="fas fa-tools"></i> Cross-platform Installer**: Automated environment setup scripts for all platforms
+- **<i class="fas fa-desktop"></i> Cross-platform**: Windows, macOS, and Linux support
 
-## 🚀 Quick Start
+## <i class="fas fa-rocket"></i> Quick Start
 
 ### Prerequisites
 
@@ -50,7 +50,7 @@ npm run tauri dev
 npm run tauri build
 ```
 
-## 🛠️ Development Commands
+## <i class="fas fa-tools"></i> Development Commands
 
 ### Frontend Development
 ```bash
@@ -70,7 +70,7 @@ npm run tauri build  # Build production app bundle
 npx tsc --noEmit     # Type check without emitting files
 ```
 
-## 🏗️ Architecture
+## <i class="fas fa-building"></i> Architecture
 
 ### Frontend (React + TypeScript)
 - **Main App**: `src/App.tsx` - Central application with unified header/toolbar and multi-tab support
@@ -99,7 +99,7 @@ npx tsc --noEmit     # Type check without emitting files
 - **Script Execution**: Virtual environment isolation
 - **Cross-platform Support**: Environment setup scripts for Windows, macOS, and Linux
 
-## 🎨 Theming
+## <i class="fas fa-palette"></i> Theming
 
 Pyra features the beautiful Catppuccin color scheme with both light (Latte) and dark (Mocha) variants. Themes are applied consistently across:
 
@@ -107,7 +107,7 @@ Pyra features the beautiful Catppuccin color scheme with both light (Latte) and 
 - Monaco Editor syntax highlighting
 - Terminal/console output
 
-## 📁 Project Structure
+## <i class="fas fa-folder"></i> Project Structure
 
 ```
 pyra/
@@ -123,24 +123,24 @@ pyra/
 └── docs/                  # Documentation
 ```
 
-## 🌍 Language Support
+## <i class="fas fa-globe"></i> Language Support
 
 - **中文**: [中文文档](./docs/README.md)
 
-## 📖 Documentation
+## <i class="fas fa-book"></i> Documentation
 
 - **[User Guide](./docs/USER_GUIDE_EN.md)** - Complete user manual for getting started
 - **[用户指南](./docs/USER_GUIDE.md)** - 中文版用户使用手册
 
-## 🤝 Contributing
+## <i class="fas fa-handshake"></i> Contributing
 
 We welcome contributions! Please feel free to submit issues and enhancement requests.
 
-## 📄 License
+## <i class="fas fa-file-alt"></i> License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## <i class="fas fa-heart"></i> Acknowledgments
 
 - Built with [Tauri](https://tauri.app/) for the desktop application framework
 - Powered by [Monaco Editor](https://microsoft.github.io/monaco-editor/) for code editing

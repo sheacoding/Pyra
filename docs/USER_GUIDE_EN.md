@@ -2,34 +2,34 @@
 
 Welcome to Pyra IDE! This guide will help you get started with our lightweight Python development environment.
 
-## 🚀 Getting Started
+## <i class="fas fa-rocket"></i> Getting Started
 
 ### First Launch
 1. **Open Pyra IDE** - The application will start with a default test project
 2. **Create Virtual Environment** - If prompted, create a Python virtual environment for your project
 3. **Explore the Interface** - Familiarize yourself with the layout and tools
 
-## 🎯 Interface Overview
+## <i class="fas fa-bullseye"></i> Interface Overview
 
 ### Main Areas
-- **🗂️ File Explorer** (Left): Browse and manage your project files
-- **📝 Code Editor** (Center): Write and edit your Python code
-- **📊 Console** (Bottom): View script output and error messages
-- **⚙️ Project Panel** (Right, toggleable): Manage Python packages and environment
+- **<i class="fas fa-folder-open"></i> File Explorer** (Left): Browse and manage your project files
+- **<i class="fas fa-edit"></i> Code Editor** (Center): Write and edit your Python code
+- **<i class="fas fa-chart-bar"></i> Console** (Bottom): View script output and error messages
+- **<i class="fas fa-cog"></i> Project Panel** (Right, toggleable): Manage Python packages and environment
 
 ### Toolbar Actions
-- **📄 New File** - Create a new Python file
-- **📁 New Folder** - Create a new directory
-- **🔄 Refresh** - Refresh the file tree
-- **▶️ Run** - Execute the current Python script
-- **⏹️ Stop** - Stop the running script
-- **🎨 Format** - Format your code with Ruff
-- **🔍 Lint** - Check code quality with Ruff
+- **<i class="fas fa-file"></i> New File** - Create a new Python file
+- **<i class="fas fa-folder"></i> New Folder** - Create a new directory
+- **<i class="fas fa-sync-alt"></i> Refresh** - Refresh the file tree
+- **<i class="fas fa-play"></i> Run** - Execute the current Python script
+- **<i class="fas fa-stop"></i> Stop** - Stop the running script
+- **<i class="fas fa-palette"></i> Format** - Format your code with Ruff
+- **<i class="fas fa-search"></i> Lint** - Check code quality with Ruff
 
-## 📁 Working with Projects
+## <i class="fas fa-folder"></i> Working with Projects
 
 ### Creating a New Project
-1. Click **🚀 New Project** in the toolbar
+1. Click **<i class="fas fa-rocket"></i> New Project** in the toolbar
 2. Choose from available templates:
    - **Basic Python Project** - Simple structure
    - **Data Science Project** - With Jupyter notebook support
@@ -38,12 +38,12 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 4. Click **Create Project**
 
 ### Opening an Existing Project
-1. Click **📂 Open Project** in the toolbar
+1. Click **<i class="fas fa-folder-open"></i> Open Project** in the toolbar
 2. Navigate to your project folder
 3. Select the project directory
 4. Pyra will automatically detect Python files and configuration
 
-## 🐍 Python Environment Management
+## <i class="fab fa-python"></i> Python Environment Management
 
 ### Virtual Environment Setup
 - **Automatic Detection**: Pyra checks for existing `.venv` folders
@@ -51,7 +51,7 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Python Version Selection**: Choose from Python 3.9, 3.10, 3.11, or 3.12
 
 ### Package Management
-1. **Open Project Panel** - Click the **📋** button or use "Show Panel"
+1. **Open Project Panel** - Click the **<i class="fas fa-clipboard"></i>** button or use "Show Panel"
 2. **Install Packages**:
    - Type package name in the search box
    - Click **Install** to add to your project
@@ -59,7 +59,7 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 3. **View Installed Packages** - See all packages in your virtual environment
 4. **Update Dependencies** - Keep your packages up to date
 
-## ✏️ Code Editing
+## <i class="fas fa-edit"></i> Code Editing
 
 ### Features
 - **Syntax Highlighting** - Full Python syntax support
@@ -68,15 +68,15 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Multiple Files** - Work with multiple Python files simultaneously
 
 ### Code Quality Tools
-- **Format Code** (🎨): Automatically format your code using Ruff
-- **Lint Code** (🔍): Check for code quality issues and potential bugs
+- **Format Code** (<i class="fas fa-palette"></i>): Automatically format your code using Ruff
+- **Lint Code** (<i class="fas fa-search"></i>): Check for code quality issues and potential bugs
 - **Real-time Feedback**: See linting issues as you type
 
-## ▶️ Running Code
+## <i class="fas fa-play"></i> Running Code
 
 ### Execute Scripts
 1. **Open a Python file** in the editor
-2. **Click Run** (▶️) or use keyboard shortcut
+2. **Click Run** (<i class="fas fa-play"></i>) or use keyboard shortcut
 3. **View Output** in the console below
 4. **Monitor Execution** - See real-time output and errors
 
@@ -86,10 +86,10 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Clear Console** - Reset output when needed
 - **Scrollable History** - Review previous execution results
 
-## ⚙️ Settings & Customization
+## <i class="fas fa-cog"></i> Settings & Customization
 
 ### Theme Options
-1. **Open Settings** - Click ⚙️ Settings button
+1. **Open Settings** - Click <i class="fas fa-cog"></i> Settings button
 2. **Choose Theme**:
    - **Catppuccin Mocha** (Dark theme)
    - **Catppuccin Latte** (Light theme)
@@ -101,7 +101,7 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Word Wrap** - Enable/disable line wrapping
 - **Minimap** - Show/hide code minimap
 
-## 📋 Tips & Best Practices
+## <i class="fas fa-clipboard"></i> Tips & Best Practices
 
 ### Project Organization
 - **Use Virtual Environments** - Always create isolated environments for projects
@@ -118,7 +118,7 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Clear Console** - Reset output when it gets lengthy
 - **Restart if Needed** - Refresh the application if it becomes unresponsive
 
-## 🔧 Troubleshooting
+## <i class="fas fa-wrench"></i> Troubleshooting
 
 ### Common Issues
 
@@ -142,7 +142,7 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Review Code** - Use the linting tools to identify issues
 - **Restart Application** - Close and reopen Pyra if problems persist
 
-## 📚 Additional Resources
+## <i class="fas fa-book"></i> Additional Resources
 
 - **[中文用户手册](./USER_GUIDE.md)** - Chinese version of this guide
 - **[项目文档](./README.md)** - Technical documentation in Chinese
@@ -150,4 +150,4 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 
 ---
 
-Happy coding with Pyra IDE! 🎉
+Happy coding with Pyra IDE! <i class="fas fa-star"></i>

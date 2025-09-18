@@ -2,21 +2,21 @@
 
 一个基于 **Tauri (Rust 后端) + React (TypeScript 前端)** 构建的轻量级现代 Python IDE。Pyra 强调现代化工具链、跨平台兼容性，以及与 `uv` 的无缝集成来管理 Python 环境。
 
-## ✨ 特性
+## <i class="fas fa-star"></i> 特性
 
-- **🚀 轻量快速**: 基于 Rust 后端，性能卓越
-- **🎨 Monaco 编辑器**: 专业代码编辑体验，支持 Python 语法高亮
-- **📑 多文件编辑**: 基于标签页的界面，支持同时编辑多个文件
-- **🐍 智能环境管理**: 自动安装 `uv` 并智能跟踪环境状态
-- **📦 包管理**: 可视化包安装和依赖管理
-- **🔧 代码质量工具**: 内置 Ruff 集成，支持代码检查和格式化
-- **🌈 现代化界面**: Catppuccin 主题，支持亮色/暗色模式并保持统一设计风格
-- **⚡ 实时控制台**: 实时脚本输出和错误报告
-- **🔄 项目模板**: 预定义模板快速创建项目
-- **🛠️ 跨平台安装器**: 自动化环境设置脚本，支持所有平台
-- **🖥️ 跨平台**: 支持 Windows、macOS 和 Linux
+- **<i class="fas fa-rocket"></i> 轻量快速**: 基于 Rust 后端，性能卓越
+- **<i class="fas fa-palette"></i> Monaco 编辑器**: 专业代码编辑体验，支持 Python 语法高亮
+- **<i class="fas fa-file-alt"></i> 多文件编辑**: 基于标签页的界面，支持同时编辑多个文件
+- **<i class="fab fa-python"></i> 智能环境管理**: 自动安装 `uv` 并智能跟踪环境状态
+- **<i class="fas fa-box"></i> 包管理**: 可视化包安装和依赖管理
+- **<i class="fas fa-wrench"></i> 代码质量工具**: 内置 Ruff 集成，支持代码检查和格式化
+- **<i class="fas fa-palette"></i> 现代化界面**: Catppuccin 主题，支持亮色/暗色模式并保持统一设计风格
+- **<i class="fas fa-bolt"></i> 实时控制台**: 实时脚本输出和错误报告
+- **<i class="fas fa-sync-alt"></i> 项目模板**: 预定义模板快速创建项目
+- **<i class="fas fa-tools"></i> 跨平台安装器**: 自动化环境设置脚本，支持所有平台
+- **<i class="fas fa-desktop"></i> 跨平台**: 支持 Windows、macOS 和 Linux
 
-## 🚀 快速开始
+## <i class="fas fa-rocket"></i> 快速开始
 
 ### 系统要求
 
@@ -50,7 +50,7 @@ npm run tauri dev
 npm run tauri build
 ```
 
-## 🛠️ 开发命令
+## <i class="fas fa-tools"></i> 开发命令
 
 ### 前端开发
 ```bash
@@ -70,7 +70,7 @@ npm run tauri build  # 构建生产应用包
 npx tsc --noEmit     # 类型检查（不生成文件）
 ```
 
-## 🏗️ 架构设计
+## <i class="fas fa-building"></i> 架构设计
 
 ### 前端 (React + TypeScript)
 - **主应用**: `src/App.tsx` - 中央应用组件，统一的标题栏/工具栏和多标签页支持
@@ -99,7 +99,7 @@ npx tsc --noEmit     # 类型检查（不生成文件）
 - **脚本执行**: 虚拟环境隔离执行
 - **跨平台支持**: 为 Windows、macOS 和 Linux 提供环境设置脚本
 
-## 🎨 主题系统
+## <i class="fas fa-palette"></i> 主题系统
 
 Pyra 采用精美的 Catppuccin 配色方案，提供亮色（Latte）和暗色（Mocha）两种变体。主题统一应用于：
 
@@ -107,7 +107,7 @@ Pyra 采用精美的 Catppuccin 配色方案，提供亮色（Latte）和暗色�
 - Monaco 编辑器语法高亮
 - 终端/控制台输出
 
-## 📁 项目结构
+## <i class="fas fa-folder"></i> 项目结构
 
 ```
 pyra/
@@ -128,7 +128,7 @@ pyra/
 - **English**: [English Documentation](../README.md)
 - **中文**: 本文档
 
-## 📖 文档资源
+## <i class="fas fa-book"></i> 文档资源
 
 - **[用户指南](./USER_GUIDE.md)** - 完整的用户使用手册，帮助快速上手
 - **[User Guide](./USER_GUIDE_EN.md)** - 英文版用户使用指南
@@ -137,7 +137,7 @@ pyra/
 
 我们欢迎贡献！请随时提交问题和功能改进请求。
 
-## 📄 许可证
+## <i class="fas fa-file-alt"></i> 许可证
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](../LICENSE) 文件。
 
