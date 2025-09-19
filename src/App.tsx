@@ -21,6 +21,149 @@ function App() {
   const [showProjectPanel, setShowProjectPanel] = useState(false)
   const [showSettingsPanel, setShowSettingsPanel] = useState(false)
   const [ideSettings, setIdeSettings] = useState<IDESettings | null>(null)
+
+  // Load settings on app initialization
+  useEffect(() => {
+    const loadSettings = () => {
+      const savedSettings = localStorage.getItem('pyra-settings')
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings)
+          console.log('[APP] Loading saved settings:', parsed)
+          setIdeSettings(parsed)
+          return parsed
+        } catch (error) {
+          console.error('Failed to parse saved settings:', error)
+        }
+      }
+
+      // Set default settings if none exist
+      const defaultSettings: IDESettings = {
+        editor: {
+          fontSize: 14,
+          fontFamily: 'JetBrains Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, monospace',
+          lineNumbers: true,
+          wordWrap: true,
+          minimap: false,
+          renderWhitespace: false,
+          tabSize: 4,
+          insertSpaces: true
+        },
+        theme: {
+          editorTheme: 'catppuccin-mocha',
+          uiTheme: 'catppuccin-mocha',
+          catppuccinFlavor: 'mocha'
+        },
+        python: {
+          defaultVersion: '3.11',
+          autoCreateVenv: true,
+          useUV: true
+        },
+        ruff: {
+          enabled: true,
+          formatOnSave: false,
+          lintOnSave: true,
+          configPath: 'pyproject.toml'
+        },
+        general: {
+          autoSave: true,
+          autoSaveDelay: 2000,
+          confirmDelete: true,
+          showHiddenFiles: false
+        }
+      }
+
+      console.log('[APP] Using default settings:', defaultSettings)
+      setIdeSettings(defaultSettings)
+      localStorage.setItem('pyra-settings', JSON.stringify(defaultSettings))
+      return defaultSettings
+    }
+
+    const settings = loadSettings()
+
+    // Apply initial theme immediately
+    if (settings?.theme?.uiTheme) {
+      applyThemeToDocument(settings.theme.uiTheme)
+    }
+  }, [])
+
+  // Helper function to apply theme to document
+  const applyThemeToDocument = (theme: string) => {
+    console.log('[APP] Applying theme to document:', theme)
+
+    if (theme.startsWith('catppuccin-')) {
+      document.documentElement.setAttribute('data-theme', theme)
+      document.body.setAttribute('data-theme', theme)
+
+      // Force CSS variable updates based on theme
+      const root = document.documentElement
+      if (theme === 'catppuccin-latte') {
+        root.style.setProperty('--ctp-base', '#eff1f5')
+        root.style.setProperty('--ctp-text', '#4c4f69')
+        root.style.setProperty('--ctp-mantle', '#e6e9ef')
+        root.style.setProperty('--ctp-crust', '#dce0e8')
+        root.style.setProperty('--ctp-surface0', '#ccd0da')
+        root.style.setProperty('--ctp-surface1', '#bcc0cc')
+        root.style.setProperty('--ctp-surface2', '#acb0be')
+        root.style.setProperty('--ctp-overlay0', '#9ca0b0')
+        root.style.setProperty('--ctp-overlay1', '#8c8fa1')
+        root.style.setProperty('--ctp-overlay2', '#7c7f93')
+        root.style.setProperty('--ctp-subtext1', '#5c5f77')
+        root.style.setProperty('--ctp-subtext0', '#6c6f85')
+        root.style.setProperty('--ctp-rosewater', '#dc8a78')
+        root.style.setProperty('--ctp-flamingo', '#dd7878')
+        root.style.setProperty('--ctp-pink', '#ea76cb')
+        root.style.setProperty('--ctp-mauve', '#8839ef')
+        root.style.setProperty('--ctp-red', '#d20f39')
+        root.style.setProperty('--ctp-maroon', '#e64553')
+        root.style.setProperty('--ctp-peach', '#fe640b')
+        root.style.setProperty('--ctp-yellow', '#df8e1d')
+        root.style.setProperty('--ctp-green', '#40a02b')
+        root.style.setProperty('--ctp-teal', '#179299')
+        root.style.setProperty('--ctp-sky', '#04a5e5')
+        root.style.setProperty('--ctp-sapphire', '#209fb5')
+        root.style.setProperty('--ctp-blue', '#1e66f5')
+        root.style.setProperty('--ctp-lavender', '#7287fd')
+      } else {
+        // Mocha theme
+        root.style.setProperty('--ctp-base', '#1e1e2e')
+        root.style.setProperty('--ctp-text', '#cdd6f4')
+        root.style.setProperty('--ctp-mantle', '#181825')
+        root.style.setProperty('--ctp-crust', '#11111b')
+        root.style.setProperty('--ctp-surface0', '#313244')
+        root.style.setProperty('--ctp-surface1', '#45475a')
+        root.style.setProperty('--ctp-surface2', '#585b70')
+        root.style.setProperty('--ctp-overlay0', '#6c7086')
+        root.style.setProperty('--ctp-overlay1', '#7f849c')
+        root.style.setProperty('--ctp-overlay2', '#9399b2')
+        root.style.setProperty('--ctp-subtext1', '#bac2de')
+        root.style.setProperty('--ctp-subtext0', '#a6adc8')
+        root.style.setProperty('--ctp-rosewater', '#f5e0dc')
+        root.style.setProperty('--ctp-flamingo', '#f2cdcd')
+        root.style.setProperty('--ctp-pink', '#f5c2e7')
+        root.style.setProperty('--ctp-mauve', '#cba6f7')
+        root.style.setProperty('--ctp-red', '#f38ba8')
+        root.style.setProperty('--ctp-maroon', '#eba0ac')
+        root.style.setProperty('--ctp-peach', '#fab387')
+        root.style.setProperty('--ctp-yellow', '#f9e2af')
+        root.style.setProperty('--ctp-green', '#a6e3a1')
+        root.style.setProperty('--ctp-teal', '#94e2d5')
+        root.style.setProperty('--ctp-sky', '#89dceb')
+        root.style.setProperty('--ctp-sapphire', '#74c7ec')
+        root.style.setProperty('--ctp-blue', '#87ceeb')
+        root.style.setProperty('--ctp-lavender', '#b4befe')
+      }
+      console.log('✅ [APP] CSS variables updated for theme:', theme)
+
+      // Force repaint
+      document.body.style.display = 'none'
+      document.body.offsetHeight // Trigger reflow
+      document.body.style.display = ''
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+      document.body.removeAttribute('data-theme')
+    }
+  }
   const [showVenvDialog, setShowVenvDialog] = useState(false)
   const [, setVenvExists] = useState(false)
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
@@ -325,9 +468,13 @@ function App() {
   const selectTab = (path: string) => setCurrentFile(path)
 
   const handleSettingsChange = (settings: IDESettings) => {
+    console.log('[APP] Settings changed:', settings)
     setIdeSettings(settings)
-    // Here you could apply the settings to various components
-    console.log('Settings updated:', settings)
+
+    // Apply theme immediately when settings change
+    if (settings.theme?.uiTheme) {
+      applyThemeToDocument(settings.theme.uiTheme)
+    }
   }
 
   const handleCreateVenv = async (pythonVersion: string = '3.11') => {
@@ -386,12 +533,7 @@ function App() {
   // Apply theme to document root when settings change
   useEffect(() => {
     if (ideSettings?.theme?.uiTheme) {
-      const theme = ideSettings.theme.uiTheme
-      if (theme.startsWith('catppuccin-')) {
-        document.documentElement.setAttribute('data-theme', theme)
-      } else {
-        document.documentElement.removeAttribute('data-theme')
-      }
+      applyThemeToDocument(ideSettings.theme.uiTheme)
     }
   }, [ideSettings?.theme?.uiTheme])
 
@@ -511,7 +653,7 @@ function App() {
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }}
               type="button"
               title="Close"
-            >✕</button>
+            ><i className="fas fa-times"></i></button>
           </div>
         </div>
         </div>

@@ -128,7 +128,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
   if (!config) {
     return (
       <div className="p-4 text-center text-gray-500">
-        <div className="text-4xl mb-4">📄</div>
+        <div className="text-4xl mb-4"><i className="fas fa-file-alt"></i></div>
         <div className="text-lg mb-2">Failed to load configuration</div>
         <button 
           onClick={loadConfig}
@@ -146,9 +146,9 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       <div className="px-4 py-3 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-            📄 PyProject Configuration
-            {exists && <span className="text-green-400 text-xs">✅</span>}
-            {!exists && <span className="text-yellow-400 text-xs">⚠️ Not saved</span>}
+            <i className="fas fa-file-alt"></i> PyProject Configuration
+            {exists && <span className="text-green-400 text-xs"><i className="fas fa-check"></i></span>}
+            {!exists && <span className="text-yellow-400 text-xs"><i className="fas fa-exclamation-triangle"></i> Not saved</span>}
           </div>
           <button
             onClick={saveConfig}
@@ -159,7 +159,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                 : 'bg-green-600 hover:bg-green-700 text-white'
             }`}
           >
-            {saving ? '⏳ Saving...' : '💾 Save'}
+            {saving ? <><i className="fas fa-clock"></i> Saving...</> : <><i className="fas fa-save"></i> Save</>}
           </button>
         </div>
       </div>
@@ -168,7 +168,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Project Metadata */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4">📋 Project Information</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-clipboard-list"></i> Project Information</h3>
           
           <div className="space-y-4">
             {/* First row - Project Name and Version */}
@@ -260,7 +260,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
 
         {/* Dependencies */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4">📦 Dependencies</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-box"></i> Dependencies</h3>
           
           <div className="mb-4">
             <div className="flex gap-2">
@@ -290,7 +290,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                   onClick={() => removeDependency(index)}
                   className="flex-shrink-0 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                 >
-                  ✕
+                  <i className="fas fa-times"></i>
                 </button>
               </div>
             ))}
@@ -302,7 +302,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
 
         {/* Dev Dependencies */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4">🛠️ Development Dependencies</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-tools"></i> Development Dependencies</h3>
           
           <div className="mb-4">
             <div className="flex gap-2">
@@ -332,7 +332,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                   onClick={() => removeDevDependency(index)}
                   className="flex-shrink-0 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                 >
-                  ✕
+                  <i className="fas fa-times"></i>
                 </button>
               </div>
             ))}
@@ -345,7 +345,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
         {/* Build System */}
         {config.build_system && (
           <div className="bg-gray-800 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-200 mb-4">⚙️ Build System</h3>
+            <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-cog"></i> Build System</h3>
             
             <div className="space-y-4">
               <div>
@@ -389,7 +389,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                         }}
                         className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                       >
-                        ✕
+                        <i className="fas fa-times"></i>
                       </button>
                     </div>
                   ))}
@@ -403,7 +403,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       {/* Footer */}
       <div className="px-4 py-2 bg-gray-800 border-t border-gray-700 text-xs text-gray-400">
         <div className="flex items-center justify-between">
-          <span>💡 Changes are not saved until you click the Save button</span>
+          <span><i className="fas fa-lightbulb"></i> Changes are not saved until you click the Save button</span>
           <span>pyproject.toml format compatible with UV and other Python tools</span>
         </div>
       </div>

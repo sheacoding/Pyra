@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Configure custom variant for data-theme based switching */
+@custom-variant light (&:where([data-theme=catppuccin-latte], [data-theme=catppuccin-latte] *));
+
 /* Catppuccin Theme CSS Variables */
 :root {
   /* Default to Catppuccin Mocha Colors */
@@ -41,13 +44,13 @@
   --ctp-crust: #dce0e8;
   --ctp-text: #4c4f69;
   --ctp-subtext1: #5c5f77;
-  --ctp-subtext0: #6c6f85;
+  --ctp-subtext0: #5c5f77;
   --ctp-surface2: #acb0be;
   --ctp-surface1: #bcc0cc;
   --ctp-surface0: #ccd0da;
-  --ctp-overlay2: #7c7f93;
-  --ctp-overlay1: #8c8fa1;
-  --ctp-overlay0: #9ca0b0;
+  --ctp-overlay2: #6c6f85;
+  --ctp-overlay1: #7c7f93;
+  --ctp-overlay0: #7c7f93;
   --ctp-rosewater: #dc8a78;
   --ctp-flamingo: #dd7878;
   --ctp-pink: #ea76cb;
@@ -70,14 +73,14 @@
     background-color: var(--ctp-base);
     color: var(--ctp-text);
   }
-  
+
   /* ENSURE PROPER THEME APPLICATION */
   html[data-theme="catppuccin-mocha"],
   body[data-theme="catppuccin-mocha"] {
     background-color: #1e1e2e !important;
     color: #cdd6f4 !important;
   }
-  
+
   html[data-theme="catppuccin-latte"],
   body[data-theme="catppuccin-latte"] {
     background-color: #eff1f5 !important;
@@ -218,6 +221,41 @@
     border-color: var(--ctp-surface1);
     color: var(--ctp-subtext1);
   }
+
+  /* Special overrides for light theme to improve contrast */
+  [data-theme="catppuccin-latte"] .panel-header {
+    color: var(--ctp-text);
+  }
+
+  /* Fix file tree text visibility in light theme */
+  [data-theme="catppuccin-latte"] .text-gray-400,
+  [data-theme="catppuccin-latte"] .text-gray-500,
+  [data-theme="catppuccin-latte"] .text-gray-600 {
+    color: var(--ctp-subtext1);
+  }
+
+  /* Fix context menu and dialogs in light theme */
+  [data-theme="catppuccin-latte"] .bg-gray-800 {
+    background-color: var(--ctp-surface0);
+  }
+
+  [data-theme="catppuccin-latte"] .bg-gray-700 {
+    background-color: var(--ctp-surface1);
+  }
+
+  [data-theme="catppuccin-latte"] .text-gray-300 {
+    color: var(--ctp-text);
+  }
+
+  [data-theme="catppuccin-latte"] .border-gray-600,
+  [data-theme="catppuccin-latte"] .border-gray-700 {
+    border-color: var(--ctp-surface1);
+  }
+
+  /* Fix specific inline styles in light theme */
+  [data-theme="catppuccin-latte"] [style*="color: var(--ctp-overlay0)"] {
+    color: var(--ctp-overlay1) !important;
+  }
 }
 
 /* Monaco editor custom decorations for Ruff diagnostics */
@@ -339,17 +377,16 @@ body[data-theme="catppuccin-mocha"] .monaco-editor .overflow-guard {
   background: #1e1e2e !important;
 }
 
-/* NOTE: Do not force generic token colors on spans; rely on Monaco theme rules */
-
-/* Avoid binding to volatile mtk classes; Monaco theme handles token colors */
-
-/* CATPPUCCIN LATTE THEME */
 /* CATPPUCCIN LATTE THEME - TARGETED Monaco Editor BACKGROUNDS */
 [data-theme="catppuccin-latte"] .monaco-editor,
 [data-theme="catppuccin-latte"] .monaco-editor .monaco-editor-background,
 [data-theme="catppuccin-latte"] .monaco-editor .view-lines,
 [data-theme="catppuccin-latte"] .monaco-editor .monaco-scrollable-element,
 [data-theme="catppuccin-latte"] .monaco-editor .overflow-guard,
+[data-theme="catppuccin-latte"] .monaco-editor .editor-scrollable,
+[data-theme="catppuccin-latte"] .monaco-editor .margin,
+[data-theme="catppuccin-latte"] .monaco-editor .margin-view-overlays,
+[data-theme="catppuccin-latte"] .monaco-editor .glyph-margin,
 body[data-theme="catppuccin-latte"] .monaco-editor,
 body[data-theme="catppuccin-latte"] .monaco-editor .monaco-editor-background,
 body[data-theme="catppuccin-latte"] .monaco-editor .view-lines,
@@ -359,11 +396,18 @@ body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
   background: #eff1f5 !important;
 }
 
-/* Do not force text color in Latte; rely on theme */
+/* FORCE Monaco Editor Container Background */
+[data-theme="catppuccin-mocha"] .monaco-editor-container,
+[data-theme="catppuccin-mocha"] div[data-uri*="monaco-editor"] {
+  background-color: #1e1e2e !important;
+}
 
-/* Avoid binding to volatile mtk classes in Latte */
+[data-theme="catppuccin-latte"] .monaco-editor-container,
+[data-theme="catppuccin-latte"] div[data-uri*="monaco-editor"] {
+  background-color: #eff1f5 !important;
+}
 
-/* LINE NUMBERS */
+/* LINE NUMBERS - Enhanced */
 [data-theme="catppuccin-mocha"] .monaco-editor .line-numbers {
   color: #6c7086 !important;
   background-color: #1e1e2e !important;
@@ -374,7 +418,18 @@ body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
   background-color: #eff1f5 !important;
 }
 
-/* SELECTION AND CURSOR COLORS */
+/* TEXT CONTENT OVERRIDE */
+[data-theme="catppuccin-mocha"] .monaco-editor .view-line,
+[data-theme="catppuccin-mocha"] .monaco-editor .view-lines {
+  color: #cdd6f4 !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .view-line,
+[data-theme="catppuccin-latte"] .monaco-editor .view-lines {
+  color: #4c4f69 !important;
+}
+
+/* SELECTION AND CURSOR COLORS - Enhanced */
 [data-theme="catppuccin-mocha"] .monaco-editor .selected-text,
 [data-theme="catppuccin-mocha"] .monaco-editor .focused .selected-text,
 [data-theme="catppuccin-mocha"] .monaco-editor .view-line span.inline-selected-text {
@@ -397,12 +452,46 @@ body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
   border-color: #dc8a78 !important;
 }
 
+/* AGGRESSIVE BACKGROUND OVERRIDE */
+[data-theme="catppuccin-latte"] * {
+  background-color: inherit;
+}
 
-/* FORCE REMOVAL OF ANY WHITE/LIGHT BACKGROUNDS */
+[data-theme="catppuccin-latte"] .monaco-editor *[style*="background"],
+[data-theme="catppuccin-latte"] .monaco-editor *[style*="background-color"] {
+  background-color: #eff1f5 !important;
+}
+
+[data-theme="catppuccin-mocha"] .monaco-editor *[style*="background"],
+[data-theme="catppuccin-mocha"] .monaco-editor *[style*="background-color"] {
+  background-color: #1e1e2e !important;
+}
+
+/* FORCE REMOVAL OF ANY WHITE/LIGHT BACKGROUNDS - Enhanced */
 .monaco-editor [style*="background-color: rgb(255, 255, 255)"],
 .monaco-editor [style*="background-color: #ffffff"],
 .monaco-editor [style*="background: rgb(255, 255, 255)"],
-.monaco-editor [style*="background: #ffffff"] {
+.monaco-editor [style*="background: #ffffff"],
+[data-theme="catppuccin-latte"] .monaco-editor [style*="background-color: rgb(30, 30, 46)"],
+[data-theme="catppuccin-latte"] .monaco-editor [style*="background-color: #1e1e2e"] {
   background-color: inherit !important;
   background: inherit !important;
+}
+
+/* ADDITIONAL MONACO OVERRIDES FOR LATTE */
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-menu,
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-action-bar,
+[data-theme="catppuccin-latte"] .monaco-editor .suggest-widget,
+[data-theme="catppuccin-latte"] .monaco-editor .parameter-hints-widget {
+  background-color: #e6e9ef !important;
+  color: #4c4f69 !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-list-row {
+  background-color: transparent !important;
+  color: #4c4f69 !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .monaco-list-row:hover {
+  background-color: #ccd0da !important;
 }

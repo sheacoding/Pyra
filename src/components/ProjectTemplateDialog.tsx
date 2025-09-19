@@ -94,7 +94,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
             onClick={handleClose}
             className="text-gray-400 hover:text-white p-1 rounded"
           >
-            ✕
+            <i className="fas fa-times"></i>
           </button>
         </div>
 

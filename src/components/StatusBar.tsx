@@ -27,12 +27,16 @@ export function StatusBar({ currentFile, uvReady = true, uvInstalling = false }:
   const { name, language } = getFileInfo(currentFile)
 
   return (
-    <div className="h-6 bg-purple-600 text-white text-xs flex items-center justify-between px-4">
+    <div className="h-6 text-xs flex items-center justify-between px-4"
+      style={{
+        backgroundColor: 'var(--ctp-mauve)',
+        color: 'var(--ctp-base)'
+      }}>
       <div className="flex items-center gap-4">
         <span>{name}</span>
         {language && <span>{language}</span>}
       </div>
-      
+
       <div className="flex items-center gap-4">
         <span>Pyra IDE v0.1.0</span>
         {uvInstalling ? (

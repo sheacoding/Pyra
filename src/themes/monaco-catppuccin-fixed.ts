@@ -26,7 +26,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'string.quoted.docstring.multi.python', foreground: clean(colors.green) },
 
       // Comments
-      { token: 'comment.line.number-sign.python', foreground: clean(colors.overlay1), fontStyle: 'italic' },
+      { token: 'comment.line.number-sign.python', foreground: clean(isDark ? colors.overlay1 : colors.overlay2), fontStyle: 'italic' },
 
       // Functions
       { token: 'entity.name.function.python', foreground: clean(colors.blue) },
@@ -62,7 +62,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
 
       // Generic fallbacks for any language
       { token: 'keyword', foreground: clean(colors.mauve), fontStyle: 'bold' },
-      { token: 'comment', foreground: clean(colors.overlay1), fontStyle: 'italic' },
+      { token: 'comment', foreground: clean(isDark ? colors.overlay1 : colors.overlay2), fontStyle: 'italic' },
       { token: 'string', foreground: clean(colors.green) },
       { token: 'number', foreground: clean(colors.peach) },
       { token: 'regexp', foreground: clean(colors.pink) },
@@ -94,14 +94,14 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       'editor.selectionBackground': colors.surface2,
       'editor.lineHighlightBackground': colors.surface0 + '50',
       'editorCursor.foreground': colors.rosewater,
-      'editorWhitespace.foreground': colors.surface1,
+      'editorWhitespace.foreground': isDark ? colors.surface1 : colors.surface2,
 
-      // Line numbers
-      'editorLineNumber.foreground': colors.overlay0,
-      'editorLineNumber.activeForeground': colors.lavender,
+      // Line numbers - improved contrast for light theme
+      'editorLineNumber.foreground': isDark ? colors.overlay0 : colors.subtext1,
+      'editorLineNumber.activeForeground': colors.text,
 
-      // Indent guides
-      'editorIndentGuide.background': colors.surface0,
+      // Indent guides - improved visibility for light theme
+      'editorIndentGuide.background': isDark ? colors.surface0 : colors.surface1,
       'editorIndentGuide.activeBackground': colors.surface2,
 
       // Scrollbar
