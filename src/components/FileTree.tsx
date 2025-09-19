@@ -382,7 +382,7 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
     <div className="h-full flex flex-col relative">
       <div className="flex-1 overflow-y-auto">
         {files.length === 0 ? (
-          <div className="p-4 text-gray-400 text-sm">
+          <div className="p-4 text-sm" style={{ color: 'var(--ctp-subtext1)' }}>
             No files in project
           </div>
         ) : (

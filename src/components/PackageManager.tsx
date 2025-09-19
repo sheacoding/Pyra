@@ -122,21 +122,40 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
     const isExpanded = expandedPackages.has(pkg.name)
     return (
       <div key={pkg.name} className="mb-2">
-        <div className="flex items-center justify-between p-3 bg-gray-800 rounded border border-gray-700 hover:bg-gray-750 transition-colors">
+        <div className="flex items-center justify-between p-3 rounded border transition-colors"
+             style={{
+               backgroundColor: 'var(--ctp-surface0)',
+               borderColor: 'var(--ctp-surface1)'
+             }}
+             onMouseEnter={(e) => {
+               e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)'
+             }}
+             onMouseLeave={(e) => {
+               e.currentTarget.style.backgroundColor = 'var(--ctp-surface0)'
+             }}>
           <div className="flex items-center flex-1 min-w-0">
             <button
               onClick={() => togglePackageExpansion(pkg.name)}
-              className="mr-2 text-gray-400 hover:text-gray-200"
+              className="mr-2 transition-colors"
+              style={{
+                color: 'var(--ctp-subtext1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--ctp-text)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--ctp-subtext1)'
+              }}
               disabled={pkg.dependencies.length === 0}
             >
               {pkg.dependencies.length > 0 ? (isExpanded ? '▼' : '▶') : '◦'}
             </button>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-200 truncate">{pkg.name}</div>
-              <div className="text-xs text-gray-400 flex items-center gap-2">
+              <div className="text-sm font-medium truncate" style={{ color: 'var(--ctp-text)' }}>{pkg.name}</div>
+              <div className="text-xs flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                 <span>v{pkg.version}</span>
                 {pkg.dependencies.length > 0 && (
-                  <span className="text-blue-400">({pkg.dependencies.length} deps)</span>
+                  <span style={{ color: 'var(--ctp-blue)' }}>({pkg.dependencies.length} deps)</span>
                 )}
               </div>
             </div>
@@ -144,7 +163,17 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
           <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={() => window.open(`https://pypi.org/project/${pkg.name}/`, '_blank')}
-              className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+              className="px-2 py-1 text-xs rounded transition-colors"
+              style={{
+                backgroundColor: 'var(--ctp-blue)',
+                color: 'var(--ctp-base)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+              }}
               title="View on PyPI"
             >
               <i className="fas fa-external-link-alt"></i>
@@ -152,7 +181,21 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
             <button
               onClick={() => handleUninstallPackage(pkg.name)}
               disabled={isInstalling}
-              className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded transition-colors"
+              className="px-2 py-1 text-xs rounded transition-colors"
+              style={{
+                backgroundColor: isInstalling ? 'var(--ctp-surface2)' : 'var(--ctp-red)',
+                color: 'var(--ctp-base)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isInstalling) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isInstalling) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
+                }
+              }}
               title="Uninstall package"
             >
               <i className="fas fa-trash"></i>
@@ -161,17 +204,27 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         </div>
         
         {isExpanded && pkg.dependencies.length > 0 && (
-          <div className="ml-6 mt-2 border-l-2 border-gray-600 pl-4">
+          <div className="ml-6 mt-2 border-l-2 pl-4" style={{ borderColor: 'var(--ctp-surface2)' }}>
             {pkg.dependencies.map((dep) => (
-              <div key={dep.name} className="mb-1 p-2 bg-gray-700 rounded text-sm">
+              <div key={dep.name} className="mb-1 p-2 rounded text-sm" style={{ backgroundColor: 'var(--ctp-surface1)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-gray-300 font-medium">{dep.name}</span>
-                    <span className="text-gray-400 ml-2">v{dep.version}</span>
+                    <span className="font-medium" style={{ color: 'var(--ctp-text)' }}>{dep.name}</span>
+                    <span className="ml-2" style={{ color: 'var(--ctp-subtext1)' }}>v{dep.version}</span>
                   </div>
                   <button
                     onClick={() => window.open(`https://pypi.org/project/${dep.name}/`, '_blank')}
-                    className="px-1 py-0.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
+                    className="px-1 py-0.5 text-xs rounded"
+                    style={{
+                      backgroundColor: 'var(--ctp-blue)',
+                      color: 'var(--ctp-base)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                    }}
                     title="View on PyPI"
                   >
                     <i className="fas fa-external-link-alt"></i>
@@ -186,30 +239,54 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-900">
+    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--ctp-base)' }}>
       {/* Header */}
-      <div className="px-4 py-3 bg-gray-800 border-b border-gray-700">
+      <div className="px-4 py-3 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-semibold text-gray-300">Package Manager</div>
+          <div className="text-sm font-semibold" style={{ color: 'var(--ctp-text)' }}>Package Manager</div>
           <div className="flex items-center gap-2">
-            <div className="flex bg-gray-700 rounded">
+            <div className="flex rounded" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
               <button
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-1 text-xs rounded-l transition-colors ${
-                  viewMode === 'list' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:text-white hover:bg-gray-600'
+                  viewMode === 'list'
+                    ? ''
+                    : ''
                 }`}
+                style={{
+                  backgroundColor: viewMode === 'list' ? 'var(--ctp-blue)' : 'transparent',
+                  color: viewMode === 'list' ? 'var(--ctp-base)' : 'var(--ctp-text)'
+                }}
+                onMouseEnter={(e) => {
+                  if (viewMode !== 'list') {
+                    e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (viewMode !== 'list') {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }
+                }}
               >
                 <i className="fas fa-list"></i> List
               </button>
               <button
                 onClick={() => setViewMode('tree')}
-                className={`px-3 py-1 text-xs rounded-r transition-colors ${
-                  viewMode === 'tree' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:text-white hover:bg-gray-600'
-                }`}
+                className={`px-3 py-1 text-xs rounded-r transition-colors`}
+                style={{
+                  backgroundColor: viewMode === 'tree' ? 'var(--ctp-blue)' : 'transparent',
+                  color: viewMode === 'tree' ? 'var(--ctp-base)' : 'var(--ctp-text)'
+                }}
+                onMouseEnter={(e) => {
+                  if (viewMode !== 'tree') {
+                    e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (viewMode !== 'tree') {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }
+                }}
               >
                 <i className="fas fa-sitemap"></i> Tree
               </button>
@@ -217,7 +294,21 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
             <button
               onClick={loadPackages}
               disabled={loading || isInstalling}
-              className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded"
+              className="px-2 py-1 text-xs rounded transition-colors"
+              style={{
+                backgroundColor: loading || isInstalling ? 'var(--ctp-surface2)' : 'var(--ctp-blue)',
+                color: 'var(--ctp-base)'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && !isInstalling) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && !isInstalling) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                }
+              }}
             >
               {loading ? 'Loading...' : 'Refresh'}
             </button>
@@ -226,20 +317,20 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         
         {/* Stats */}
         {(packages.length > 0 || dependencyTree) && (
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--ctp-subtext1)' }}>
             <span>{packages.length} packages installed</span>
             {dependencyTree && (
               <span>{dependencyTree.total_count} root dependencies</span>
             )}
             {viewMode === 'tree' && dependencyTree && (
-              <span className="text-blue-400">
+              <span style={{ color: 'var(--ctp-blue)' }}>
                 {dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0)} sub-dependencies
               </span>
             )}
             {searchFilter && (
-              <span className="text-green-400">
-                {viewMode === 'tree' && filteredDependencyTree 
-                  ? filteredDependencyTree.packages.length 
+              <span style={{ color: 'var(--ctp-green)' }}>
+                {viewMode === 'tree' && filteredDependencyTree
+                  ? filteredDependencyTree.packages.length
                   : filteredPackages.length} matches
               </span>
             )}
@@ -254,14 +345,21 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
               placeholder="Search packages..."
-              className="w-full px-3 py-2 bg-gray-700 text-gray-300 text-sm rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm rounded border focus:outline-none transition-colors"
+              style={{
+                backgroundColor: 'var(--ctp-surface0)',
+                color: 'var(--ctp-text)',
+                borderColor: 'var(--ctp-surface2)'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = 'var(--ctp-blue)'}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--ctp-surface2)'}
             />
           </div>
         )}
       </div>
 
       {/* Install New Package */}
-      <div className="p-4 bg-gray-850 border-b border-gray-700">
+      <div className="p-4 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <form onSubmit={handleInstallPackage} className="flex gap-2 mb-3">
           <div className="flex-1 relative">
             <input
@@ -270,22 +368,50 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               onChange={(e) => setInstallInput(e.target.value)}
               disabled={isInstalling}
               placeholder="Package name (e.g., requests, numpy==1.24.0, git+https://...)"
-              className="w-full px-3 py-2 bg-gray-700 text-gray-300 text-sm rounded border border-gray-600 focus:outline-none focus:border-blue-500 disabled:bg-gray-800 disabled:text-gray-500"
+              className="w-full px-3 py-2 text-sm rounded border focus:outline-none transition-colors"
+              style={{
+                backgroundColor: isInstalling ? 'var(--ctp-surface1)' : 'var(--ctp-surface0)',
+                color: isInstalling ? 'var(--ctp-subtext0)' : 'var(--ctp-text)',
+                borderColor: 'var(--ctp-surface2)'
+              }}
+              onFocus={(e) => {
+                if (!isInstalling) e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+              }}
+              onBlur={(e) => {
+                if (!isInstalling) e.currentTarget.style.borderColor = 'var(--ctp-surface2)'
+              }}
             />
             {installInput && (
               <button
                 type="button"
                 onClick={() => setInstallInput('')}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--ctp-subtext1)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ctp-text)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ctp-subtext1)'}
               >
-                ✕
+                <i className="fas fa-times"></i>
               </button>
             )}
           </div>
           <button
             type="submit"
             disabled={isInstalling || !installInput.trim()}
-            className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded transition-colors"
+            className="px-4 py-2 text-sm rounded transition-colors"
+            style={{
+              backgroundColor: isInstalling || !installInput.trim() ? 'var(--ctp-surface2)' : 'var(--ctp-green)',
+              color: 'var(--ctp-base)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isInstalling && installInput.trim()) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-teal)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isInstalling && installInput.trim()) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-green)'
+              }
+            }}
           >
             {isInstalling ? <><i className="fas fa-spinner fa-spin"></i> Installing...</> : <><i className="fas fa-download"></i> Install</>}
           </button>
@@ -294,12 +420,22 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         {/* Quick install suggestions */}
         <div className="mb-3">
           <div className="flex flex-wrap gap-1 mb-2">
-            <span className="text-xs text-gray-400 mr-2">Popular packages:</span>
+            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>Popular packages:</span>
             {['requests', 'numpy', 'pandas', 'matplotlib', 'flask', 'fastapi', 'pytest', 'black'].map((pkg) => (
               <button
                 key={pkg}
                 onClick={() => setInstallInput(pkg)}
-                className="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded transition-colors"
+                className="px-2 py-1 text-xs rounded transition-colors"
+                style={{
+                  backgroundColor: isInstalling ? 'var(--ctp-surface1)' : 'var(--ctp-surface0)',
+                  color: 'var(--ctp-text)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)'
+                }}
+                onMouseLeave={(e) => {
+                  if (!isInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-surface0)'
+                }}
                 disabled={isInstalling}
               >
                 {pkg}
@@ -307,12 +443,26 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
             ))}
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="text-xs text-gray-400 mr-2">Data science:</span>
-            {['scikit-learn', 'tensorflow', 'torch', 'jupyter', 'seaborn', 'plotly'].map((pkg) => (
+            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>Data science:</span>
+            {['scikit-learn', 'opencv-python', 'torch', 'marimo', 'seaborn', 'plotly'].map((pkg) => (
               <button
                 key={pkg}
                 onClick={() => setInstallInput(pkg)}
-                className="px-2 py-1 bg-blue-700 hover:bg-blue-600 text-blue-200 text-xs rounded transition-colors"
+                className="px-2 py-1 text-xs rounded transition-colors"
+                style={{
+                  backgroundColor: isInstalling ? 'var(--ctp-surface1)' : 'var(--ctp-sapphire)',
+                  color: 'var(--ctp-base)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isInstalling) {
+                    e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isInstalling) {
+                    e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+                  }
+                }}
                 disabled={isInstalling}
               >
                 {pkg}
@@ -322,20 +472,23 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         </div>
         
         {/* Installation tips */}
-        <div className="text-xs text-gray-500 bg-gray-800 p-2 rounded">
-          <i className="fas fa-lightbulb"></i> Tips: Use <code className="bg-gray-700 px-1 rounded">==version</code> for exact versions, 
-          <code className="bg-gray-700 px-1 rounded">&gt;=version</code> for minimum versions, 
-          or <code className="bg-gray-700 px-1 rounded">git+https://...</code> for git repositories
+        <div className="text-xs p-2 rounded" style={{
+          color: 'var(--ctp-subtext0)',
+          backgroundColor: 'var(--ctp-surface0)'
+        }}>
+          <i className="fas fa-lightbulb"></i> Tips: Use <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>==version</code> for exact versions,
+          <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>&gt;=version</code> for minimum versions,
+          or <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>git+https://...</code> for git repositories
         </div>
       </div>
 
       {/* Package List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-4 text-center text-gray-400">Loading packages...</div>
+          <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext1)' }}>Loading packages...</div>
         ) : packages.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            <div className="text-6xl mb-4"><i className="fas fa-box text-brown-600"></i></div>
+          <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
+            <div className="text-6xl mb-4"><i className="fas fa-box" style={{ color: 'var(--ctp-peach)' }}></i></div>
             <div className="text-lg mb-2">No packages installed</div>
             <div className="text-sm">Install your first package using the form above</div>
           </div>
@@ -346,8 +499,8 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               filteredDependencyTree.packages.length > 0 ? (
                 filteredDependencyTree.packages.map(renderPackageTree)
               ) : (
-                <div className="p-4 text-center text-gray-500">
-                  <div className="text-4xl mb-4"><i className="fas fa-search text-gray-500"></i></div>
+                <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
+                  <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
                   <div className="text-lg mb-2">No matching packages found</div>
                   <div className="text-sm">Try adjusting your search filter</div>
                 </div>
@@ -358,16 +511,36 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                 filteredPackages.map((pkg) => (
                   <div
                     key={pkg.name}
-                    className="flex items-center justify-between p-3 mb-2 bg-gray-800 rounded border border-gray-700 hover:bg-gray-750 transition-colors"
+                    className="flex items-center justify-between p-3 mb-2 rounded border transition-colors"
+                    style={{
+                      backgroundColor: 'var(--ctp-surface0)',
+                      borderColor: 'var(--ctp-surface1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--ctp-surface0)'
+                    }}
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-200 truncate">{pkg.name}</div>
-                      <div className="text-xs text-gray-400">v{pkg.version}</div>
+                      <div className="text-sm font-medium truncate" style={{ color: 'var(--ctp-text)' }}>{pkg.name}</div>
+                      <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>v{pkg.version}</div>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button
                         onClick={() => window.open(`https://pypi.org/project/${pkg.name}/`, '_blank')}
-                        className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                        className="px-2 py-1 text-xs rounded transition-colors"
+                        style={{
+                          backgroundColor: 'var(--ctp-blue)',
+                          color: 'var(--ctp-base)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                        }}
                         title="View on PyPI"
                       >
                         <i className="fas fa-external-link-alt"></i>
@@ -375,7 +548,21 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                       <button
                         onClick={() => handleUninstallPackage(pkg.name)}
                         disabled={isInstalling}
-                        className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded transition-colors"
+                        className="px-2 py-1 text-xs rounded transition-colors"
+                        style={{
+                          backgroundColor: isInstalling ? 'var(--ctp-surface2)' : 'var(--ctp-red)',
+                          color: 'var(--ctp-base)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isInstalling) {
+                            e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isInstalling) {
+                            e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
+                          }
+                        }}
                         title="Uninstall package"
                       >
                         <i className="fas fa-trash"></i>
@@ -384,8 +571,8 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-gray-500">
-                  <div className="text-4xl mb-4"><i className="fas fa-search text-gray-500"></i></div>
+                <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
+                  <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
                   <div className="text-lg mb-2">No matching packages found</div>
                   <div className="text-sm">Try adjusting your search filter</div>
                 </div>
@@ -396,20 +583,24 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
       </div>
 
       {/* Footer Info */}
-      <div className="px-4 py-2 bg-gray-800 border-t border-gray-700 text-xs text-gray-400">
+      <div className="px-4 py-2 border-t text-xs" style={{
+        backgroundColor: 'var(--ctp-mantle)',
+        borderColor: 'var(--ctp-surface1)',
+        color: 'var(--ctp-subtext1)'
+      }}>
         <div className="flex items-center justify-between">
-          <span><i className="fas fa-bolt text-yellow-500"></i> Using UV for fast package management</span>
+          <span><i className="fas fa-bolt" style={{ color: 'var(--ctp-yellow)' }}></i> Using UV for fast package management</span>
           <div className="flex items-center gap-2">
             <span>{packages.length} package{packages.length !== 1 ? 's' : ''} installed</span>
             {viewMode === 'tree' && dependencyTree && (
-              <span className="text-blue-400">
+              <span style={{ color: 'var(--ctp-blue)' }}>
                 ({dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0)} dependencies)
               </span>
             )}
           </div>
         </div>
         {packages.length > 0 && (
-          <div className="mt-1 text-xs text-gray-500">
+          <div className="mt-1 text-xs" style={{ color: 'var(--ctp-subtext0)' }}>
             <i className="fas fa-lightbulb"></i> Tip: {viewMode === 'tree' ? 'Click ▶ to expand dependencies' : 'Switch to Tree view to see dependencies'}
           </div>
         )}

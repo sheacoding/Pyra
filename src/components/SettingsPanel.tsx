@@ -13,8 +13,8 @@ export interface IDESettings {
     insertSpaces: boolean
   }
   theme: {
-    editorTheme: 'vs-dark' | 'vs-light' | 'hc-black' | 'catppuccin-mocha' | 'catppuccin-latte'
-    uiTheme: 'dark' | 'light' | 'catppuccin-mocha' | 'catppuccin-latte'
+    editorTheme: 'catppuccin-mocha' | 'catppuccin-latte'
+    uiTheme: 'catppuccin-mocha' | 'catppuccin-latte'
     catppuccinFlavor: CatppuccinFlavor
   }
   python: {
@@ -115,6 +115,13 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
       theme: { ...settings.theme, [key]: value }
     }
     updateSettings(newSettings)
+
+    // Force CSS theme update immediately
+    if (key === 'catppuccinFlavor' || key === 'uiTheme') {
+      const themeValue = key === 'catppuccinFlavor' ? `catppuccin-${value}` : value
+      document.documentElement.setAttribute('data-theme', themeValue)
+      document.body.setAttribute('data-theme', themeValue)
+    }
   }
 
   const updatePythonSettings = (key: keyof IDESettings['python'], value: any) => {
@@ -148,38 +155,68 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg shadow-xl w-4/5 max-w-4xl h-4/5 max-h-screen overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{
+      backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    }}>
+      <div className="rounded-lg shadow-xl w-4/5 max-w-4xl h-4/5 max-h-screen overflow-hidden" style={{
+        backgroundColor: 'var(--ctp-mantle)'
+      }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white">⚙️ Pyra IDE Settings</h2>
+        <div className="flex items-center justify-between p-4 border-b" style={{
+          borderColor: 'var(--ctp-surface1)'
+        }}>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> Pyra IDE Settings</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white p-1 rounded"
+            className="p-1 rounded transition-colors"
+            style={{
+              color: 'var(--ctp-subtext1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--ctp-text)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--ctp-subtext1)'
+            }}
           >
-            ✕
+            <i className="fas fa-times"></i>
           </button>
         </div>
 
         <div className="flex h-full">
           {/* Sidebar */}
-          <div className="w-1/4 bg-gray-900 p-4 border-r border-gray-700">
+          <div className="w-1/4 p-4 border-r" style={{
+            backgroundColor: 'var(--ctp-base)',
+            borderColor: 'var(--ctp-surface1)'
+          }}>
             <nav className="space-y-2">
               {[
-                { key: 'editor', label: '📝 Editor', icon: '📝' },
-                { key: 'theme', label: '🎨 Theme', icon: '🎨' },
-                { key: 'python', label: '🐍 Python', icon: '🐍' },
-                { key: 'ruff', label: '🔍 Ruff', icon: '🔍' },
-                { key: 'general', label: '⚙️ General', icon: '⚙️' }
+                { key: 'editor', label: <><i className="fas fa-edit"></i> Editor</>, icon: <i className="fas fa-edit"></i> },
+                { key: 'theme', label: <><i className="fas fa-palette"></i> Theme</>, icon: <i className="fas fa-palette"></i> },
+                { key: 'python', label: <><i className="fab fa-python"></i> Python</>, icon: <i className="fab fa-python"></i> },
+                { key: 'ruff', label: <><i className="fas fa-search"></i> Ruff</>, icon: <i className="fas fa-search"></i> },
+                { key: 'general', label: <><i className="fas fa-cog"></i> General</>, icon: <i className="fas fa-cog"></i> }
               ].map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as any)}
-                  className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                    activeTab === key
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
+                  className="w-full text-left px-3 py-2 rounded transition-colors"
+                  style={{
+                    backgroundColor: activeTab === key ? 'var(--ctp-blue)' : 'transparent',
+                    color: activeTab === key ? 'var(--ctp-base)' : 'var(--ctp-text)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== key) {
+                      e.currentTarget.style.backgroundColor = 'var(--ctp-surface0)'
+                      e.currentTarget.style.color = 'var(--ctp-text)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== key) {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = 'var(--ctp-text)'
+                    }
+                  }}
                 >
                   {label}
                 </button>
@@ -189,38 +226,72 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
             <div className="mt-8">
               <button
                 onClick={resetToDefaults}
-                className="w-full px-3 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+                className="w-full px-3 py-2 text-sm rounded transition-colors"
+                style={{
+                  backgroundColor: 'var(--ctp-red)',
+                  color: 'var(--ctp-base)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
+                }}
               >
-                🔄 Reset to Defaults
+                <i className="fas fa-undo"></i> Reset to Defaults
               </button>
             </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 p-6 overflow-y-auto" style={{
+            backgroundColor: 'var(--ctp-base)'
+          }}>
             {activeTab === 'editor' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white mb-4">📝 Editor Settings</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-edit"></i> Editor Settings</h3>
                 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Font Size</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Font Size</label>
                     <input
                       type="number"
                       min="10"
                       max="24"
                       value={settings.editor.fontSize}
                       onChange={(e) => updateEditorSettings('fontSize', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className="w-full px-3 py-2 border rounded"
+                      style={{
+                        backgroundColor: 'var(--ctp-surface0)',
+                        borderColor: 'var(--ctp-surface1)',
+                        color: 'var(--ctp-text)'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Tab Size</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Tab Size</label>
                     <select
                       value={settings.editor.tabSize}
                       onChange={(e) => updateEditorSettings('tabSize', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className="w-full px-3 py-2 border rounded"
+                      style={{
+                        backgroundColor: 'var(--ctp-surface0)',
+                        borderColor: 'var(--ctp-surface1)',
+                        color: 'var(--ctp-text)'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                      }}
                     >
                       <option value={2}>2 spaces</option>
                       <option value={4}>4 spaces</option>
@@ -229,12 +300,23 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Font Family</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Font Family</label>
                     <input
                       type="text"
                       value={settings.editor.fontFamily}
                       onChange={(e) => updateEditorSettings('fontFamily', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className="w-full px-3 py-2 border rounded"
+                      style={{
+                        backgroundColor: 'var(--ctp-surface0)',
+                        borderColor: 'var(--ctp-surface1)',
+                        color: 'var(--ctp-text)'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                      }}
                     />
                   </div>
                 </div>
@@ -247,12 +329,16 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     { key: 'renderWhitespace', label: 'Show Whitespace' },
                     { key: 'insertSpaces', label: 'Insert Spaces (not tabs)' }
                   ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center space-x-2 text-gray-300">
+                    <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
                         type="checkbox"
                         checked={settings.editor[key as keyof IDESettings['editor']] as boolean}
                         onChange={(e) => updateEditorSettings(key as any, e.target.checked)}
-                        className="rounded bg-gray-700 border-gray-600"
+                        className="rounded"
+                        style={{
+                          backgroundColor: 'var(--ctp-surface0)',
+                          borderColor: 'var(--ctp-surface1)'
+                        }}
                       />
                       <span>{label}</span>
                     </label>
@@ -263,19 +349,33 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'theme' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white mb-4">🎨 Theme Settings</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-palette"></i> Theme Settings</h3>
                 
                 <div className="space-y-6">
                   {/* Catppuccin Theme Selector */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Catppuccin Flavor</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Catppuccin Flavor</label>
                     <div className="grid grid-cols-2 gap-4">
-                      <div 
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          settings.theme.catppuccinFlavor === 'mocha' 
-                            ? 'border-purple-500 bg-purple-900/20' 
-                            : 'border-gray-600 hover:border-gray-500'
-                        }`}
+                      <div
+                        className="p-4 rounded-lg border-2 cursor-pointer transition-all"
+                        style={{
+                          borderColor: settings.theme.catppuccinFlavor === 'mocha'
+                            ? 'var(--ctp-mauve)'
+                            : 'var(--ctp-surface2)',
+                          backgroundColor: settings.theme.catppuccinFlavor === 'mocha'
+                            ? 'rgba(203, 166, 247, 0.2)'
+                            : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (settings.theme.catppuccinFlavor !== 'mocha') {
+                            e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (settings.theme.catppuccinFlavor !== 'mocha') {
+                            e.currentTarget.style.borderColor = 'var(--ctp-surface2)'
+                          }
+                        }}
                         onClick={() => {
                           updateThemeSettings('catppuccinFlavor', 'mocha')
                           updateThemeSettings('editorTheme', 'catppuccin-mocha')
@@ -285,8 +385,8 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700"></div>
                           <div>
-                            <div className="text-white font-medium">Mocha</div>
-                            <div className="text-gray-400 text-xs">Dark & cozy</div>
+                            <div className="font-medium" style={{ color: 'var(--ctp-text)' }}>Mocha</div>
+                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>Dark & cozy</div>
                           </div>
                         </div>
                         <div className="mt-3 flex space-x-1">
@@ -297,13 +397,27 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                           <div className="w-3 h-3 rounded-full bg-red-400"></div>
                         </div>
                       </div>
-                      
-                      <div 
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          settings.theme.catppuccinFlavor === 'latte' 
-                            ? 'border-purple-500 bg-purple-900/20' 
-                            : 'border-gray-600 hover:border-gray-500'
-                        }`}
+
+                      <div
+                        className="p-4 rounded-lg border-2 cursor-pointer transition-all"
+                        style={{
+                          borderColor: settings.theme.catppuccinFlavor === 'latte'
+                            ? 'var(--ctp-mauve)'
+                            : 'var(--ctp-surface2)',
+                          backgroundColor: settings.theme.catppuccinFlavor === 'latte'
+                            ? 'rgba(203, 166, 247, 0.2)'
+                            : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (settings.theme.catppuccinFlavor !== 'latte') {
+                            e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (settings.theme.catppuccinFlavor !== 'latte') {
+                            e.currentTarget.style.borderColor = 'var(--ctp-surface2)'
+                          }
+                        }}
                         onClick={() => {
                           updateThemeSettings('catppuccinFlavor', 'latte')
                           updateThemeSettings('editorTheme', 'catppuccin-latte')
@@ -313,8 +427,8 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-300 to-purple-500"></div>
                           <div>
-                            <div className="text-white font-medium">Latte</div>
-                            <div className="text-gray-400 text-xs">Light & warm</div>
+                            <div className="font-medium" style={{ color: 'var(--ctp-text)' }}>Latte</div>
+                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>Light & warm</div>
                           </div>
                         </div>
                         <div className="mt-3 flex space-x-1">
@@ -328,48 +442,15 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     </div>
                   </div>
 
-                  {/* Legacy Theme Options */}
-                  <div className="border-t border-gray-700 pt-6">
-                    <h4 className="text-md font-medium text-gray-300 mb-4">Advanced Theme Options</h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Editor Theme</label>
-                        <select
-                          value={settings.theme.editorTheme}
-                          onChange={(e) => updateThemeSettings('editorTheme', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
-                        >
-                          <option value="catppuccin-mocha">Catppuccin Mocha</option>
-                          <option value="catppuccin-latte">Catppuccin Latte</option>
-                          <option value="vs-dark">VS Dark</option>
-                          <option value="vs-light">VS Light</option>
-                          <option value="hc-black">High Contrast</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">UI Theme</label>
-                        <select
-                          value={settings.theme.uiTheme}
-                          onChange={(e) => updateThemeSettings('uiTheme', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
-                        >
-                          <option value="catppuccin-mocha">Catppuccin Mocha</option>
-                          <option value="catppuccin-latte">Catppuccin Latte</option>
-                          <option value="dark">Dark</option>
-                          <option value="light">Light</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  
+
                   {/* Theme Preview */}
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <h4 className="text-md font-medium text-gray-300 mb-3">Theme Preview</h4>
-                    <div className="bg-gray-900 rounded p-3 font-mono text-sm">
-                      <div className="text-purple-400"># This is a comment</div>
-                      <div className="text-blue-400">def <span className="text-yellow-400">hello_world</span>():</div>
-                      <div className="ml-4 text-green-400">"Hello, World!"</div>
-                      <div className="ml-4 text-orange-400">print</div>(<span className="text-green-400">"Welcome to Pyra IDE"</span>)
+                  <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
+                    <h4 className="text-md font-medium mb-3" style={{ color: 'var(--ctp-subtext1)' }}>Theme Preview</h4>
+                    <div className="rounded p-3 font-mono text-sm" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
+                      <div style={{ color: 'var(--ctp-mauve)' }}># This is a comment</div>
+                      <div style={{ color: 'var(--ctp-blue)' }}>def <span style={{ color: 'var(--ctp-yellow)' }}>hello_world</span>():</div>
+                      <div className="ml-4" style={{ color: 'var(--ctp-green)' }}>"Hello, World!"</div>
+                      <div className="ml-4" style={{ color: 'var(--ctp-peach)' }}>print</div>(<span style={{ color: 'var(--ctp-green)' }}>"Welcome to Pyra IDE"</span>)
                     </div>
                   </div>
                 </div>
@@ -378,15 +459,26 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'python' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white mb-4">🐍 Python Settings</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fab fa-python"></i> Python Settings</h3>
                 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Default Python Version</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Default Python Version</label>
                     <select
                       value={settings.python.defaultVersion}
                       onChange={(e) => updatePythonSettings('defaultVersion', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className="w-full px-3 py-2 border rounded"
+                      style={{
+                        backgroundColor: 'var(--ctp-surface0)',
+                        borderColor: 'var(--ctp-surface1)',
+                        color: 'var(--ctp-text)'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                      }}
                     >
                       <option value="3.12">Python 3.12</option>
                       <option value="3.11">Python 3.11</option>
@@ -401,12 +493,16 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     { key: 'autoCreateVenv', label: 'Auto-create virtual environment' },
                     { key: 'useUV', label: 'Use UV for package management' }
                   ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center space-x-2 text-gray-300">
+                    <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
                         type="checkbox"
                         checked={settings.python[key as keyof IDESettings['python']] as boolean}
                         onChange={(e) => updatePythonSettings(key as any, e.target.checked)}
-                        className="rounded bg-gray-700 border-gray-600"
+                        className="rounded"
+                        style={{
+                          backgroundColor: 'var(--ctp-surface0)',
+                          borderColor: 'var(--ctp-surface1)'
+                        }}
                       />
                       <span>{label}</span>
                     </label>
@@ -417,7 +513,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'ruff' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white mb-4">🔍 Ruff Settings</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-search"></i> Ruff Settings</h3>
                 
                 <div className="space-y-4">
                   {[
@@ -425,12 +521,16 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     { key: 'formatOnSave', label: 'Format on save' },
                     { key: 'lintOnSave', label: 'Lint on save' }
                   ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center space-x-2 text-gray-300">
+                    <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
                         type="checkbox"
                         checked={settings.ruff[key as keyof IDESettings['ruff']] as boolean}
                         onChange={(e) => updateRuffSettings(key as any, e.target.checked)}
-                        className="rounded bg-gray-700 border-gray-600"
+                        className="rounded"
+                        style={{
+                          backgroundColor: 'var(--ctp-surface0)',
+                          borderColor: 'var(--ctp-surface1)'
+                        }}
                       />
                       <span>{label}</span>
                     </label>
@@ -438,12 +538,23 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Config File Path</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Config File Path</label>
                   <input
                     type="text"
                     value={settings.ruff.configPath}
                     onChange={(e) => updateRuffSettings('configPath', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                    className="w-full px-3 py-2 border rounded"
+                    style={{
+                      backgroundColor: 'var(--ctp-surface0)',
+                      borderColor: 'var(--ctp-surface1)',
+                      color: 'var(--ctp-text)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                    }}
                     placeholder="pyproject.toml"
                   />
                 </div>
@@ -452,7 +563,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-white mb-4">⚙️ General Settings</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> General Settings</h3>
                 
                 <div className="space-y-4">
                   {[
@@ -460,12 +571,16 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     { key: 'confirmDelete', label: 'Confirm before deleting files' },
                     { key: 'showHiddenFiles', label: 'Show hidden files in explorer' }
                   ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center space-x-2 text-gray-300">
+                    <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
                         type="checkbox"
                         checked={settings.general[key as keyof IDESettings['general']] as boolean}
                         onChange={(e) => updateGeneralSettings(key as any, e.target.checked)}
-                        className="rounded bg-gray-700 border-gray-600"
+                        className="rounded"
+                        style={{
+                          backgroundColor: 'var(--ctp-surface0)',
+                          borderColor: 'var(--ctp-surface1)'
+                        }}
                       />
                       <span>{label}</span>
                     </label>
@@ -473,7 +588,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Auto-save Delay (ms)</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Auto-save Delay (ms)</label>
                   <input
                     type="number"
                     min="500"
@@ -481,7 +596,18 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                     step="500"
                     value={settings.general.autoSaveDelay}
                     onChange={(e) => updateGeneralSettings('autoSaveDelay', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                    className="w-full px-3 py-2 border rounded"
+                    style={{
+                      backgroundColor: 'var(--ctp-surface0)',
+                      borderColor: 'var(--ctp-surface1)',
+                      color: 'var(--ctp-text)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                    }}
                   />
                 </div>
               </div>

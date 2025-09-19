@@ -386,8 +386,8 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       try {
         const fileContent = await TauriAPI.readFile(filePath)
         setContent(fileContent)
-        // Run initial linting after file loads
-        if (filePath.endsWith('.py')) {
+        // Run initial linting after file loads (dev only to avoid popup in release)
+        if (filePath.endsWith('.py') && import.meta.env.DEV) {
           setTimeout(() => runRuffLinting(filePath), 500)
         }
       } catch (error) {
@@ -432,10 +432,35 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     console.log('[EDITOR] Monaco Editor mounted')
 
     try {
+      // Register themes first
+      const mochaTheme = createMonacoCatppuccinTheme('mocha')
+      const latteTheme = createMonacoCatppuccinTheme('latte')
+      if (m?.editor) {
+        m.editor.defineTheme('catppuccin-mocha', mochaTheme)
+        m.editor.defineTheme('catppuccin-latte', latteTheme)
+        console.log('✅ Themes registered on mount')
+      }
+
       // Apply the current theme
       const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
-      console.log('[THEME] Applying theme:', targetTheme)
+      console.log('[EDITOR] Applying initial theme on mount:', targetTheme)
       monacoRef.current?.editor?.setTheme(targetTheme)
+
+      // Force editor container background
+      const editorContainer = editor.getContainerDomNode()
+      if (editorContainer) {
+        const uiTheme = settings?.theme?.uiTheme || 'catppuccin-mocha'
+        const backgroundColor = uiTheme === 'catppuccin-latte' ? '#eff1f5' : '#1e1e2e'
+        editorContainer.style.backgroundColor = backgroundColor
+
+        // Also force the Monaco editor div background
+        const monacoDiv = editorContainer.querySelector('.monaco-editor')
+        if (monacoDiv instanceof HTMLElement) {
+          monacoDiv.style.backgroundColor = backgroundColor
+        }
+
+        console.log('✅ Initial editor container background set to:', backgroundColor)
+      }
 
       // Debug: Check what tokens are actually generated
       if (filePath?.endsWith('.py')) {
@@ -443,29 +468,29 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
         if (model) {
           const content = model.getValue()
           const tokens = monacoRef.current?.editor?.tokenize(content.substring(0, 500), 'python')
-          console.log('[THEME] Python tokens for current file:', tokens)
+          console.log('[EDITOR] Python tokens for current file:', tokens)
         }
       }
 
     } catch (error) {
       console.error('❌ Failed to apply theme on mount:', error)
     }
-    
+
     // Add keybindings
     editor.addCommand(monacoRef.current.KeyMod.CtrlCmd | monacoRef.current.KeyMod.Shift | monacoRef.current.KeyCode.KeyF, () => {
       if (filePath?.endsWith('.py')) {
         formatCurrentFile()
       }
     })
-    
+
     // Add keybinding for save and format (Ctrl+S)
     editor.addCommand(monacoRef.current.KeyMod.CtrlCmd | monacoRef.current.KeyCode.KeyS, async () => {
       if (!filePath) return
-      
+
       try {
         const currentContent = editor.getValue()
         await TauriAPI.writeFile(filePath, currentContent)
-        
+
         // Auto-format on save for Python files if enabled in settings
         if (filePath.endsWith('.py') && settings?.ruff?.formatOnSave) {
           await formatCurrentFile()
@@ -478,10 +503,11 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
 
   // Update theme when settings change
   useEffect(() => {
-    if (!editorRef.current) return
+    if (!editorRef.current || !monacoRef.current) return
 
     const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
-    console.log('[SETTINGS] Settings changed - applying theme:', targetTheme)
+    const uiTheme = settings?.theme?.uiTheme || 'catppuccin-mocha'
+    console.log('[EDITOR] Settings changed - applying theme:', targetTheme, 'UI theme:', uiTheme)
 
     try {
       // Always register custom themes to ensure they're available
@@ -491,33 +517,55 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       if (m?.editor) {
         m.editor.defineTheme('catppuccin-mocha', mochaTheme)
         m.editor.defineTheme('catppuccin-latte', latteTheme)
+        console.log('✅ Themes registered in Monaco')
       }
 
-      // Apply the theme
+      // Apply the theme to Monaco editor
       monacoRef.current?.editor?.setTheme(targetTheme)
-      console.log('✅ Theme applied:', targetTheme)
+      console.log('✅ Monaco theme applied:', targetTheme)
 
-      // Set data-theme attributes for CSS
-      document.documentElement.setAttribute('data-theme', targetTheme)
-      document.body.setAttribute('data-theme', targetTheme)
+      // Force editor wrapper background to match theme
+      const editorContainer = editorRef.current.getContainerDomNode()
+      if (editorContainer) {
+        const backgroundColor = uiTheme === 'catppuccin-latte' ? '#eff1f5' : '#1e1e2e'
+        editorContainer.style.backgroundColor = backgroundColor
 
-      // Force layout refresh
+        // Also force the Monaco editor div background
+        const monacoDiv = editorContainer.querySelector('.monaco-editor')
+        if (monacoDiv instanceof HTMLElement) {
+          monacoDiv.style.backgroundColor = backgroundColor + ' !important'
+        }
+
+        console.log('✅ Editor container background forced to:', backgroundColor)
+      }
+
+      // Force layout refresh with delay to ensure theme is applied
       setTimeout(() => {
         if (editorRef.current) {
           editorRef.current.layout()
-          // Trigger re-tokenization for better highlighting
-          const model = editorRef.current.getModel()
-          if (model) {
-            editorRef.current.trigger('editor', 'editor.action.formatDocument', {})
+          console.log('✅ Layout refreshed')
+
+          // Force re-render by briefly setting a different theme then back
+          if (targetTheme === 'catppuccin-latte') {
+            monacoRef.current?.editor?.setTheme('catppuccin-mocha')
+            setTimeout(() => {
+              monacoRef.current?.editor?.setTheme('catppuccin-latte')
+              console.log('✅ Theme double-applied for Latte')
+            }, 50)
+          } else {
+            monacoRef.current?.editor?.setTheme('catppuccin-latte')
+            setTimeout(() => {
+              monacoRef.current?.editor?.setTheme('catppuccin-mocha')
+              console.log('✅ Theme double-applied for Mocha')
+            }, 50)
           }
-          console.log('✅ Layout and tokenization refreshed')
         }
-      }, 50)
+      }, 100)
 
     } catch (error) {
       console.error('❌ Failed to apply theme:', error)
     }
-  }, [settings?.theme?.editorTheme])
+  }, [settings?.theme?.editorTheme, settings?.theme?.uiTheme])
 
   const getLanguage = (path: string) => {
     const ext = path.split('.').pop()?.toLowerCase()
