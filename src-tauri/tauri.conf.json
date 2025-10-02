@@ -13,7 +13,30 @@
                             ],
                    "resources":  [
 
-                                 ]
+                                 ],
+                   "windows": {
+                       "nsis": {
+                           "installerIcon": "./icons/icon.ico",
+                           "installMode": "both",
+                           "languages": ["SimpChinese", "English"],
+                           "displayLanguageSelector": true,
+                           "installerHooks": "./nsis/installer-hooks.nsh"
+                       },
+                       "wix": {
+                           "language": {
+                               "zh-CN": {
+                                   "localePath": "./wix/locales/zh-CN.wxl"
+                               },
+                               "en-US": {
+                                   "localePath": "./wix/locales/en-US.wxl"
+                               }
+                           }
+                       },
+                       "webviewInstallMode": {
+                           "type": "embedBootstrapper",
+                           "silent": true
+                       }
+                   }
                },
     "productName":  "Pyra",
     "mainBinaryName":  "Pyra",

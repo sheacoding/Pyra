@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization
+  Culture="en-US"
+  xmlns="http://schemas.microsoft.com/wix/2006/localization"
+>
+  <!-- Application Launch -->
+  <String Id="LaunchApp">Launch Pyra IDE</String>
+
+  <!-- Error Messages -->
+  <String Id="DowngradeErrorMessage">
+    A newer version of Pyra IDE is already installed on this computer.
+  </String>
+
+  <!-- Feature Descriptions -->
+  <String Id="InstallAppFeature">
+    Install Pyra IDE - A modern Python integrated development environment with intelligent code editing, environment management, and code quality tools.
+  </String>
+
+  <!-- Path Environment Variable Feature -->
+  <String Id="PathEnvVarFeature">
+    Add the Pyra IDE executable location to the system PATH environment variable. This allows calling Pyra commands from any location.
+  </String>
+
+  <!-- Welcome Messages -->
+  <String Id="WelcomeDlgTitle">Welcome to the Pyra IDE Setup Wizard</String>
+  <String Id="WelcomeDlgDescription">
+    This wizard will guide you through the installation of Pyra IDE.
+  </String>
+</WixLocalization>

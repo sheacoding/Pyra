@@ -64,6 +64,7 @@ test-project/.venv/
 # Temporary files
 *.tmp
 *.temp
+nul
 
 # Local AI assistant metadata
 .claude/
