@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
+import './i18n' // 导入 i18n 配置
 
 // Ensure Catppuccin UI theme is applied early
 try {

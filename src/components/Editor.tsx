@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Editor as MonacoEditor } from '@monaco-editor/react'
 import { TauriAPI, RuffCheckResult, RuffDiagnostic } from '../lib/tauri'
 import { listen } from '@tauri-apps/api/event'
@@ -25,6 +26,7 @@ export interface EditorHandle {
 }
 
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ filePath, projectPath, settings, onConsoleOutput, onConsoleError, onScriptStart, onScriptStop }: EditorProps, ref) {
+  const { t } = useTranslation()
   const [content, setContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
@@ -285,7 +287,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     }
 
     setIsFormatting(true)
-    onConsoleOutput?.('[FORMAT] Formatting with Ruff...\n')
+    onConsoleOutput?.(`${t('messages.ruffFormatting')}\n`)
     console.log('[FORMAT] Starting Ruff format for:', filePath)
     
     try {
@@ -300,15 +302,15 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       if (editorRef.current) {
         editorRef.current.setValue(fileContent)
         console.log('✅ Editor content updated after formatting')
-        onConsoleOutput?.('✅ File formatted successfully\n')
+        onConsoleOutput?.(`${t('messages.ruffFormatSuccess')}\n`)
       } else {
         console.warn('❌ Editor ref not available for content update')
-        onConsoleOutput?.('⚠️ File formatted but editor display may not be updated\n')
+        onConsoleOutput?.(`${t('messages.ruffFormatWarning')}\n`)
       }
     } catch (error) {
       console.error('❌ Ruff formatting failed:', error)
       console.error('Error details:', JSON.stringify(error, null, 2))
-      onConsoleError?.(`❌ Ruff formatting failed: ${error}\n`)
+      onConsoleError?.(`${t('messages.ruffFormatFailed', { error: String(error) })}\n`)
     } finally {
       setIsFormatting(false)
     }
@@ -322,13 +324,13 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     
     // Only run Python files
     if (!filePath.endsWith('.py')) {
-      onConsoleError?.('Can only run Python (.py) files\n')
+      onConsoleError?.(`${t('messages.pythonFileOnly')}\n`)
       return
     }
 
     console.log('Starting script execution, setting isRunning to true')
     setIsRunning(true)
-    onConsoleOutput?.(`Running ${filePath}...\n`)
+    onConsoleOutput?.(`${t('messages.runningScript', { path: filePath })}\n`)
     onScriptStart?.()
     
     try {
@@ -337,7 +339,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       
       if (pyprojectExists) {
         // Try to use UV run with streaming for UV projects
-        onConsoleOutput?.('Using UV to execute script with streaming...\n')
+        onConsoleOutput?.(`${t('messages.usingUvStreaming')}\n`)
         try {
           console.log('Calling runScriptWithUvStreaming...')
           await TauriAPI.runScriptWithUvStreaming(projectPath, filePath)
@@ -346,7 +348,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
           return
         } catch (uvError) {
           // UV run failed, fall back to streaming execution
-          onConsoleOutput?.('UV streaming run failed, falling back to traditional execution...\n')
+          onConsoleOutput?.(`${t('messages.uvFallback')}\n`)
           console.log('UV streaming run failed, falling back:', uvError)
         }
       }
@@ -359,7 +361,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       // isRunning will be set to false when 'script-completed' event is received
     } catch (error) {
       console.error('Error in script execution:', error)
-      onConsoleError?.(`Error: ${error}\n`)
+      onConsoleError?.(`${t('messages.scriptError', { error: String(error) })}\n`)
       setIsRunning(false)
       onScriptStop?.()
     }
@@ -604,7 +606,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center" style={{ color: 'var(--ctp-overlay0)' }}>
-        Loading...
+        {t('editor.loading')}
       </div>
     )
   }

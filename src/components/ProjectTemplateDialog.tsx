@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TauriAPI, ProjectTemplate } from '../lib/tauri'
 import { message } from '@tauri-apps/plugin-dialog'
 
@@ -9,6 +10,7 @@ interface ProjectTemplateDialogProps {
 }
 
 export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: ProjectTemplateDialogProps) {
+  const { t } = useTranslation()
   const [templates, setTemplates] = useState<ProjectTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [projectName, setProjectName] = useState('')
@@ -40,8 +42,8 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
 
   const handleCreateProject = async () => {
     if (!selectedTemplate || !projectName.trim() || !projectPath.trim()) {
-      await message('Please fill in all fields', {
-        title: 'Missing Information',
+      await message(t('templateDialog.missingInfo'), {
+        title: t('templateDialog.missingInfoTitle'),
         kind: 'warning'
       })
       return
@@ -55,8 +57,8 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
       handleClose()
     } catch (error) {
       console.error('Failed to create project:', error)
-      await message(`Failed to create project: ${error}`, {
-        title: 'Error',
+      await message(t('templateDialog.createError', { error: String(error) }), {
+        title: t('templateDialog.createErrorTitle'),
         kind: 'error'
       })
     } finally {
@@ -89,7 +91,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
       <div className="bg-gray-800 rounded-lg shadow-xl w-5/6 max-w-6xl h-5/6 max-h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white"><i className="fas fa-rocket"></i> Create New Project</h2>
+          <h2 className="text-xl font-bold text-white"><i className="fas fa-rocket"></i> {t('templateDialog.title')}</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-white p-1 rounded"
@@ -100,16 +102,16 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
 
         <div className="flex flex-1 overflow-hidden">{/* Left Panel - Template Selection */}
           <div className="w-1/2 p-4 border-r border-gray-700 overflow-y-auto">
-            <h3 className="text-lg font-semibold text-white mb-4">Choose a Template</h3>
-            
+            <h3 className="text-lg font-semibold text-white mb-4">{t('templateDialog.chooseTemplate')}</h3>
+
             {loading ? (
-              <div className="text-gray-400">Loading templates...</div>
+              <div className="text-gray-400">{t('templateDialog.loadingTemplates')}</div>
             ) : (
               <div className="space-y-4">
                 {Object.entries(templatesByCategory).map(([category, categoryTemplates]) => (
                   <div key={category}>
                     <h4 className="text-sm font-medium text-gray-300 mb-2 uppercase tracking-wide">
-                      {category}
+                      {t(`templateDialog.categories.${category}`, { defaultValue: category })}
                     </h4>
                     <div className="space-y-2 mb-4">
                       {categoryTemplates.map((template) => (
@@ -124,8 +126,12 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h5 className="font-medium text-white mb-1">{template.name}</h5>
-                              <p className="text-sm text-gray-400 mb-2">{template.description}</p>
+                              <h5 className="font-medium text-white mb-1">
+                                {t(`templateDialog.templates.${template.id}.name`, { defaultValue: template.name })}
+                              </h5>
+                              <p className="text-sm text-gray-400 mb-2">
+                                {t(`templateDialog.templates.${template.id}.description`, { defaultValue: template.description })}
+                              </p>
                               {template.dependencies.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                   {template.dependencies.slice(0, 3).map((dep, index) => (
@@ -138,7 +144,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                                   ))}
                                   {template.dependencies.length > 3 && (
                                     <span className="text-xs px-2 py-1 bg-gray-700 rounded text-gray-300">
-                                      +{template.dependencies.length - 3} more
+                                      {t('templateDialog.morePackages', { count: template.dependencies.length - 3 })}
                                     </span>
                                   )}
                                 </div>
@@ -164,16 +170,20 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
           {/* Right Panel - Project Configuration */}
           <div className="w-1/2 flex flex-col">
             <div className="flex-1 p-4 overflow-y-auto">
-              <h3 className="text-lg font-semibold text-white mb-4">Project Configuration</h3>
-              
+              <h3 className="text-lg font-semibold text-white mb-4">{t('templateDialog.projectConfig')}</h3>
+
               {/* Template Preview */}
               {selectedTemplateObj && (
                 <div className="mb-6 p-4 bg-gray-700/50 rounded-lg">
-                  <h4 className="font-medium text-white mb-2"><i className="fas fa-clipboard-list"></i> {selectedTemplateObj.name}</h4>
-                  <p className="text-sm text-gray-300 mb-3">{selectedTemplateObj.description}</p>
-                  
+                  <h4 className="font-medium text-white mb-2">
+                    <i className="fas fa-clipboard-list"></i> {t(`templateDialog.templates.${selectedTemplateObj.id}.name`, { defaultValue: selectedTemplateObj.name })}
+                  </h4>
+                  <p className="text-sm text-gray-300 mb-3">
+                    {t(`templateDialog.templates.${selectedTemplateObj.id}.description`, { defaultValue: selectedTemplateObj.description })}
+                  </p>
+
                   <div className="mb-3">
-                    <h5 className="text-sm font-medium text-gray-300 mb-2">Files to be created:</h5>
+                    <h5 className="text-sm font-medium text-gray-300 mb-2">{t('templateDialog.filesToCreate')}</h5>
                     <div className="text-xs text-gray-400 max-h-32 overflow-y-auto">
                       {selectedTemplateObj.files
                         .filter(f => !f.is_directory)
@@ -186,7 +196,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                         ))}
                       {selectedTemplateObj.files.filter(f => !f.is_directory).length > 8 && (
                         <div className="text-gray-500 mt-1">
-                          ...and {selectedTemplateObj.files.filter(f => !f.is_directory).length - 8} more files
+                          {t('templateDialog.andMoreFiles', { count: selectedTemplateObj.files.filter(f => !f.is_directory).length - 8 })}
                         </div>
                       )}
                     </div>
@@ -194,7 +204,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
 
                   {selectedTemplateObj.dependencies.length > 0 && (
                     <div>
-                      <h5 className="text-sm font-medium text-gray-300 mb-2">Dependencies:</h5>
+                      <h5 className="text-sm font-medium text-gray-300 mb-2">{t('templateDialog.dependencies')}</h5>
                       <div className="text-xs text-gray-400">
                         {selectedTemplateObj.dependencies.slice(0, 5).join(', ')}
                         {selectedTemplateObj.dependencies.length > 5 && ' ...'}
@@ -207,25 +217,25 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
               {/* Project Form */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Project Name</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('templateDialog.projectName')}</label>
                   <input
                     type="text"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="my-awesome-project"
+                    placeholder={t('templateDialog.projectNamePlaceholder')}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
                     disabled={creating}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Project Location</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('templateDialog.projectLocation')}</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={projectPath}
                       onChange={(e) => setProjectPath(e.target.value)}
-                      placeholder="C:\\Projects"
+                      placeholder={t('templateDialog.projectLocationPlaceholder')}
                       className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
                       disabled={creating}
                     />
@@ -248,13 +258,13 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                   </div>
                   {projectName && projectPath && (
                     <div className="mt-1 text-xs text-gray-400">
-                      Full path: {projectPath}/{projectName}
+                      {t('templateDialog.fullPath', { path: `${projectPath}/${projectName}` })}
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Python Version</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('templateDialog.pythonVersion')}</label>
                   <select
                     value={pythonVersion}
                     onChange={(e) => setPythonVersion(e.target.value)}
@@ -281,7 +291,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
             className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
             disabled={creating}
           >
-            Cancel
+            {t('templateDialog.cancel')}
           </button>
           <button
             onClick={handleCreateProject}
@@ -291,11 +301,11 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
             {creating ? (
               <>
                 <span className="animate-spin">⏳</span>
-                Creating...
+                {t('templateDialog.creating')}
               </>
             ) : (
               <>
-                <i className="fas fa-rocket"></i> Create Project
+                <i className="fas fa-rocket"></i> {t('templateDialog.createProject')}
               </>
             )}
           </button>

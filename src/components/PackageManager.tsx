@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TauriAPI, type Package, type DependencyTree, type PackageWithDeps } from '../lib/tauri'
 
 interface PackageManagerProps {
@@ -10,6 +11,7 @@ interface PackageManagerProps {
 type ViewMode = 'list' | 'tree'
 
 export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }: PackageManagerProps) {
+  const { t } = useTranslation()
   const [packages, setPackages] = useState<Package[]>([])
   const [dependencyTree, setDependencyTree] = useState<DependencyTree | null>(null)
   const [loading, setLoading] = useState(false)
@@ -51,18 +53,18 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
 
     const packageName = installInput.trim()
     setIsInstalling(true)
-    onConsoleOutput?.(`Installing package: ${packageName}...`)
+    onConsoleOutput?.(t('messages.packageInstalling', { name: packageName }))
 
     try {
       const result = await TauriAPI.installPackage(projectPath, packageName)
-      onConsoleOutput?.(`✅ Successfully installed ${packageName}`)
+      onConsoleOutput?.(t('messages.packageInstalled', { name: packageName }))
       onConsoleOutput?.(`${result}`)
-      
+
       // Reload packages list
       await loadPackages()
       setInstallInput('')
     } catch (error) {
-      onConsoleError?.(`❌ Failed to install ${packageName}: ${error}`)
+      onConsoleError?.(t('messages.packageInstallFailed', { name: packageName, error: String(error) }))
     } finally {
       setIsInstalling(false)
     }
@@ -72,17 +74,17 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
     if (!projectPath || isInstalling) return
 
     setIsInstalling(true)
-    onConsoleOutput?.(`Uninstalling package: ${packageName}...`)
+    onConsoleOutput?.(t('messages.packageUninstalling', { name: packageName }))
 
     try {
       const result = await TauriAPI.uninstallPackage(projectPath, packageName)
-      onConsoleOutput?.(`✅ Successfully uninstalled ${packageName}`)
+      onConsoleOutput?.(t('messages.packageUninstalled', { name: packageName }))
       onConsoleOutput?.(`${result}`)
-      
+
       // Reload packages list
       await loadPackages()
     } catch (error) {
-      onConsoleError?.(`❌ Failed to uninstall ${packageName}: ${error}`)
+      onConsoleError?.(t('messages.packageUninstallFailed', { name: packageName, error: String(error) }))
     } finally {
       setIsInstalling(false)
     }
@@ -155,7 +157,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               <div className="text-xs flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                 <span>v{pkg.version}</span>
                 {pkg.dependencies.length > 0 && (
-                  <span style={{ color: 'var(--ctp-blue)' }}>({pkg.dependencies.length} deps)</span>
+                  <span style={{ color: 'var(--ctp-blue)' }}>({pkg.dependencies.length} {t('packageManager.dependencies')})</span>
                 )}
               </div>
             </div>
@@ -174,7 +176,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
               }}
-              title="View on PyPI"
+              title={t('packageManager.viewOnPyPI')}
             >
               <i className="fas fa-external-link-alt"></i>
             </button>
@@ -196,7 +198,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
                 }
               }}
-              title="Uninstall package"
+              title={t('packageManager.uninstall')}
             >
               <i className="fas fa-trash"></i>
             </button>
@@ -225,7 +227,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
                     }}
-                    title="View on PyPI"
+                    title={t('packageManager.viewOnPyPI')}
                   >
                     <i className="fas fa-external-link-alt"></i>
                   </button>
@@ -243,7 +245,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
       {/* Header */}
       <div className="px-4 py-3 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-semibold" style={{ color: 'var(--ctp-text)' }}>Package Manager</div>
+          <div className="text-sm font-semibold" style={{ color: 'var(--ctp-text)' }}>{t('packageManager.title')}</div>
           <div className="flex items-center gap-2">
             <div className="flex rounded" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
               <button
@@ -268,7 +270,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   }
                 }}
               >
-                <i className="fas fa-list"></i> List
+                <i className="fas fa-list"></i> {t('packageManager.viewList')}
               </button>
               <button
                 onClick={() => setViewMode('tree')}
@@ -288,7 +290,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   }
                 }}
               >
-                <i className="fas fa-sitemap"></i> Tree
+                <i className="fas fa-sitemap"></i> {t('packageManager.viewTree')}
               </button>
             </div>
             <button
@@ -310,7 +312,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                 }
               }}
             >
-              {loading ? 'Loading...' : 'Refresh'}
+              {loading ? t('packageManager.loading') : t('packageManager.refresh')}
             </button>
           </div>
         </div>
@@ -318,20 +320,20 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         {/* Stats */}
         {(packages.length > 0 || dependencyTree) && (
           <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--ctp-subtext1)' }}>
-            <span>{packages.length} packages installed</span>
+            <span>{t('packageManager.packagesInstalled', { count: packages.length })}</span>
             {dependencyTree && (
-              <span>{dependencyTree.total_count} root dependencies</span>
+              <span>{t('packageManager.rootDependencies', { count: dependencyTree.total_count })}</span>
             )}
             {viewMode === 'tree' && dependencyTree && (
               <span style={{ color: 'var(--ctp-blue)' }}>
-                {dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0)} sub-dependencies
+                {t('packageManager.subDependencies', { count: dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0) })}
               </span>
             )}
             {searchFilter && (
               <span style={{ color: 'var(--ctp-green)' }}>
-                {viewMode === 'tree' && filteredDependencyTree
+                {t('packageManager.matches', { count: viewMode === 'tree' && filteredDependencyTree
                   ? filteredDependencyTree.packages.length
-                  : filteredPackages.length} matches
+                  : filteredPackages.length })}
               </span>
             )}
           </div>
@@ -344,7 +346,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Search packages..."
+              placeholder={t('packageManager.searchPlaceholder')}
               className="w-full px-3 py-2 text-sm rounded border focus:outline-none transition-colors"
               style={{
                 backgroundColor: 'var(--ctp-surface0)',
@@ -367,7 +369,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               value={installInput}
               onChange={(e) => setInstallInput(e.target.value)}
               disabled={isInstalling}
-              placeholder="Package name (e.g., requests, numpy==1.24.0, git+https://...)"
+              placeholder={t('packageManager.installPlaceholder')}
               className="w-full px-3 py-2 text-sm rounded border focus:outline-none transition-colors"
               style={{
                 backgroundColor: isInstalling ? 'var(--ctp-surface1)' : 'var(--ctp-surface0)',
@@ -413,14 +415,14 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               }
             }}
           >
-            {isInstalling ? <><i className="fas fa-spinner fa-spin"></i> Installing...</> : <><i className="fas fa-download"></i> Install</>}
+            {isInstalling ? <><i className="fas fa-spinner fa-spin"></i> {t('packageManager.installing')}</> : <><i className="fas fa-download"></i> {t('packageManager.install')}</>}
           </button>
         </form>
         
         {/* Quick install suggestions */}
         <div className="mb-3">
           <div className="flex flex-wrap gap-1 mb-2">
-            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>Popular packages:</span>
+            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('packageManager.popularPackages')}</span>
             {['requests', 'numpy', 'pandas', 'matplotlib', 'flask', 'fastapi', 'pytest', 'black'].map((pkg) => (
               <button
                 key={pkg}
@@ -443,7 +445,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
             ))}
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>Data science:</span>
+            <span className="text-xs mr-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('packageManager.dataScience')}</span>
             {['scikit-learn', 'opencv-python', 'torch', 'marimo', 'seaborn', 'plotly'].map((pkg) => (
               <button
                 key={pkg}
@@ -476,21 +478,21 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
           color: 'var(--ctp-subtext0)',
           backgroundColor: 'var(--ctp-surface0)'
         }}>
-          <i className="fas fa-lightbulb"></i> Tips: Use <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>==version</code> for exact versions,
-          <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>&gt;=version</code> for minimum versions,
-          or <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>git+https://...</code> for git repositories
+          <i className="fas fa-lightbulb"></i> {t('packageManager.tips')} <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.exactVersion')}</code> {t('packageManager.forExact')}
+          <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.minVersion')}</code> {t('packageManager.forMin')}
+          {t('packageManager.orGit')} <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.gitRepo')}</code> {t('packageManager.forGitRepos')}
         </div>
       </div>
 
       {/* Package List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext1)' }}>Loading packages...</div>
+          <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext1)' }}>{t('packageManager.loading')}</div>
         ) : packages.length === 0 ? (
           <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
             <div className="text-6xl mb-4"><i className="fas fa-box" style={{ color: 'var(--ctp-peach)' }}></i></div>
-            <div className="text-lg mb-2">No packages installed</div>
-            <div className="text-sm">Install your first package using the form above</div>
+            <div className="text-lg mb-2">{t('packageManager.noPackages')}</div>
+            <div className="text-sm">{t('packageManager.installFirst')}</div>
           </div>
         ) : (
           <div className="p-2">
@@ -501,8 +503,8 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               ) : (
                 <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
                   <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
-                  <div className="text-lg mb-2">No matching packages found</div>
-                  <div className="text-sm">Try adjusting your search filter</div>
+                  <div className="text-lg mb-2">{t('packageManager.noMatches')}</div>
+                  <div className="text-sm">{t('packageManager.adjustFilter')}</div>
                 </div>
               )
             ) : (
@@ -541,7 +543,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
                         }}
-                        title="View on PyPI"
+                        title={t('packageManager.viewOnPyPI')}
                       >
                         <i className="fas fa-external-link-alt"></i>
                       </button>
@@ -563,7 +565,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                             e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
                           }
                         }}
-                        title="Uninstall package"
+                        title={t('packageManager.uninstall')}
                       >
                         <i className="fas fa-trash"></i>
                       </button>
@@ -573,8 +575,8 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               ) : (
                 <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
                   <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
-                  <div className="text-lg mb-2">No matching packages found</div>
-                  <div className="text-sm">Try adjusting your search filter</div>
+                  <div className="text-lg mb-2">{t('packageManager.noMatches')}</div>
+                  <div className="text-sm">{t('packageManager.adjustFilter')}</div>
                 </div>
               )
             )}
@@ -589,19 +591,19 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         color: 'var(--ctp-subtext1)'
       }}>
         <div className="flex items-center justify-between">
-          <span><i className="fas fa-bolt" style={{ color: 'var(--ctp-yellow)' }}></i> Using UV for fast package management</span>
+          <span><i className="fas fa-bolt" style={{ color: 'var(--ctp-yellow)' }}></i> {t('packageManager.usingUV')}</span>
           <div className="flex items-center gap-2">
-            <span>{packages.length} package{packages.length !== 1 ? 's' : ''} installed</span>
+            <span>{packages.length} {packages.length !== 1 ? t('packageManager.packages') : t('packageManager.package')}</span>
             {viewMode === 'tree' && dependencyTree && (
               <span style={{ color: 'var(--ctp-blue)' }}>
-                ({dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0)} dependencies)
+                ({dependencyTree.packages.reduce((acc, pkg) => acc + pkg.dependencies.length, 0)} {t('packageManager.dependencies')})
               </span>
             )}
           </div>
         </div>
         {packages.length > 0 && (
           <div className="mt-1 text-xs" style={{ color: 'var(--ctp-subtext0)' }}>
-            <i className="fas fa-lightbulb"></i> Tip: {viewMode === 'tree' ? 'Click ▶ to expand dependencies' : 'Switch to Tree view to see dependencies'}
+            <i className="fas fa-lightbulb"></i> {viewMode === 'tree' ? t('packageManager.expandTip') : t('packageManager.treeTip')}
           </div>
         )}
       </div>

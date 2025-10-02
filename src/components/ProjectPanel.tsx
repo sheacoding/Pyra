@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TauriAPI } from '../lib/tauri'
 import { PackageManager } from './PackageManager'
 import { PyProjectManager } from './PyProjectManager'
@@ -12,6 +13,7 @@ interface ProjectPanelProps {
 type PanelView = 'overview' | 'packages' | 'python' | 'settings'
 
 export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: ProjectPanelProps) {
+  const { t } = useTranslation()
   const [activeView, setActiveView] = useState<PanelView>('overview')
   const [venvExists, setVenvExists] = useState(false)
   const [pythonVersions, setPythonVersions] = useState<string[]>([])
@@ -51,35 +53,35 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
   const handleCreateVenv = async (pythonVersion?: string) => {
     if (!projectPath) return
 
-    onConsoleOutput?.('Initializing UV project...')
+    onConsoleOutput?.(t('messages.packageInstalling'))
     try {
       // Get project name from path
       const projectName = projectPath.split(/[\\/]/).pop() || 'pyra-project'
-      
+
       // Initialize UV project
       const initResult = await TauriAPI.initUvProject(projectPath, projectName, pythonVersion)
-      onConsoleOutput?.(`✅ UV project initialized successfully`)
+      onConsoleOutput?.(t('messages.packageInstalled', { name: 'UV project' }))
       onConsoleOutput?.(`${initResult}`)
-      
+
       // Sync dependencies
-      onConsoleOutput?.('Syncing project dependencies...')
+      onConsoleOutput?.(t('messages.syncingDependencies'))
       const syncResult = await TauriAPI.syncUvProject(projectPath)
-      onConsoleOutput?.(`✅ Dependencies synced successfully`)
+      onConsoleOutput?.(t('messages.packageInstalled', { name: 'dependencies' }))
       onConsoleOutput?.(`${syncResult}`)
-      
+
       setVenvExists(true)
     } catch (error) {
-      onConsoleError?.(`❌ Failed to initialize UV project: ${error}`)
-      
+      onConsoleError?.(t('messages.venvCreateFailed', { error: String(error) }))
+
       // Fallback to old venv creation if UV init fails
-      onConsoleOutput?.('Falling back to traditional virtual environment creation...')
+      onConsoleOutput?.(t('messages.venvFallback'))
       try {
         const result = await TauriAPI.createVenv(projectPath, pythonVersion)
-        onConsoleOutput?.(`✅ Virtual environment created successfully`)
+        onConsoleOutput?.(t('messages.venvCreated'))
         onConsoleOutput?.(`${result}`)
         setVenvExists(true)
       } catch (venvError) {
-        onConsoleError?.(`❌ Failed to create virtual environment: ${venvError}`)
+        onConsoleError?.(t('messages.venvCreateFailed', { error: String(venvError) }))
       }
     }
   }
@@ -121,34 +123,34 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
               <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                   <i className="fas fa-info-circle text-blue-400"></i>
-                  Project Overview
+                  {t('projectPanel.overview.title')}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
                       <i className="fas fa-folder text-xs"></i>
-                      Project Path:
+                      {t('projectPanel.overview.projectPath')}
                     </span>
                     <span className="font-mono text-xs" style={{ color: 'var(--ctp-text)' }}>{projectPath}</span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
                       <i className="fas fa-cube text-xs"></i>
-                      Virtual Environment:
+                      {t('projectPanel.overview.virtualEnv')}
                     </span>
                     <span style={{ color: venvExists ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
                       <i className={venvExists ? 'fas fa-check' : 'fas fa-times'}></i>
-                      {venvExists ? 'Active' : 'Not Found'}
+                      {venvExists ? t('projectPanel.overview.active') : t('projectPanel.overview.notFound')}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
                       <i className="fas fa-package text-xs"></i>
-                      UV Package Manager:
+                      {t('projectPanel.overview.uvPackageManager')}
                     </span>
                     <span style={{ color: uvInstalled ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
                       <i className={uvInstalled ? 'fas fa-check' : 'fas fa-times'}></i>
-                      {uvInstalled ? 'Installed' : 'Not Found'}
+                      {uvInstalled ? t('projectPanel.overview.installed') : t('projectPanel.overview.notFound')}
                     </span>
                   </div>
                 </div>
@@ -158,7 +160,7 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
               <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                   <i className="fas fa-bolt text-yellow-400"></i>
-                  Quick Actions
+                  {t('projectPanel.overview.quickActions')}
                 </h3>
                 <div className="space-y-2">
                   {!venvExists && (
@@ -169,16 +171,16 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
                     >
-                      <i className="fas fa-rocket"></i> Initialize UV Project
+                      <i className="fas fa-rocket"></i> {t('projectPanel.overview.initUvProject')}
                     </button>
                   )}
                   {!uvInstalled && (
                     <div className="p-3 border rounded text-sm" style={{ backgroundColor: 'var(--ctp-yellow)' + '20', borderColor: 'var(--ctp-yellow)' + '50', color: 'var(--ctp-yellow)' }}>
                       <div className="font-semibold mb-1 flex items-center gap-2">
                         <i className="fas fa-exclamation-triangle"></i>
-                        UV not installed
+                        {t('projectPanel.overview.uvNotInstalled')}
                       </div>
-                      <div>Install UV for faster Python package management:</div>
+                      <div>{t('projectPanel.overview.uvInstallHint')}</div>
                       <code className="block mt-2 p-2 rounded" style={{ backgroundColor: 'var(--ctp-surface0)' }}>curl -LsSf https://astral.sh/uv/install.sh | sh</code>
                     </div>
                   )}
@@ -190,10 +192,10 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
                 <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                     <i className="fas fa-server text-green-400"></i>
-                    Environment Status
+                    {t('projectPanel.overview.environmentStatus')}
                   </h3>
                   <div className="text-sm" style={{ color: 'var(--ctp-text)' }}>
-                    Click on "Packages" tab to manage installed packages
+                    {t('projectPanel.overview.managePackagesHint')}
                   </div>
                 </div>
               )}
@@ -216,23 +218,23 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
             <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
                 <i className="fab fa-python text-blue-400"></i>
-                Python Version Management
+                {t('projectPanel.python.title')}
               </h3>
 
               {!uvInstalled ? (
                 <div className="text-center py-8" style={{ color: 'var(--ctp-overlay1)' }}>
                   <div className="text-4xl mb-4"><i className="fab fa-python text-blue-500"></i></div>
-                  <div>UV is required for Python version management</div>
+                  <div>{t('projectPanel.python.uvRequired')}</div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: 'var(--ctp-text)' }}>
                       <i className="fas fa-list-ul text-sm"></i>
-                      Available Python Versions:
+                      {t('projectPanel.python.availableVersions')}
                     </label>
                     {pythonVersions.length === 0 ? (
-                      <div className="text-sm" style={{ color: 'var(--ctp-overlay1)' }}>No Python versions found via UV</div>
+                      <div className="text-sm" style={{ color: 'var(--ctp-overlay1)' }}>{t('projectPanel.python.noVersionsFound')}</div>
                     ) : (
                       <div className="space-y-2">
                         {pythonVersions.map((version) => (
@@ -257,7 +259,7 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
                                 }
                               }}
                             >
-                              {venvExists ? 'In Use' : 'Use'}
+                              {venvExists ? t('projectPanel.python.inUse') : t('projectPanel.python.use')}
                             </button>
                           </div>
                         ))}
@@ -289,10 +291,10 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
       {/* Navigation */}
       <div className="px-3 py-3 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <div className="flex justify-between gap-1">
-          <NavButton view="overview" label="Overview" icon="fas fa-home" />
-          <NavButton view="packages" label="Packages" icon="fas fa-box" />
-          <NavButton view="python" label="Python" icon="fab fa-python" />
-          <NavButton view="settings" label="Settings" icon="fas fa-cog" />
+          <NavButton view="overview" label={t('projectPanel.tabs.overview')} icon="fas fa-home" />
+          <NavButton view="packages" label={t('projectPanel.tabs.packages')} icon="fas fa-box" />
+          <NavButton view="python" label={t('projectPanel.tabs.python')} icon="fab fa-python" />
+          <NavButton view="settings" label={t('projectPanel.tabs.settings')} icon="fas fa-cog" />
         </div>
       </div>
 

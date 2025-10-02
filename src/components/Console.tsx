@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TauriAPI } from '../lib/tauri'
 import { ConsoleMessage } from '../types'
 
@@ -9,6 +10,7 @@ interface ConsoleProps {
 }
 
 export function Console({ projectPath, messages: externalMessages, onClearMessages }: ConsoleProps) {
+  const { t } = useTranslation()
   const [localMessages, setLocalMessages] = useState<ConsoleMessage[]>([])
   const [input, setInput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
@@ -46,16 +48,16 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
     if (!projectPath || isRunning) return
 
     setIsRunning(true)
-    addMessage(`Running: ${scriptPath}`, 'info')
+    addMessage(t('console.runningScript', { script: scriptPath }), 'info')
 
     try {
       const output = await TauriAPI.runScript(projectPath, scriptPath)
       if (output.trim()) {
         addMessage(output, 'stdout')
       }
-      addMessage('Script completed successfully', 'info')
+      addMessage(t('console.scriptCompleted'), 'info')
     } catch (error) {
-      addMessage(`Error: ${error}`, 'error')
+      addMessage(t('console.scriptError', { error: String(error) }), 'error')
     } finally {
       setIsRunning(false)
     }
@@ -65,14 +67,14 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
     if (!projectPath || isRunning) return
 
     setIsRunning(true)
-    addMessage('Creating virtual environment...', 'info')
+    addMessage(t('console.creatingVenv'), 'info')
 
     try {
       const output = await TauriAPI.createVenv(projectPath)
       addMessage(output, 'stdout')
-      addMessage('Virtual environment created successfully', 'info')
+      addMessage(t('console.venvCreated'), 'info')
     } catch (error) {
-      addMessage(`Failed to create virtual environment: ${error}`, 'error')
+      addMessage(t('console.venvError', { error: String(error) }), 'error')
     } finally {
       setIsRunning(false)
     }
@@ -94,7 +96,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
       const scriptPath = command.substring(4).trim()
       runScript(scriptPath)
     } else {
-      addMessage(`Unknown command: ${command}`, 'error')
+      addMessage(t('console.unknownCommand', { command }), 'error')
     }
 
     setInput('')
@@ -115,7 +117,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
       {/* Console Header */}
       <div className="px-4 py-2 border-b flex items-center justify-between"
            style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
-        <div className="text-sm font-semibold" style={{ color: 'var(--ctp-subtext1)' }}>Console</div>
+        <div className="text-sm font-semibold" style={{ color: 'var(--ctp-subtext1)' }}>{t('console.title')}</div>
         <div className="flex gap-2">
           <button
             onClick={createVirtualEnv}
@@ -136,7 +138,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
               }
             }}
           >
-            Create venv
+            {t('console.createVenv')}
           </button>
           <button
             onClick={() => {
@@ -148,7 +150,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-overlay0)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-surface2)' }}
           >
-            Clear
+            {t('console.clear')}
           </button>
         </div>
       </div>
@@ -161,7 +163,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
       >
         {allMessages.length === 0 ? (
           <div style={{ color: 'var(--ctp-overlay0)' }}>
-            Console ready. Type commands or use buttons above.
+            {t('console.ready')}
           </div>
         ) : (
           allMessages.map((message) => (
@@ -179,7 +181,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
         )}
         {isRunning && (
           <div className="animate-pulse" style={{ color: 'var(--ctp-yellow)' }}>
-            Running command...
+            {t('console.running')}
           </div>
         )}
       </div>
@@ -193,7 +195,7 @@ export function Console({ projectPath, messages: externalMessages, onClearMessag
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isRunning}
-            placeholder="Enter command (e.g., 'run main.py', 'create-venv', 'clear')"
+            placeholder={t('console.placeholder')}
             className="flex-1 bg-transparent font-mono text-sm focus:outline-none disabled:opacity-50"
             style={{
               color: isRunning ? 'var(--ctp-overlay0)' : 'var(--ctp-text)',

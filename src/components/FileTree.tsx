@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TauriAPI, FileItem } from '../lib/tauri'
 import { ask, message } from '@tauri-apps/plugin-dialog'
 
@@ -21,6 +22,7 @@ interface ContextMenu {
 }
 
 export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileTree({ projectPath, onFileSelect }: FileTreeProps, ref) {
+  const { t } = useTranslation()
   const [files, setFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
@@ -155,8 +157,8 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
   const handleDeleteFile = async (filePath: string) => {
     const fileName = filePath.split(/[/\\]/).pop() || 'this file'
     try {
-      const confirmed = await ask(`Are you sure you want to delete "${fileName}"?`, {
-        title: 'Confirm Delete',
+      const confirmed = await ask(t('fileTree.deleteConfirm', { name: fileName }), {
+        title: t('fileTree.deleteTitle'),
         kind: 'warning'
       })
 
@@ -170,8 +172,8 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
           }
         } catch (error) {
           console.error('Failed to delete file:', error)
-          await message('Failed to delete file: ' + error, {
-            title: 'Error',
+          await message(t('fileTree.deleteFailed', { error: String(error) }), {
+            title: t('fileTree.error'),
             kind: 'error'
           })
         }
@@ -213,8 +215,8 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       setContextMenuData(null)
     } catch (error) {
       console.error('Failed to create file:', error)
-      await message('Failed to create file: ' + error, {
-        title: 'Error',
+      await message(t('fileTree.createFileFailed', { error: String(error) }), {
+        title: t('fileTree.error'),
         kind: 'error'
       })
     }
@@ -251,8 +253,8 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       setContextMenuData(null)
     } catch (error) {
       console.error('Failed to create folder:', error)
-      await message('Failed to create folder: ' + error, {
-        title: 'Error',
+      await message(t('fileTree.createFolderFailed', { error: String(error) }), {
+        title: t('fileTree.error'),
         kind: 'error'
       })
     }
@@ -360,7 +362,7 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
   if (!projectPath) {
     return (
       <div className="p-4" style={{ color: 'var(--ctp-overlay0)' }}>
-        <div className="text-sm mb-4" style={{ color: 'var(--ctp-subtext1)' }}>No project selected</div>
+        <div className="text-sm mb-4" style={{ color: 'var(--ctp-subtext1)' }}>{t('fileTree.noProject')}</div>
         <button className="px-3 py-1 text-sm rounded font-medium transition-colors"
           style={{
             backgroundColor: 'var(--ctp-mauve)',
@@ -372,7 +374,7 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)'
           }}>
-          Open Project
+          {t('fileTree.openProject')}
         </button>
       </div>
     )
@@ -383,7 +385,7 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       <div className="flex-1 overflow-y-auto">
         {files.length === 0 ? (
           <div className="p-4 text-sm" style={{ color: 'var(--ctp-subtext1)' }}>
-            No files in project
+            {t('fileTree.noFiles')}
           </div>
         ) : (
           <div className="p-2">
@@ -403,26 +405,26 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
             onClick={() => { refreshFiles(); setContextMenu(null) }}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-sync-alt"></i> Refresh
+            <i className="fas fa-sync-alt"></i> {t('fileTree.refresh')}
           </button>
           <button
             onClick={handleCreateNewFile}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-file-plus"></i> New File
+            <i className="fas fa-file-plus"></i> {t('fileTree.newFile')}
           </button>
           <button
             onClick={handleCreateNewFolder}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-folder-plus"></i> New Folder
+            <i className="fas fa-folder-plus"></i> {t('fileTree.newFolder')}
           </button>
           <div className="border-t border-gray-600 my-1"></div>
           <button
             onClick={() => handleDeleteFile(contextMenu.targetPath)}
             className="w-full text-left px-3 py-1 text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-trash"></i> Delete
+            <i className="fas fa-trash"></i> {t('fileTree.delete')}
           </button>
         </div>
       )}
@@ -431,12 +433,12 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       {showNewFileDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-4 w-80">
-            <h3 className="text-lg font-semibold text-white mb-4">Create New File</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{t('fileTree.createFileTitle')}</h3>
             <input
               type="text"
               value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
-              placeholder="Enter file name (e.g., script.py)"
+              placeholder={t('fileTree.createFilePlaceholder')}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white mb-4"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') confirmCreateFile()
@@ -457,13 +459,13 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
                 }}
                 className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded"
               >
-                Cancel
+                {t('fileTree.cancel')}
               </button>
               <button
                 onClick={confirmCreateFile}
                 className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
               >
-                Create
+                {t('fileTree.create')}
               </button>
             </div>
           </div>
@@ -474,12 +476,12 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
       {showNewFolderDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-4 w-80">
-            <h3 className="text-lg font-semibold text-white mb-4">Create New Folder</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{t('fileTree.createFolderTitle')}</h3>
             <input
               type="text"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Enter folder name"
+              placeholder={t('fileTree.createFolderPlaceholder')}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white mb-4"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') confirmCreateFolder()
@@ -500,13 +502,13 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
                 }}
                 className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded"
               >
-                Cancel
+                {t('fileTree.cancel')}
               </button>
               <button
                 onClick={confirmCreateFolder}
                 className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
               >
-                Create
+                {t('fileTree.create')}
               </button>
             </div>
           </div>

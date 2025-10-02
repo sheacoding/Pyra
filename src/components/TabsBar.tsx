@@ -1,4 +1,5 @@
 // No explicit React import needed with React 17+ JSX transform
+import { useTranslation } from 'react-i18next'
 
 export interface TabItem {
   path: string
@@ -13,12 +14,13 @@ interface TabsBarProps {
 }
 
 export function TabsBar({ tabs, activePath, onSelect, onClose }: TabsBarProps) {
+  const { t } = useTranslation()
   if (!tabs.length) return null
 
   return (
     <div className="flex items-center gap-1 px-2 py-1 border-b overflow-x-auto" style={{ borderColor: 'var(--ctp-surface1)', backgroundColor: 'var(--ctp-mantle)' }}>
       {tabs.map(tab => {
-        const name = tab.title || tab.path.split('\\').pop() || tab.path.split('/').pop() || 'Untitled'
+        const name = tab.title || tab.path.split('\\').pop() || tab.path.split('/').pop() || t('tabsBar.untitled')
         const isActive = tab.path === activePath
         return (
           <div
@@ -41,7 +43,7 @@ export function TabsBar({ tabs, activePath, onSelect, onClose }: TabsBarProps) {
               className="ml-1 text-[10px] px-1 py-0.5 rounded"
               onClick={(e) => { e.stopPropagation(); onClose(tab.path) }}
               style={{ color: 'var(--ctp-overlay0)' }}
-              title="Close"
+              title={t('tabsBar.close')}
             >×</button>
           </div>
         )

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CatppuccinFlavor } from '../themes/catppuccin'
 
 export interface IDESettings {
@@ -78,8 +79,9 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPanelProps) {
+  const { t, i18n } = useTranslation()
   const [settings, setSettings] = useState<IDESettings>(defaultSettings)
-  const [activeTab, setActiveTab] = useState<'editor' | 'theme' | 'python' | 'ruff' | 'general'>('editor')
+  const [activeTab, setActiveTab] = useState<'editor' | 'theme' | 'python' | 'ruff' | 'general' | 'language'>('editor')
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -148,6 +150,11 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
     updateSettings(newSettings)
   }
 
+  const changeLanguage = async (lang: string) => {
+    await i18n.changeLanguage(lang)
+    localStorage.setItem('i18nextLng', lang)
+  }
+
   const resetToDefaults = () => {
     updateSettings(defaultSettings)
   }
@@ -165,7 +172,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
         <div className="flex items-center justify-between p-4 border-b" style={{
           borderColor: 'var(--ctp-surface1)'
         }}>
-          <h2 className="text-xl font-bold" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> Pyra IDE Settings</h2>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> {t('settingsPanel.title')}</h2>
           <button
             onClick={onClose}
             className="p-1 rounded transition-colors"
@@ -191,11 +198,12 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
           }}>
             <nav className="space-y-2">
               {[
-                { key: 'editor', label: <><i className="fas fa-edit"></i> Editor</>, icon: <i className="fas fa-edit"></i> },
-                { key: 'theme', label: <><i className="fas fa-palette"></i> Theme</>, icon: <i className="fas fa-palette"></i> },
-                { key: 'python', label: <><i className="fab fa-python"></i> Python</>, icon: <i className="fab fa-python"></i> },
-                { key: 'ruff', label: <><i className="fas fa-search"></i> Ruff</>, icon: <i className="fas fa-search"></i> },
-                { key: 'general', label: <><i className="fas fa-cog"></i> General</>, icon: <i className="fas fa-cog"></i> }
+                { key: 'editor', label: t('settingsPanel.tabs.editor'), icon: 'fas fa-edit' },
+                { key: 'theme', label: t('settingsPanel.tabs.theme'), icon: 'fas fa-palette' },
+                { key: 'python', label: t('settingsPanel.tabs.python'), icon: 'fab fa-python' },
+                { key: 'ruff', label: t('settingsPanel.tabs.ruff'), icon: 'fas fa-search' },
+                { key: 'general', label: t('settingsPanel.tabs.general'), icon: 'fas fa-cog' },
+                { key: 'language', label: t('settingsPanel.tabs.language'), icon: 'fas fa-language' }
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -238,7 +246,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                   e.currentTarget.style.backgroundColor = 'var(--ctp-red)'
                 }}
               >
-                <i className="fas fa-undo"></i> Reset to Defaults
+                <i className="fas fa-undo"></i> {t('settingsPanel.resetDefaults')}
               </button>
             </div>
           </div>
@@ -249,11 +257,11 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
           }}>
             {activeTab === 'editor' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-edit"></i> Editor Settings</h3>
-                
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-edit"></i> {t('settingsPanel.editor.title')}</h3>
+
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Font Size</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.editor.fontSize')}</label>
                     <input
                       type="number"
                       min="10"
@@ -276,7 +284,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Tab Size</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.editor.tabSize')}</label>
                     <select
                       value={settings.editor.tabSize}
                       onChange={(e) => updateEditorSettings('tabSize', parseInt(e.target.value))}
@@ -293,14 +301,14 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                         e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
                       }}
                     >
-                      <option value={2}>2 spaces</option>
-                      <option value={4}>4 spaces</option>
-                      <option value={8}>8 spaces</option>
+                      <option value={2}>{t('settingsPanel.editor.spaces', { count: 2 })}</option>
+                      <option value={4}>{t('settingsPanel.editor.spaces', { count: 4 })}</option>
+                      <option value={8}>{t('settingsPanel.editor.spaces', { count: 8 })}</option>
                     </select>
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Font Family</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.editor.fontFamily')}</label>
                     <input
                       type="text"
                       value={settings.editor.fontFamily}
@@ -323,11 +331,11 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { key: 'lineNumbers', label: 'Show Line Numbers' },
-                    { key: 'wordWrap', label: 'Word Wrap' },
-                    { key: 'minimap', label: 'Show Minimap' },
-                    { key: 'renderWhitespace', label: 'Show Whitespace' },
-                    { key: 'insertSpaces', label: 'Insert Spaces (not tabs)' }
+                    { key: 'lineNumbers', label: t('settingsPanel.editor.showLineNumbers') },
+                    { key: 'wordWrap', label: t('settingsPanel.editor.wordWrap') },
+                    { key: 'minimap', label: t('settingsPanel.editor.showMinimap') },
+                    { key: 'renderWhitespace', label: t('settingsPanel.editor.showWhitespace') },
+                    { key: 'insertSpaces', label: t('settingsPanel.editor.insertSpaces') }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
@@ -349,12 +357,12 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'theme' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-palette"></i> Theme Settings</h3>
-                
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-palette"></i> {t('settingsPanel.theme.title')}</h3>
+
                 <div className="space-y-6">
                   {/* Catppuccin Theme Selector */}
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Catppuccin Flavor</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.theme.catppuccinFlavor')}</label>
                     <div className="grid grid-cols-2 gap-4">
                       <div
                         className="p-4 rounded-lg border-2 cursor-pointer transition-all"
@@ -386,7 +394,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700"></div>
                           <div>
                             <div className="font-medium" style={{ color: 'var(--ctp-text)' }}>Mocha</div>
-                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>Dark & cozy</div>
+                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.theme.mochaDesc')}</div>
                           </div>
                         </div>
                         <div className="mt-3 flex space-x-1">
@@ -428,7 +436,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-300 to-purple-500"></div>
                           <div>
                             <div className="font-medium" style={{ color: 'var(--ctp-text)' }}>Latte</div>
-                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>Light & warm</div>
+                            <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.theme.latteDesc')}</div>
                           </div>
                         </div>
                         <div className="mt-3 flex space-x-1">
@@ -445,12 +453,12 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
                   {/* Theme Preview */}
                   <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
-                    <h4 className="text-md font-medium mb-3" style={{ color: 'var(--ctp-subtext1)' }}>Theme Preview</h4>
+                    <h4 className="text-md font-medium mb-3" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.theme.preview')}</h4>
                     <div className="rounded p-3 font-mono text-sm" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
-                      <div style={{ color: 'var(--ctp-mauve)' }}># This is a comment</div>
-                      <div style={{ color: 'var(--ctp-blue)' }}>def <span style={{ color: 'var(--ctp-yellow)' }}>hello_world</span>():</div>
-                      <div className="ml-4" style={{ color: 'var(--ctp-green)' }}>"Hello, World!"</div>
-                      <div className="ml-4" style={{ color: 'var(--ctp-peach)' }}>print</div>(<span style={{ color: 'var(--ctp-green)' }}>"Welcome to Pyra IDE"</span>)
+                      <div style={{ color: 'var(--ctp-mauve)' }}>{t('settingsPanel.theme.comment')}</div>
+                      <div style={{ color: 'var(--ctp-blue)' }}>{t('settingsPanel.theme.function')} <span style={{ color: 'var(--ctp-yellow)' }}>{t('settingsPanel.theme.functionName')}</span>():</div>
+                      <div className="ml-4" style={{ color: 'var(--ctp-green)' }}>{t('settingsPanel.theme.string')}</div>
+                      <div className="ml-4" style={{ color: 'var(--ctp-peach)' }}>{t('settingsPanel.theme.print')}</div>(<span style={{ color: 'var(--ctp-green)' }}>{t('settingsPanel.theme.welcome')}</span>)
                     </div>
                   </div>
                 </div>
@@ -459,11 +467,11 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'python' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fab fa-python"></i> Python Settings</h3>
-                
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fab fa-python"></i> {t('settingsPanel.python.title')}</h3>
+
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Default Python Version</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.python.defaultVersion')}</label>
                     <select
                       value={settings.python.defaultVersion}
                       onChange={(e) => updatePythonSettings('defaultVersion', e.target.value)}
@@ -490,8 +498,8 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
                 <div className="space-y-4">
                   {[
-                    { key: 'autoCreateVenv', label: 'Auto-create virtual environment' },
-                    { key: 'useUV', label: 'Use UV for package management' }
+                    { key: 'autoCreateVenv', label: t('settingsPanel.python.autoCreateVenv') },
+                    { key: 'useUV', label: t('settingsPanel.python.useUV') }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
@@ -513,13 +521,13 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'ruff' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-search"></i> Ruff Settings</h3>
-                
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-search"></i> {t('settingsPanel.ruff.title')}</h3>
+
                 <div className="space-y-4">
                   {[
-                    { key: 'enabled', label: 'Enable Ruff linting' },
-                    { key: 'formatOnSave', label: 'Format on save' },
-                    { key: 'lintOnSave', label: 'Lint on save' }
+                    { key: 'enabled', label: t('settingsPanel.ruff.enabled') },
+                    { key: 'formatOnSave', label: t('settingsPanel.ruff.formatOnSave') },
+                    { key: 'lintOnSave', label: t('settingsPanel.ruff.lintOnSave') }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
@@ -538,7 +546,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Config File Path</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.ruff.configPath')}</label>
                   <input
                     type="text"
                     value={settings.ruff.configPath}
@@ -563,13 +571,13 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
 
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> General Settings</h3>
-                
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-cog"></i> {t('settingsPanel.general.title')}</h3>
+
                 <div className="space-y-4">
                   {[
-                    { key: 'autoSave', label: 'Auto-save files' },
-                    { key: 'confirmDelete', label: 'Confirm before deleting files' },
-                    { key: 'showHiddenFiles', label: 'Show hidden files in explorer' }
+                    { key: 'autoSave', label: t('settingsPanel.general.autoSave') },
+                    { key: 'confirmDelete', label: t('settingsPanel.general.confirmDelete') },
+                    { key: 'showHiddenFiles', label: t('settingsPanel.general.showHiddenFiles') }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center space-x-2" style={{ color: 'var(--ctp-text)' }}>
                       <input
@@ -588,7 +596,7 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>Auto-save Delay (ms)</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>{t('settingsPanel.general.autoSaveDelay')}</label>
                   <input
                     type="number"
                     min="500"
@@ -609,6 +617,66 @@ export function SettingsPanel({ isOpen, onClose, onSettingsChange }: SettingsPan
                       e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
                     }}
                   />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'language' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--ctp-text)' }}><i className="fas fa-language"></i> {t('settingsPanel.language.title')}</h3>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                    {t('settingsPanel.language.selectLanguage')}
+                  </label>
+                  <select
+                    value={i18n.language}
+                    onChange={(e) => changeLanguage(e.target.value)}
+                    className="w-full px-3 py-2 border rounded"
+                    style={{
+                      backgroundColor: 'var(--ctp-surface0)',
+                      borderColor: 'var(--ctp-surface1)',
+                      color: 'var(--ctp-text)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-blue)'
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--ctp-surface1)'
+                    }}
+                  >
+                    <option value="en">{t('settingsPanel.language.english')}</option>
+                    <option value="zh-CN">{t('settingsPanel.language.chineseSimplified')}</option>
+                  </select>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
+                  <div className="flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
+                    <i className="fas fa-info-circle"></i>
+                    <span className="text-sm">{t('settingsPanel.language.restartHint')}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg border-2" style={{
+                  borderColor: 'var(--ctp-surface2)',
+                  backgroundColor: 'var(--ctp-mantle)'
+                }}>
+                  <h4 className="text-md font-medium mb-3" style={{ color: 'var(--ctp-subtext1)' }}>
+                    {i18n.language === 'zh-CN' ? '当前语言' : 'Current Language'}
+                  </h4>
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">
+                      {i18n.language === 'zh-CN' ? '🇨🇳' : '🇬🇧'}
+                    </div>
+                    <div>
+                      <div className="font-semibold" style={{ color: 'var(--ctp-text)' }}>
+                        {i18n.language === 'zh-CN' ? '简体中文' : 'English'}
+                      </div>
+                      <div className="text-xs" style={{ color: 'var(--ctp-subtext1)' }}>
+                        {i18n.language === 'zh-CN' ? 'Simplified Chinese' : 'English (US)'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

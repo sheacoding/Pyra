@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { LogicalSize } from '@tauri-apps/api/window'
 import { FileTree } from './components/FileTree'
@@ -14,6 +15,7 @@ import { ProjectTemplateDialog } from './components/ProjectTemplateDialog'
 import { TabsBar } from './components/TabsBar'
 
 function App() {
+  const { t } = useTranslation()
   const [currentFile, setCurrentFile] = useState<string | null>(null)
   const [openTabs, setOpenTabs] = useState<string[]>([])
   const [projectPath, setProjectPath] = useState<string>('E:\\Code\\Pyra\\test-project')
@@ -402,10 +404,10 @@ function App() {
         if (!openTabs.includes(filePath)) {
           setOpenTabs(prev => [...prev, filePath])
         }
-        handleConsoleOutput(`[FILE] Opened file: ${filePath}`)
+        handleConsoleOutput(t('messages.fileOpened', { path: filePath }))
       }
     } catch (error) {
-      handleConsoleError(`❌ Failed to open file: ${error}`)
+      handleConsoleError(t('messages.openFileFailed', { error: String(error) }))
     }
   }
 
@@ -415,9 +417,9 @@ function App() {
       const content = editorRef.current?.getContent() || ''
       const { TauriAPI } = await import('./lib/tauri')
       await TauriAPI.writeFile(currentFile, content)
-      handleConsoleOutput(`[SAVE] Saved: ${currentFile}`)
+      handleConsoleOutput(t('messages.fileSaved', { path: currentFile }))
     } catch (error) {
-      handleConsoleError(`❌ Failed to save file: ${error}`)
+      handleConsoleError(t('messages.saveFileFailed', { error: String(error) }))
     }
   }
 
@@ -433,10 +435,10 @@ function App() {
         if (!openTabs.includes(newPath)) {
           setOpenTabs(prev => [...prev, newPath])
         }
-        handleConsoleOutput(`[SAVE] Saved as: ${newPath}`)
+        handleConsoleOutput(t('messages.fileSavedAs', { path: newPath }))
       }
     } catch (error) {
-      handleConsoleError(`❌ Failed to save file as: ${error}`)
+      handleConsoleError(t('messages.saveFileFailed', { error: String(error) }))
     }
   }
 
@@ -480,48 +482,48 @@ function App() {
   const handleCreateVenv = async (pythonVersion: string = '3.11') => {
     try {
       const { TauriAPI } = await import('./lib/tauri')
-      handleConsoleOutput(`Creating virtual environment with Python ${pythonVersion}...`)
-      
+      handleConsoleOutput(t('messages.venvCreating', { version: pythonVersion }))
+
       const result = await TauriAPI.createVenv(projectPath, pythonVersion)
-      handleConsoleOutput(`✅ Virtual environment created successfully`)
+      handleConsoleOutput(t('messages.venvCreated'))
       handleConsoleOutput(result)
-      
+
       setVenvExists(true)
       setShowVenvDialog(false)
     } catch (error) {
-      handleConsoleError(`❌ Failed to create virtual environment: ${error}`)
+      handleConsoleError(t('messages.venvCreateFailed', { error: String(error) }))
     }
   }
 
   const handleSkipVenv = () => {
     setShowVenvDialog(false)
-    handleConsoleOutput('⚠️ Skipping virtual environment creation - you can create it later from the Project Panel')
+    handleConsoleOutput(t('messages.venvSkipped'))
   }
 
   const handleCreateProject = (projectName: string, newProjectPath: string) => {
-    handleConsoleOutput(`✅ Project '${projectName}' created successfully from template!`)
-    handleConsoleOutput(`[PROJECT] Project location: ${newProjectPath}`)
-    
+    handleConsoleOutput(t('messages.projectCreated', { name: projectName }))
+    handleConsoleOutput(t('messages.projectLocation', { path: newProjectPath }))
+
     // Auto-open the newly created project
     setProjectPath(newProjectPath)
     setCurrentFile(null) // Reset current file
-    handleConsoleOutput(`[PROJECT] Switched to project: ${projectName}`)
+    handleConsoleOutput(t('messages.projectSwitched', { name: projectName }))
   }
 
   const handleOpenProject = async () => {
     try {
       const { TauriAPI } = await import('./lib/tauri')
       const selectedPath = await TauriAPI.openProjectDialog()
-      
+
       if (selectedPath) {
         setProjectPath(selectedPath)
         setCurrentFile(null) // Reset current file
         const projectName = selectedPath.split('\\').pop() || selectedPath.split('/').pop()
-        handleConsoleOutput(`[PROJECT] Opened project: ${projectName}`)
-        handleConsoleOutput(`[PROJECT] Project location: ${selectedPath}`)
+        handleConsoleOutput(t('messages.projectOpened', { name: projectName }))
+        handleConsoleOutput(t('messages.projectLocation', { path: selectedPath }))
       }
     } catch (error) {
-      handleConsoleError(`❌ Failed to open project: ${error}`)
+      handleConsoleError(t('messages.openProjectFailed', { error: String(error) }))
     }
   }
 
@@ -560,27 +562,27 @@ function App() {
         {/* Left segment: matches sidebar width and border */}
         <div className="flex items-center w-48 sm:w-56 md:w-64 px-1 gap-1 border-r" style={{ borderColor: 'var(--ctp-surface1)' }}>
           <div className="flex items-center px-2 py-1 rounded opacity-90" style={{ backgroundColor: 'var(--ctp-surface0)' }}>
-            <span className="text-xs font-semibold select-none" style={{ color: 'var(--ctp-text)' }}>Pyra</span>
+            <span className="text-xs font-semibold select-none" style={{ color: 'var(--ctp-text)' }}>{t('app.title')}</span>
           </div>
           <div className="flex items-center gap-1 ml-1">
-            <button data-tauri-drag-region="false" onClick={explorerNewFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-yellow)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }} type="button" title="New File"><i className="fas fa-plus text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerNewFolder} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-sapphire)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} type="button" title="New Folder"><i className="fas fa-folder-plus text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleOpenFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Open File"><i className="fas fa-folder-open text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleSaveFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-blue)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Save"><i className="fas fa-save text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={handleSaveAsFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Save As"><i className="fas fa-copy text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerRefresh} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-teal)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} type="button" title="Refresh"><i className="fas fa-sync-alt text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerNewFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-yellow)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }} type="button" title={t('toolbar.newFile')}><i className="fas fa-plus text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerNewFolder} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-sapphire)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} type="button" title={t('toolbar.newFolder')}><i className="fas fa-folder-plus text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleOpenFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title={t('toolbar.openFile')}><i className="fas fa-folder-open text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleSaveFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-blue)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title={t('toolbar.save')}><i className="fas fa-save text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={handleSaveAsFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title={t('toolbar.saveAs')}><i className="fas fa-copy text-sm"></i></button>
+            <button data-tauri-drag-region="false" onClick={explorerRefresh} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-teal)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} type="button" title={t('toolbar.refresh')}><i className="fas fa-sync-alt text-sm"></i></button>
           </div>
         </div>
 
         {/* Center segment: editor actions */}
         <div className="flex-1 flex items-center px-2 gap-2">
-          <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title="Run"><i className="fas fa-play text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorStop} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title="Stop"><i className="fas fa-stop text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title="Format"><i className="fas fa-palette text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title="Lint"><i className="fas fa-search text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title={t('toolbar.run')}><i className="fas fa-play text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorStop} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title={t('toolbar.stop')}><i className="fas fa-stop text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title={t('toolbar.format')}><i className="fas fa-palette text-sm"></i></button>
+          <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title={t('toolbar.lint')}><i className="fas fa-search text-sm"></i></button>
 
           {/* 拖拽区域 - 中央空白区域 */}
-          <div className="flex-1 min-w-[100px] h-full" title="拖拽此区域移动窗口"></div>
+          <div className="flex-1 min-w-[100px] h-full" title={t('app.dragHint')}></div>
 
           {/* Right segment separator inside center area */}
           <div className="h-6 w-px mx-2" style={{ backgroundColor: 'var(--ctp-surface2)' }}></div>
@@ -594,7 +596,7 @@ function App() {
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }}
             type="button"
-            title="New Project"><i className="fas fa-rocket text-sm"></i></button>
+            title={t('toolbar.newProject')}><i className="fas fa-rocket text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={handleOpenProject}
             className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
@@ -602,7 +604,7 @@ function App() {
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
             type="button"
-            title="Open Project"><i className="fas fa-folder-open text-sm"></i></button>
+            title={t('toolbar.openProject')}><i className="fas fa-folder-open text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={(e) => handleToggleProjectPanel(e)}
             className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
@@ -611,7 +613,7 @@ function App() {
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }}
             type="button"
             aria-pressed={showProjectPanel}
-            title={showProjectPanel ? 'Hide Project Panel' : 'Show Project Panel'}
+            title={showProjectPanel ? t('toolbar.hideProjectPanel') : t('toolbar.showProjectPanel')}
           ><i className="fas fa-clipboard-list text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={handleOpenSettings}
@@ -620,7 +622,7 @@ function App() {
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
             type="button"
-            title="Settings"><i className="fas fa-cog text-sm"></i></button>
+            title={t('toolbar.settings')}><i className="fas fa-cog text-sm"></i></button>
 
           {/* Window controls */}
           <div className="window-controls ml-2 flex items-center gap-2" data-tauri-drag-region="false">
@@ -632,7 +634,7 @@ function App() {
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
               type="button"
-              title="Minimize"
+              title={t('toolbar.minimize')}
             >—</button>
             <button
               data-tauri-drag-region="false"
@@ -642,7 +644,7 @@ function App() {
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }}
               type="button"
-              title="Maximize/Restore"
+              title={t('toolbar.maximize')}
             >▢</button>
             <button
               data-tauri-drag-region="false"
@@ -652,7 +654,7 @@ function App() {
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }}
               type="button"
-              title="Close"
+              title={t('toolbar.close')}
             ><i className="fas fa-times"></i></button>
           </div>
         </div>
@@ -734,21 +736,20 @@ function App() {
       {showVenvDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 w-96 max-w-90vw">
-            <h3 className="text-xl font-bold text-white mb-4"><i className="fab fa-python text-2xl"></i> Setup Python Environment</h3>
+            <h3 className="text-xl font-bold text-white mb-4"><i className="fab fa-python text-2xl"></i> {t('venvDialog.title')}</h3>
             <p className="text-gray-300 mb-6">
-              No virtual environment found for this project. Would you like to create one? 
-              This will help manage your Python packages and dependencies.
+              {t('venvDialog.message')}
             </p>
-            
+
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Python Version</label>
-              <select 
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('venvDialog.pythonVersion')}</label>
+              <select
                 id="python-version"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
                 defaultValue="3.11"
               >
                 <option value="3.12">Python 3.12</option>
-                <option value="3.11">Python 3.11 (Recommended)</option>
+                <option value="3.11">Python 3.11 {t('venvDialog.recommended')}</option>
                 <option value="3.10">Python 3.10</option>
                 <option value="3.9">Python 3.9</option>
               </select>
@@ -759,7 +760,7 @@ function App() {
                 onClick={handleSkipVenv}
                 className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
               >
-                Skip for now
+                {t('venvDialog.skipForNow')}
               </button>
               <button
                 onClick={() => {
@@ -768,12 +769,12 @@ function App() {
                 }}
                 className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
               >
-                <i className="fas fa-rocket"></i> Create Environment
+                <i className="fas fa-rocket"></i> {t('venvDialog.createEnvironment')}
               </button>
             </div>
 
             <div className="mt-4 p-3 bg-gray-700 rounded text-xs text-gray-400">
-              <i className="fas fa-lightbulb"></i> Tip: You can always create or manage virtual environments later from the Project Panel
+              <i className="fas fa-lightbulb"></i> {t('venvDialog.tip')}
             </div>
           </div>
         </div>

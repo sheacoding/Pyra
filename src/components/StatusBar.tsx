@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface StatusBarProps {
   currentFile: string | null
   uvReady?: boolean
@@ -5,22 +7,24 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ currentFile, uvReady = true, uvInstalling = false }: StatusBarProps) {
+  const { t } = useTranslation()
+
   const getFileInfo = (filePath: string | null) => {
-    if (!filePath) return { name: 'No file selected', language: '' }
-    
+    if (!filePath) return { name: t('statusBar.noFileSelected'), language: '' }
+
     const name = filePath.split('/').pop() || filePath.split('\\').pop() || ''
     const ext = name.split('.').pop()?.toLowerCase()
-    
+
     let language = ''
     switch (ext) {
-      case 'py': language = 'Python'; break
-      case 'js': language = 'JavaScript'; break
-      case 'ts': language = 'TypeScript'; break
-      case 'json': language = 'JSON'; break
-      case 'md': language = 'Markdown'; break
-      default: language = 'Plain Text'
+      case 'py': language = t('statusBar.languages.python'); break
+      case 'js': language = t('statusBar.languages.javascript'); break
+      case 'ts': language = t('statusBar.languages.typescript'); break
+      case 'json': language = t('statusBar.languages.json'); break
+      case 'md': language = t('statusBar.languages.markdown'); break
+      default: language = t('statusBar.languages.plainText')
     }
-    
+
     return { name, language }
   }
 
@@ -38,11 +42,11 @@ export function StatusBar({ currentFile, uvReady = true, uvInstalling = false }:
       </div>
 
       <div className="flex items-center gap-4">
-        <span>Pyra IDE v0.1.0</span>
+        <span>{t('statusBar.version', { version: '0.1.0' })}</span>
         {uvInstalling ? (
-          <span>Preparing environment…</span>
+          <span>{t('statusBar.preparing')}</span>
         ) : (
-          <span>{uvReady ? 'Ready' : 'Setting up…'}</span>
+          <span>{uvReady ? t('statusBar.ready') : t('statusBar.settingUp')}</span>
         )}
       </div>
     </div>
