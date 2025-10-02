@@ -1,7 +1,28 @@
 {
   "name": "pyra-frontend",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
+  "description": "A lightweight Python IDE built with Tauri, React, and TypeScript",
+  "author": "ericoding",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sheacoding/Pyra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sheacoding/Pyra/issues"
+  },
+  "homepage": "https://github.com/sheacoding/Pyra#readme",
+  "keywords": [
+    "python",
+    "ide",
+    "editor",
+    "tauri",
+    "react",
+    "typescript",
+    "uv",
+    "ruff"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

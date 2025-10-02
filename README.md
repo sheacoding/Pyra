@@ -134,11 +134,51 @@ pyra/
 
 ## <i class="fas fa-handshake"></i> Contributing
 
-We welcome contributions! Please feel free to submit issues and enhancement requests.
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Code of conduct
+- Development workflow
+- Coding standards
+- Commit guidelines
+- License agreement
+
+For security vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+## <i class="fas fa-briefcase"></i> Commercial Use
+
+Pyra is licensed under Apache 2.0, which allows for both personal and commercial use:
+
+- ✅ **Free to Use**: Use Pyra for any purpose, including commercial projects
+- ✅ **Modify and Distribute**: Modify and distribute the software with proper attribution
+- ✅ **Patent Grant**: Includes an express grant of patent rights from contributors
+- ⚠️ **Attribution Required**: Include the original copyright notice and license
+- ⚠️ **Trademark Restrictions**: Cannot use the Pyra name/logo without permission
+
+For commercial support, custom features, or partnership opportunities, please contact: **ericoding**
 
 ## <i class="fas fa-file-alt"></i> License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```
+Copyright 2024 ericoding
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for full details.
+
+### Third-Party Licenses
+
+This project includes various third-party open-source components. See [NOTICE](NOTICE) for detailed attribution and license information.
 
 ## <i class="fas fa-heart"></i> Acknowledgments
 

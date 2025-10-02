@@ -2,7 +2,10 @@
 name = "pyra"
 version = "0.1.0"
 description = "A lightweight Python IDE built with Tauri"
-authors = ["Pyra Team"]
+authors = ["ericoding"]
+license = "Apache-2.0"
+repository = "https://github.com/sheacoding/Pyra"
+homepage = "https://github.com/sheacoding/Pyra"
 edition = "2021"
 rust-version = "1.60"
 
