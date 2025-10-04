@@ -12,6 +12,12 @@
     "refresh": "刷新",
     "run": "运行",
     "stop": "停止",
+    "debug": "调试",
+    "debugMenu": {
+      "debug": "调试",
+      "stepDebug": "单步调试",
+      "visualDebug": "可视化调试"
+    },
     "format": "格式化",
     "lint": "代码检查",
     "newProject": "新建项目",
@@ -235,7 +241,12 @@
     "close": "关闭"
   },
   "editor": {
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "breakpoint": {
+      "add": "添加断点",
+      "remove": "移除断点",
+      "toggle": "切换断点"
+    }
   },
   "settingsPanel": {
     "title": "Pyra IDE 设置",
@@ -344,6 +355,35 @@
     "uvFallback": "UV 流式运行失败，回退到传统执行方式...",
     "scriptError": "错误: {{error}}",
     "syncingDependencies": "正在同步项目依赖...",
-    "venvFallback": "回退到传统虚拟环境创建方式..."
+    "venvFallback": "回退到传统虚拟环境创建方式...",
+    "debugStarting": "[调试] 正在启动调试会话...",
+    "debugStarted": "🐛 调试会话已启动",
+    "debugStopped": "⏹️ 调试会话已停止",
+    "debugError": "❌ 调试失败: {{error}}",
+    "stepDebugStarting": "[单步调试] 正在启动单步执行...",
+    "stepDebugLine": "➡️ 执行第 {{line}} 行: {{code}}",
+    "stepDebugCompleted": "✅ 单步调试完成",
+    "visualDebugStarting": "[可视化调试] 正在启动可视化调试器...",
+    "breakpointAdded": "🔴 已添加断点: 第 {{line}} 行",
+    "breakpointRemoved": "⚪ 已移除断点: 第 {{line}} 行",
+    "noBreakpoints": "⚠️ 未设置断点，将在第一行暂停"
+  },
+  "debugPanel": {
+    "title": "调试",
+    "close": "隐藏调试面板（调试会话继续运行）",
+    "variables": "变量",
+    "callStack": "调用栈",
+    "breakpoints": "断点",
+    "output": "输出",
+    "noVariables": "无可用变量",
+    "noCallStack": "无调用栈信息",
+    "noBreakpoints": "点击行号添加断点",
+    "currentLine": "当前行: {{line}}",
+    "file": "文件: {{file}}",
+    "scopes": "作用域",
+    "noScopes": "暂无作用域信息",
+    "loadingVariables": "正在加载变量…",
+    "noChildVariables": "没有子变量",
+    "expensiveScope": "需延迟计算"
   }
 }

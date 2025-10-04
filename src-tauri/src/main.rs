@@ -14,6 +14,7 @@ fn greet(name: &str) -> String {
 
 fn main() {
     let process_manager = commands::python::create_process_manager();
+    let debug_manager = commands::debug::create_debug_manager();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -21,6 +22,7 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_process::init())
         .manage(process_manager)
+        .manage(debug_manager)
         .invoke_handler(tauri::generate_handler![
             greet,
             commands::file::read_file,
@@ -68,6 +70,15 @@ fn main() {
             commands::ruff::ruff_format_project,
             commands::ruff::ruff_fix_file,
             commands::ruff::create_ruff_config,
+            commands::debug::start_debug_session,
+            commands::debug::debug_continue,
+            commands::debug::debug_step_over,
+            commands::debug::debug_step_into,
+            commands::debug::debug_step_out,
+            commands::debug::get_stack_trace,
+            commands::debug::get_scopes,
+            commands::debug::get_variables,
+            commands::debug::stop_debug_session,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

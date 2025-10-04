@@ -495,3 +495,16 @@ body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
 [data-theme="catppuccin-latte"] .monaco-editor .monaco-list-row:hover {
   background-color: #ccd0da !important;
 }
+
+/* Breakpoint decoration styles */
+.breakpoint-glyph {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23f38ba8' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3C/svg%3E") center center no-repeat !important;
+  background-size: 14px 14px !important;
+  margin-left: 2px !important;
+  cursor: pointer !important;
+}
+
+.breakpoint-glyph:hover {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23f38ba8' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' stroke='%23cba6f7' stroke-width='1'/%3E%3C/svg%3E") center center no-repeat !important;
+  background-size: 16px 16px !important;
+}

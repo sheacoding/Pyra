@@ -12,6 +12,12 @@
     "refresh": "Refresh",
     "run": "Run",
     "stop": "Stop",
+    "debug": "Debug",
+    "debugMenu": {
+      "debug": "Debug",
+      "stepDebug": "Step Debug",
+      "visualDebug": "Visual Debug"
+    },
     "format": "Format",
     "lint": "Lint",
     "newProject": "New Project",
@@ -235,7 +241,12 @@
     "close": "Close"
   },
   "editor": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "breakpoint": {
+      "add": "Add Breakpoint",
+      "remove": "Remove Breakpoint",
+      "toggle": "Toggle Breakpoint"
+    }
   },
   "settingsPanel": {
     "title": "Pyra IDE Settings",
@@ -344,6 +355,35 @@
     "uvFallback": "UV streaming run failed, falling back to traditional execution...",
     "scriptError": "Error: {{error}}",
     "syncingDependencies": "Syncing project dependencies...",
-    "venvFallback": "Falling back to traditional virtual environment creation..."
-  }
+    "venvFallback": "Falling back to traditional virtual environment creation...",
+    "debugStarting": "[DEBUG] Starting debug session...",
+    "debugStarted": "🐛 Debug session started",
+    "debugStopped": "⏹️ Debug session stopped",
+    "debugError": "❌ Debug failed: {{error}}",
+    "stepDebugStarting": "[STEP DEBUG] Starting step-by-step execution...",
+    "stepDebugLine": "➡️ Executing line {{line}}: {{code}}",
+    "stepDebugCompleted": "✅ Step debugging completed",
+    "visualDebugStarting": "[VISUAL DEBUG] Starting visual debugger...",
+    "breakpointAdded": "🔴 Breakpoint added: Line {{line}}",
+    "breakpointRemoved": "⚪ Breakpoint removed: Line {{line}}",
+    "noBreakpoints": "⚠️ No breakpoints set, will pause at first line"
+  },
+  "debugPanel": {
+    "title": "Debug",
+    "close": "Hide debug panel (session continues)",
+    "variables": "Variables",
+  "callStack": "Call Stack",
+  "scopes": "Scopes",
+  "breakpoints": "Breakpoints",
+  "output": "Output",
+  "noVariables": "No variables available",
+  "noCallStack": "No call stack information",
+  "noScopes": "No scopes available",
+  "noBreakpoints": "Click line numbers to add breakpoints",
+  "loadingVariables": "Loading variables…",
+  "noChildVariables": "No child variables",
+  "expensiveScope": "Expensive",
+  "currentLine": "Current Line: {{line}}",
+  "file": "File: {{file}}"
+}
 }

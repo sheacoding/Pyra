@@ -78,6 +78,34 @@ export interface TemplateFile {
   is_directory: boolean;
 }
 
+export interface Breakpoint {
+  id?: number;
+  file: string;
+  line: number;
+  verified: boolean;
+}
+
+export interface StackFrame {
+  id: number;
+  name: string;
+  file: string;
+  line: number;
+  column: number;
+}
+
+export interface Variable {
+  name: string;
+  value: string;
+  type: string;
+  variables_reference: number;
+}
+
+export interface Scope {
+  name: string;
+  variables_reference: number;
+  expensive: boolean;
+}
+
 export class TauriAPI {
   // File operations
   static async readFile(path: string): Promise<string> {
@@ -256,6 +284,52 @@ export class TauriAPI {
 
   static async checkPyProjectExists(projectPath: string): Promise<boolean> {
     return invoke('check_pyproject_exists', { projectPath });
+  }
+
+  // Debug operations
+  static async startDebugSession(
+      projectPath: string,
+      scriptPath: string,
+      breakpoints: Breakpoint[]
+    ): Promise<string> {
+    console.debug('[TauriAPI] startDebugSession payload', { projectPath, scriptPath, breakpoints })
+    return invoke('start_debug_session', {
+      projectPath,
+      scriptPath,
+      breakpoints
+    })
+  }
+
+  static async debugContinue(threadId: number): Promise<void> {
+    return invoke('debug_continue', { threadId });
+  }
+
+  static async debugStepOver(threadId: number): Promise<void> {
+    return invoke('debug_step_over', { threadId });
+  }
+
+  static async debugStepInto(threadId: number): Promise<void> {
+    return invoke('debug_step_into', { threadId });
+  }
+
+  static async debugStepOut(threadId: number): Promise<void> {
+    return invoke('debug_step_out', { threadId });
+  }
+
+  static async getStackTrace(threadId: number): Promise<StackFrame[]> {
+    return invoke('get_stack_trace', { threadId });
+  }
+
+  static async getScopes(frameId: number): Promise<Scope[]> {
+    return invoke('get_scopes', { frameId });
+  }
+
+  static async getVariables(variablesReference: number): Promise<Variable[]> {
+    return invoke('get_variables', { variablesReference });
+  }
+
+  static async stopDebugSession(): Promise<void> {
+    return invoke('stop_debug_session');
   }
 
   // File dialog operations

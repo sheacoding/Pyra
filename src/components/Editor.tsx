@@ -23,6 +23,7 @@ export interface EditorHandle {
   format: () => void
   lint: () => void
   getContent: () => string
+  getBreakpoints: () => number[]
 }
 
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ filePath, projectPath, settings, onConsoleOutput, onConsoleError, onScriptStart, onScriptStop }: EditorProps, ref) {
@@ -33,8 +34,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   const [, setRuffDiagnostics] = useState<RuffDiagnostic[]>([])
   const [, setIsLinting] = useState(false)
   const [, setIsFormatting] = useState(false)
+  const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set())
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<any>(null)
+  const breakpointDecorationsRef = useRef<string[]>([])
 
   // Define Catppuccin themes before the editor mounts
   const handleBeforeMount = (m: any) => {
@@ -104,6 +107,45 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
 
   // Store decoration IDs to manage them
   const decorationIdsRef = useRef<string[]>([])
+
+  // Update breakpoint decorations
+  const updateBreakpointDecorations = () => {
+    if (!editorRef.current || !monacoRef.current) return
+
+    const decorations = Array.from(breakpoints).map(lineNumber => ({
+      range: new monacoRef.current.Range(lineNumber, 1, lineNumber, 1),
+      options: {
+        isWholeLine: false,
+        glyphMarginClassName: 'breakpoint-glyph',
+        glyphMarginHoverMessage: { value: t('editor.breakpoint.toggle') }
+      }
+    }))
+
+    breakpointDecorationsRef.current = editorRef.current.deltaDecorations(
+      breakpointDecorationsRef.current,
+      decorations
+    )
+  }
+
+  // Toggle breakpoint at a specific line
+  const toggleBreakpoint = (lineNumber: number) => {
+    setBreakpoints(prev => {
+      const newBreakpoints = new Set(prev)
+      if (newBreakpoints.has(lineNumber)) {
+        newBreakpoints.delete(lineNumber)
+        onConsoleOutput?.(t('messages.breakpointRemoved', { line: lineNumber }) + '\n')
+      } else {
+        newBreakpoints.add(lineNumber)
+        onConsoleOutput?.(t('messages.breakpointAdded', { line: lineNumber }) + '\n')
+      }
+      return newBreakpoints
+    })
+  }
+
+  // Update breakpoint decorations when breakpoints change
+  useEffect(() => {
+    updateBreakpointDecorations()
+  }, [breakpoints])
 
   // Helper function to get decoration styles based on severity
   const getSeverityStyles = (severity: string, m: any) => {
@@ -478,6 +520,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       console.error('❌ Failed to apply theme on mount:', error)
     }
 
+    // Add click handler for breakpoints in glyph margin
+    editor.onMouseDown((e) => {
+      // Check if click was in the glyph margin (line number area)
+      if (e.target.type === m.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+        if (e.target.position) {
+          toggleBreakpoint(e.target.position.lineNumber)
+        }
+      }
+    })
+
     // Add keybindings
     editor.addCommand(monacoRef.current.KeyMod.CtrlCmd | monacoRef.current.KeyMod.Shift | monacoRef.current.KeyCode.KeyF, () => {
       if (filePath?.endsWith('.py')) {
@@ -588,8 +640,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     stop: () => { stopRunning() },
     format: () => { formatCurrentFile() },
     lint: () => { if (filePath) runRuffLinting(filePath) },
-    getContent: () => { return editorRef.current?.getValue() || content }
-  }), [filePath, projectPath, isRunning, settings, content])
+    getContent: () => { return editorRef.current?.getValue() || content },
+    getBreakpoints: () => { return Array.from(breakpoints) }
+  }), [filePath, projectPath, isRunning, settings, content, breakpoints])
 
   if (!filePath) {
     return (

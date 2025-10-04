@@ -86,6 +86,78 @@ Welcome to Pyra IDE! This guide will help you get started with our lightweight P
 - **Clear Console** - Reset output when needed
 - **Scrollable History** - Review previous execution results
 
+## <i class="fas fa-bug"></i> Debugging Code
+
+### Starting Debug
+1. **Open a Python file** (.py)
+2. **Set Breakpoints** - Click the line number gutter, red dots will appear
+3. **Start Debugging** - Click the debug button in toolbar (<i class="fas fa-bug"></i> orange bug icon)
+4. **Select Debug Mode** - Choose "Debug" from the dropdown menu
+
+### Debug Controls
+- **<i class="fas fa-play"></i> Continue (F5)** - Continue execution until next breakpoint
+- **<i class="fas fa-arrow-right"></i> Step Over (F10)** - Execute current line without entering functions
+- **<i class="fas fa-arrow-down"></i> Step Into (F11)** - Step into function calls
+- **<i class="fas fa-arrow-up"></i> Step Out (Shift+F11)** - Exit current function
+- **<i class="fas fa-stop"></i> Stop** - Stop the debug session
+
+### Debug Information Panel
+When the program pauses at a breakpoint, the debug panel displays:
+
+- **Call Stack**:
+  - Shows function call hierarchy
+  - Click different stack frames to view corresponding code location
+  - Understand program execution path
+
+- **Variables Viewer**:
+  - **Locals** - Variables in current function scope
+  - **Globals** - Variables in global scope
+  - Expand nested objects to view details
+  - Real-time display of variable value changes
+
+### Breakpoint Management
+- **Add Breakpoint** - Click the line number gutter
+- **Remove Breakpoint** - Click the red dot again
+- **Multiple Breakpoints** - Set breakpoints at different locations
+- **Breakpoint Verification** - Breakpoints are verified after debug starts
+
+### Debugging Tips
+- **Set breakpoints at key locations** - Place breakpoints where errors might occur
+- **Use step execution** - Track code execution line by line
+- **Check variable values** - Verify variables match expectations
+- **Observe call stack** - Understand function call sequence
+
+### Installing debugpy
+First-time use of debugging requires installing debugpy:
+
+1. **Install via Package Manager**:
+   - Open project panel (<i class="fas fa-clipboard"></i>)
+   - Search for "debugpy"
+   - Click Install
+
+2. **Or use command line**:
+   ```bash
+   # Windows
+   .venv\Scripts\pip install debugpy
+
+   # Linux/macOS
+   .venv/bin/pip install debugpy
+   ```
+
+### Debug Troubleshooting
+
+**Q: Debug fails to start**
+- A: Ensure debugpy is installed (via package manager)
+- A: Ensure virtual environment is created
+
+**Q: Breakpoints not hit**
+- A: Ensure breakpoint is on executable code line (not empty or comment)
+- A: Restart debug session
+
+**Q: Variables display incorrectly**
+- A: Ensure program is paused at breakpoint
+- A: Click the correct stack frame in call stack
+
 ## <i class="fas fa-cog"></i> Settings & Customization
 
 ### Theme Options

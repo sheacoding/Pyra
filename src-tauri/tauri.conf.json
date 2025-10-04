@@ -9,6 +9,10 @@
                    "active":  true,
                    "targets":  "all",
                    "icon":  [
+                                "icons/32x32.png",
+                                "icons/128x128.png",
+                                "icons/128x128@2x.png",
+                                "icons/icon.icns",
                                 "icons/icon.ico"
                             ],
                    "resources":  [
@@ -17,6 +21,8 @@
                    "windows": {
                        "nsis": {
                            "installerIcon": "./icons/icon.ico",
+                           "headerImage": "./icons/nsis-header.bmp",
+                           "sidebarImage": "./icons/nsis-sidebar.bmp",
                            "installMode": "both",
                            "languages": ["SimpChinese", "English"],
                            "displayLanguageSelector": true,
@@ -40,7 +46,7 @@
                },
     "productName":  "Pyra",
     "mainBinaryName":  "Pyra",
-    "version":  "0.1.0",
+    "version":  "0.1.1",
     "identifier":  "com.pyra.ide",
     "plugins":  {
 

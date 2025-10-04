@@ -16,13 +16,6 @@ pub fn create_process_manager() -> ProcessManager {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct PythonVersion {
-    pub version: String,
-    pub path: String,
-    pub is_installed: bool,
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct Package {
     pub name: String,
     pub version: String,

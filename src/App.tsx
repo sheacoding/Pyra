@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getCurrentWindow } from '@tauri-apps/api/window'
-import { LogicalSize } from '@tauri-apps/api/window'
+import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window'
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { FileTree } from './components/FileTree'
 import type { FileTreeHandle } from './components/FileTree'
 import { Editor } from './components/Editor'
@@ -13,6 +13,8 @@ import { SettingsPanel } from './components/SettingsPanel'
 import type { IDESettings } from './components/SettingsPanel'
 import { ProjectTemplateDialog } from './components/ProjectTemplateDialog'
 import { TabsBar } from './components/TabsBar'
+import { DebugPanel } from './components/DebugPanel'
+import { TauriAPI } from './lib/tauri'
 
 function App() {
   const { t } = useTranslation()
@@ -171,8 +173,13 @@ function App() {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const [uvReady, setUvReady] = useState(false)
   const [uvInstalling, setUvInstalling] = useState(false)
+  const [showDebugMenu, setShowDebugMenu] = useState(false)
+  const [showDebugPanel, setShowDebugPanel] = useState(false)
+  const [isDebugging, setIsDebugging] = useState(false)
   const editorRef = useRef<EditorHandle | null>(null)
   const fileTreeRef = useRef<FileTreeHandle | null>(null)
+  const debugMenuRef = useRef<HTMLDivElement | null>(null)
+  const debugStopRequestedRef = useRef(false)
 
   // Disable browser shortcuts and context menu for desktop app experience
   useEffect(() => {
@@ -344,7 +351,7 @@ function App() {
     }
   }, [])
 
-  const handleConsoleOutput = (output: string) => {
+  const handleConsoleOutput = useCallback((output: string) => {
     const message = {
       id: Date.now().toString() + Math.random(),
       content: output.replace(/\n$/, ''), // Remove trailing newline
@@ -352,9 +359,9 @@ function App() {
       timestamp: new Date()
     }
     setConsoleMessages(prev => [...prev, message])
-  }
+  }, [])
 
-  const handleConsoleError = (error: string) => {
+  const handleConsoleError = useCallback((error: string) => {
     const message = {
       id: Date.now().toString() + Math.random(),
       content: error.replace(/\n$/, ''), // Remove trailing newline
@@ -362,7 +369,66 @@ function App() {
       timestamp: new Date()
     }
     setConsoleMessages(prev => [...prev, message])
-  }
+  }, [])
+
+  useEffect(() => {
+    let unlistenStopped: UnlistenFn | undefined
+    let unlistenContinued: UnlistenFn | undefined
+    let unlistenTerminated: UnlistenFn | undefined
+    let unlistenOutput: UnlistenFn | undefined
+
+    const setupDebugListeners = async () => {
+      try {
+        unlistenStopped = await listen<{ reason?: string; threadId?: number }>('debug-stopped', () => {
+          debugStopRequestedRef.current = false
+          setIsDebugging(true)
+          setShowDebugPanel(true)
+        })
+
+        unlistenContinued = await listen('debug-continued', () => {
+          setIsDebugging(true)
+        })
+
+        unlistenTerminated = await listen('debug-terminated', () => {
+          setIsDebugging(false)
+          setShowDebugPanel(false)
+
+          if (debugStopRequestedRef.current) {
+            debugStopRequestedRef.current = false
+          } else {
+            handleConsoleOutput(t('messages.debugStopped') + '\n')
+          }
+        })
+
+        unlistenOutput = await listen<{ category?: string; output?: string }>('debug-output', (event) => {
+          const { category, output } = event.payload ?? {}
+
+          if (!output) {
+            return
+          }
+
+          const normalized = output.replace(/\r?\n$/, '')
+
+          if (category === 'stderr') {
+            handleConsoleError(normalized)
+          } else {
+            handleConsoleOutput(normalized)
+          }
+        })
+      } catch (error) {
+        console.error('Failed to set up debug listeners:', error)
+      }
+    }
+
+    setupDebugListeners()
+
+    return () => {
+      unlistenStopped?.()
+      unlistenContinued?.()
+      unlistenTerminated?.()
+      unlistenOutput?.()
+    }
+  }, [handleConsoleError, handleConsoleOutput, t])
 
   const handleToggleProjectPanel = (e?: React.MouseEvent) => {
     // 确保阻止事件冒泡和默认行为
@@ -443,9 +509,112 @@ function App() {
   }
 
   const editorRun = () => editorRef.current?.run()
-  const editorStop = () => editorRef.current?.stop()
+
+  // Stop debugging session
+  const handleStopDebugging = async () => {
+    debugStopRequestedRef.current = true
+    try {
+      await TauriAPI.stopDebugSession()
+      setIsDebugging(false)
+      setShowDebugPanel(false)
+      handleConsoleOutput(t('messages.debugStopped') + '\n')
+    } catch (error) {
+      debugStopRequestedRef.current = false
+      console.error('Failed to stop debugging:', error)
+    }
+  }
+
+  const editorStop = () => {
+    if (isDebugging) {
+      handleStopDebugging()
+    } else {
+      editorRef.current?.stop()
+    }
+  }
   const editorFormat = () => editorRef.current?.format()
   const editorLint = () => editorRef.current?.lint()
+
+  // Debug menu handlers
+  const handleDebugMode = async (_mode: 'debug' | 'step' | 'visual') => {  // mode reserved for future use
+    setShowDebugMenu(false)
+    debugStopRequestedRef.current = false
+
+    if (!currentFile || !currentFile.endsWith('.py')) {
+      handleConsoleError(t('messages.pythonFileOnly'))
+      return
+    }
+
+    if (!projectPath) {
+      handleConsoleError('No project open')
+      return
+    }
+
+    // If already debugging, just show the panel
+    if (isDebugging) {
+      setShowDebugPanel(true)
+      return
+    }
+
+    try {
+      handleConsoleOutput(t('messages.debugStarting') + '\n')
+
+      // Get breakpoints from editor
+      const breakpoints = editorRef.current?.getBreakpoints?.() || []
+
+      if (breakpoints.length === 0) {
+        handleConsoleOutput(t('messages.noBreakpoints') + '\n')
+      }
+
+      // Convert to API format
+      const apiBreakpoints = breakpoints.map(line => ({
+        file: currentFile,
+        line,
+        verified: false
+      }))
+
+      console.debug('[APP] Starting debug session with', {
+        projectPath,
+        scriptPath: currentFile,
+        breakpoints,
+        apiBreakpoints
+      })
+
+      // Start debug session
+      await TauriAPI.startDebugSession(
+        projectPath,
+        currentFile,
+        apiBreakpoints
+      )
+
+      setIsDebugging(true)
+      setShowDebugPanel(true)
+      handleConsoleOutput(t('messages.debugStarted') + '\n')
+
+    } catch (error) {
+      handleConsoleError(t('messages.debugError', { error: String(error) }) + '\n')
+      console.error('Debug error:', error)
+      // Reset states on error
+      setIsDebugging(false)
+      setShowDebugPanel(false)
+    }
+  }
+
+  // Close debug menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (debugMenuRef.current && !debugMenuRef.current.contains(event.target as Node)) {
+        setShowDebugMenu(false)
+      }
+    }
+
+    if (showDebugMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showDebugMenu])
 
   // Tab management
   const openFileInTab = (path: string) => {
@@ -578,6 +747,64 @@ function App() {
         <div className="flex-1 flex items-center px-2 gap-2">
           <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title={t('toolbar.run')}><i className="fas fa-play text-sm"></i></button>
           <button data-tauri-drag-region="false" onClick={editorStop} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title={t('toolbar.stop')}><i className="fas fa-stop text-sm"></i></button>
+
+          {/* Debug button with dropdown menu */}
+          <div className="relative" ref={debugMenuRef}>
+            <button
+              data-tauri-drag-region="false"
+              onClick={() => setShowDebugMenu(!showDebugMenu)}
+              disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling}
+              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+              style={{ backgroundColor: 'var(--ctp-peach)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }}
+              onMouseEnter={(e) => { if (currentFile && currentFile.endsWith('.py') && uvReady && !uvInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }}
+              onMouseLeave={(e) => { if (currentFile && currentFile.endsWith('.py') && uvReady && !uvInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }}
+              type="button"
+              title={t('toolbar.debug')}
+            >
+              <i className="fas fa-bug text-sm"></i>
+            </button>
+
+            {/* Debug dropdown menu */}
+            {showDebugMenu && (
+              <div
+                className="absolute top-full left-0 mt-1 rounded shadow-lg z-50 min-w-[140px]"
+                style={{ backgroundColor: 'var(--ctp-surface0)', border: '1px solid var(--ctp-surface1)' }}
+                data-tauri-drag-region="false"
+              >
+                <button
+                  onClick={() => handleDebugMode('debug')}
+                  className="w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2"
+                  style={{ color: 'var(--ctp-text)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
+                  <i className="fas fa-bug"></i>
+                  {t('toolbar.debugMenu.debug')}
+                </button>
+                <button
+                  onClick={() => handleDebugMode('step')}
+                  className="w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2"
+                  style={{ color: 'var(--ctp-text)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
+                  <i className="fas fa-shoe-prints"></i>
+                  {t('toolbar.debugMenu.stepDebug')}
+                </button>
+                <button
+                  onClick={() => handleDebugMode('visual')}
+                  className="w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2"
+                  style={{ color: 'var(--ctp-text)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-surface1)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
+                  <i className="fas fa-eye"></i>
+                  {t('toolbar.debugMenu.visualDebug')}
+                </button>
+              </div>
+            )}
+          </div>
+
           <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title={t('toolbar.format')}><i className="fas fa-palette text-sm"></i></button>
           <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title={t('toolbar.lint')}><i className="fas fa-search text-sm"></i></button>
 
@@ -674,43 +901,55 @@ function App() {
         </div>
 
         {/* Editor Area */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Tabs Bar for multi-file editing */}
-          <TabsBar
-            tabs={openTabs.map(p => ({ path: p }))}
-            activePath={currentFile}
-            onSelect={selectTab}
-            onClose={closeTab}
-          />
-          <div className="flex-1 min-h-0">
-            <Editor 
-              ref={editorRef}
-              filePath={currentFile}
-              projectPath={projectPath}
-              settings={ideSettings}
-              onConsoleOutput={handleConsoleOutput}
-              onConsoleError={handleConsoleError}
-              onScriptStart={() => {}}
-              onScriptStop={() => {}}
+        <div className="flex-1 flex min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Tabs Bar for multi-file editing */}
+            <TabsBar
+              tabs={openTabs.map(p => ({ path: p }))}
+              activePath={currentFile}
+              onSelect={selectTab}
+              onClose={closeTab}
             />
-          </div>
-          
-          {/* Console */}
-          <div className="h-48 border-t flex-shrink-0" style={{ borderColor: 'var(--ctp-surface1)' }}>
-            <Console projectPath={projectPath} messages={consoleMessages} onClearMessages={handleClearConsole} />
-          </div>
-        </div>
+            <div className="flex-1 min-h-0">
+              <Editor
+                ref={editorRef}
+                filePath={currentFile}
+                projectPath={projectPath}
+                settings={ideSettings}
+                onConsoleOutput={handleConsoleOutput}
+                onConsoleError={handleConsoleError}
+                onScriptStart={() => {}}
+                onScriptStop={() => {}}
+              />
+            </div>
 
-        {/* Project Panel */}
-        {showProjectPanel && (
-          <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-base)', borderColor: 'var(--ctp-surface1)' }}>
-            <ProjectPanel
-              projectPath={projectPath}
-              onConsoleOutput={handleConsoleOutput}
-              onConsoleError={handleConsoleError}
-            />
+            {/* Console */}
+            <div className="h-48 border-t flex-shrink-0" style={{ borderColor: 'var(--ctp-surface1)' }}>
+              <Console projectPath={projectPath} messages={consoleMessages} onClearMessages={handleClearConsole} />
+            </div>
           </div>
-        )}
+
+          {/* Debug Panel */}
+          {showDebugPanel && (
+            <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
+              <DebugPanel
+                isVisible={showDebugPanel}
+                onClose={() => setShowDebugPanel(false)}
+              />
+            </div>
+          )}
+
+          {/* Project Panel */}
+          {showProjectPanel && (
+            <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-base)', borderColor: 'var(--ctp-surface1)' }}>
+              <ProjectPanel
+                projectPath={projectPath}
+                onConsoleOutput={handleConsoleOutput}
+                onConsoleError={handleConsoleError}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Status Bar */}
