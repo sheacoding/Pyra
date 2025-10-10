@@ -73,8 +73,9 @@ CLAUDE.md
 agents.md
 AGENTS.md
 
-# Internal development documentation
-DEBUG_INTEGRATION_GUIDE.md
-DEBUG_INTEGRATION_GUIDE_EN.md
-调试功能完成说明.md
-DEBUG_COMPLETION_NOTE_EN.md
+# Internal development documentation (not tracked in git)
+docs/DEBUG_INTEGRATION_GUIDE.md
+docs/DEBUG_INTEGRATION_GUIDE_EN.md
+docs/调试功能完成说明.md
+docs/DEBUG_COMPLETION_NOTE_EN.md
+docs/图标显示问题解决方案.md

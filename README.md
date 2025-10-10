@@ -2,6 +2,8 @@
 
 A lightweight, modern Python IDE built with **Tauri (Rust backend) + React (TypeScript frontend)**. Pyra emphasizes modern tooling, cross-platform compatibility, and seamless integration with `uv` for Python environment management.
 
+> English | [简体中文](./README_ZH.md)
+
 ## <i class="fas fa-star"></i> Features
 
 - **<i class="fas fa-rocket"></i> Lightweight & Fast**: Built with Rust backend for optimal performance
@@ -10,6 +12,7 @@ A lightweight, modern Python IDE built with **Tauri (Rust backend) + React (Type
 - **<i class="fab fa-python"></i> Smart Environment Management**: Automatic `uv` installation and intelligent environment status tracking
 - **<i class="fas fa-box"></i> Package Management**: Visual package installation and dependency management
 - **<i class="fas fa-wrench"></i> Code Quality Tools**: Built-in Ruff integration for linting and formatting
+- **<i class="fas fa-bug"></i> Python Debugging**: Full debugging support with DAP protocol (breakpoints, stepping, variable inspection)
 - **<i class="fas fa-palette"></i> Modern UI**: Catppuccin theme with light/dark mode support and unified design consistency
 - **<i class="fas fa-bolt"></i> Real-time Console**: Live script output and error reporting
 - **<i class="fas fa-sync-alt"></i> Project Templates**: Quick project setup with predefined templates
@@ -81,6 +84,7 @@ npx tsc --noEmit     # Type check without emitting files
   - `Console.tsx` - Real-time script output
   - `ProjectPanel.tsx` - Python environment management with smart uv integration
   - `SettingsPanel.tsx` - IDE configuration and theming
+  - `DebugPanel.tsx` - Debug control panel (breakpoints, call stack, variable inspection)
   - `StatusBar.tsx` - Environment status and system information
 
 ### Backend (Rust + Tauri)
@@ -90,6 +94,7 @@ npx tsc --noEmit     # Type check without emitting files
   - `python.rs` - Python/uv integration
   - `project.rs` - Project management
   - `ruff.rs` - Code formatting and linting
+  - `debug.rs` - Python debugger integration (DAP protocol)
 
 ### Python Integration
 - **Smart Environment Setup**: Automatic `uv` installation via official scripts on first run
@@ -97,6 +102,7 @@ npx tsc --noEmit     # Type check without emitting files
 - **Package Management**: `uv pip` for dependency installation
 - **Code Quality**: Ruff for linting and formatting
 - **Script Execution**: Virtual environment isolation
+- **Debugging**: DAP client implementation with full debugging capabilities (breakpoints, stepping, variable inspection)
 - **Cross-platform Support**: Environment setup scripts for Windows, macOS, and Linux
 
 ## <i class="fas fa-palette"></i> Theming
@@ -123,18 +129,20 @@ pyra/
 └── docs/                  # Documentation
 ```
 
-## <i class="fas fa-globe"></i> Language Support
-
-- **中文**: [中文文档](./docs/README.md)
-
 ## <i class="fas fa-book"></i> Documentation
 
-- **[User Guide](./docs/USER_GUIDE_EN.md)** - Complete user manual for getting started
-- **[用户指南](./docs/USER_GUIDE.md)** - 中文版用户使用手册
+### User Documentation
+- **[User Guide (English)](./docs/USER_GUIDE_EN.md)** - Complete user manual for getting started
+- **[用户指南（中文）](./docs/USER_GUIDE.md)** - 中文版用户使用手册
+
+### Developer Documentation
+- **[Contributing Guide](./docs/CONTRIBUTING.md)** - Development workflow, coding standards, and contribution guidelines
+- **[Security Policy](./docs/SECURITY.md)** - Security vulnerability reporting and handling procedures
+- **[Icon Update Guide](./docs/ICON_UPDATE_GUIDE.md)** - Instructions for updating application icons
 
 ## <i class="fas fa-handshake"></i> Contributing
 
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+We welcome contributions! Please read our [Contributing Guide](./docs/CONTRIBUTING.md) for details on:
 
 - Code of conduct
 - Development workflow
@@ -142,7 +150,7 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 - Commit guidelines
 - License agreement
 
-For security vulnerabilities, please see our [Security Policy](SECURITY.md).
+For security vulnerabilities, please see our [Security Policy](./docs/SECURITY.md).
 
 ## <i class="fas fa-briefcase"></i> Commercial Use
 
