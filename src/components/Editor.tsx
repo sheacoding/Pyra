@@ -6,6 +6,8 @@ import { listen } from '@tauri-apps/api/event'
 import type * as Monaco from 'monaco-editor'
 import { IDESettings } from './SettingsPanel'
 import { createMonacoCatppuccinTheme } from '../themes/monaco-catppuccin-fixed'
+import { tomlConf, tomlLanguage } from '../lib/monacoToml'
+import { conf as markdownConf, language as markdownLanguage } from 'monaco-editor/esm/vs/basic-languages/markdown/markdown'
 
 interface EditorProps {
   filePath: string | null
@@ -35,18 +37,71 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   const [, setIsLinting] = useState(false)
   const [, setIsFormatting] = useState(false)
   const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set())
+  const [lastBreakpointChange, setLastBreakpointChange] = useState<{line: number, added: boolean} | null>(null)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<any>(null)
   const breakpointDecorationsRef = useRef<string[]>([])
+
+  // Handle breakpoint change console output as a side effect
+  useEffect(() => {
+    if (lastBreakpointChange) {
+      const { line, added } = lastBreakpointChange
+      if (added) {
+        onConsoleOutput?.(t('messages.breakpointAdded', { line }) + '\n')
+      } else {
+        onConsoleOutput?.(t('messages.breakpointRemoved', { line }) + '\n')
+      }
+      setLastBreakpointChange(null)
+    }
+  }, [lastBreakpointChange, onConsoleOutput, t])
 
   // Define Catppuccin themes before the editor mounts
   const handleBeforeMount = (m: any) => {
     try {
       const mocha = createMonacoCatppuccinTheme('mocha')
       const latte = createMonacoCatppuccinTheme('latte')
+
+      console.log('[THEME] Defining Catppuccin themes:')
+      console.log('[THEME] Mocha theme object:', mocha)
+      console.log('[THEME] Mocha selection colors:', {
+        selectionBackground: mocha.colors['editor.selectionBackground'],
+        selectionHighlight: mocha.colors['editor.selectionHighlightBackground'],
+        inactiveSelection: mocha.colors['editor.inactiveSelectionBackground']
+      })
+
       m.editor.defineTheme('catppuccin-mocha', mocha)
       m.editor.defineTheme('catppuccin-latte', latte)
       monacoRef.current = m
+
+      const ensureLanguage = (
+        id: string,
+        config: any,
+        languageDefinition: any,
+        options?: { extensions?: string[]; aliases?: string[] }
+      ) => {
+        const registered = m.languages.getLanguages().some((lang: any) => lang.id === id)
+        if (!registered) {
+          m.languages.register({ id, ...(options || {}) })
+        }
+        m.languages.setLanguageConfiguration(id, config)
+        m.languages.setMonarchTokensProvider(id, languageDefinition)
+      }
+
+      ensureLanguage('toml', tomlConf, tomlLanguage, {
+        extensions: ['.toml'],
+        aliases: ['TOML', 'toml']
+      })
+      ensureLanguage('markdown', markdownConf, markdownLanguage, {
+        extensions: ['.md', '.markdown'],
+        aliases: ['Markdown', 'markdown', 'MD']
+      })
+
+      console.log('✅ Themes defined successfully')
+
+      // Expose monaco to window for debugging
+      if (typeof window !== 'undefined') {
+        (window as any).monacoInstance = m
+      }
     } catch (error) {
       console.error('❌ Failed to define themes before mount:', error)
     }
@@ -131,13 +186,17 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   const toggleBreakpoint = (lineNumber: number) => {
     setBreakpoints(prev => {
       const newBreakpoints = new Set(prev)
-      if (newBreakpoints.has(lineNumber)) {
+      const wasPresent = newBreakpoints.has(lineNumber)
+
+      if (wasPresent) {
         newBreakpoints.delete(lineNumber)
-        onConsoleOutput?.(t('messages.breakpointRemoved', { line: lineNumber }) + '\n')
       } else {
         newBreakpoints.add(lineNumber)
-        onConsoleOutput?.(t('messages.breakpointAdded', { line: lineNumber }) + '\n')
       }
+
+      // Schedule console output as a side effect
+      setLastBreakpointChange({ line: lineNumber, added: !wasPresent })
+
       return newBreakpoints
     })
   }
@@ -474,51 +533,59 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     monacoRef.current = m || monacoRef.current
 
     console.log('[EDITOR] Monaco Editor mounted')
+    console.log('[EDITOR] Monaco instance:', m ? 'Available' : 'Not available')
+
+    // Apply the current theme immediately
+    const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
+    console.log('[EDITOR] Applying theme on mount:', targetTheme)
 
     try {
-      // Register themes first
-      const mochaTheme = createMonacoCatppuccinTheme('mocha')
-      const latteTheme = createMonacoCatppuccinTheme('latte')
-      if (m?.editor) {
-        m.editor.defineTheme('catppuccin-mocha', mochaTheme)
-        m.editor.defineTheme('catppuccin-latte', latteTheme)
-        console.log('✅ Themes registered on mount')
+      // Set theme using Monaco API
+      if (monacoRef.current?.editor) {
+        monacoRef.current.editor.setTheme(targetTheme)
+        console.log('✅ Theme set successfully:', targetTheme)
+
+        // Get current theme to verify
+        const currentTheme = (monacoRef.current.editor as any)._themeService?._theme?.themeName
+        console.log('[EDITOR] Current active theme:', currentTheme)
+
+        // CRITICAL: Force update the theme service to apply selection colors
+        setTimeout(() => {
+          const themeService = (monacoRef.current.editor as any)._themeService
+          if (themeService) {
+            // Force theme refresh to ensure selection colors are applied
+            themeService.setTheme(targetTheme)
+            console.log('[EDITOR] ✅ Theme service updated')
+          }
+        }, 100)
       }
-
-      // Apply the current theme
-      const targetTheme = settings?.theme?.editorTheme || 'catppuccin-mocha'
-      console.log('[EDITOR] Applying initial theme on mount:', targetTheme)
-      monacoRef.current?.editor?.setTheme(targetTheme)
-
-      // Force editor container background
-      const editorContainer = editor.getContainerDomNode()
-      if (editorContainer) {
-        const uiTheme = settings?.theme?.uiTheme || 'catppuccin-mocha'
-        const backgroundColor = uiTheme === 'catppuccin-latte' ? '#eff1f5' : '#1e1e2e'
-        editorContainer.style.backgroundColor = backgroundColor
-
-        // Also force the Monaco editor div background
-        const monacoDiv = editorContainer.querySelector('.monaco-editor')
-        if (monacoDiv instanceof HTMLElement) {
-          monacoDiv.style.backgroundColor = backgroundColor
-        }
-
-        console.log('✅ Initial editor container background set to:', backgroundColor)
-      }
-
-      // Debug: Check what tokens are actually generated
-      if (filePath?.endsWith('.py')) {
-        const model = editor.getModel()
-        if (model) {
-          const content = model.getValue()
-          const tokens = monacoRef.current?.editor?.tokenize(content.substring(0, 500), 'python')
-          console.log('[EDITOR] Python tokens for current file:', tokens)
-        }
-      }
-
     } catch (error) {
-      console.error('❌ Failed to apply theme on mount:', error)
+      console.error('❌ Failed to set theme:', error)
     }
+
+    // Force editor container background
+    const editorContainer = editor.getContainerDomNode()
+    if (editorContainer) {
+      const uiTheme = settings?.theme?.uiTheme || 'catppuccin-mocha'
+      const backgroundColor = uiTheme === 'catppuccin-latte' ? '#eff1f5' : '#1e1e2e'
+      editorContainer.style.backgroundColor = backgroundColor
+
+      // Also force the Monaco editor div background
+      const monacoDiv = editorContainer.querySelector('.monaco-editor')
+      if (monacoDiv instanceof HTMLElement) {
+        monacoDiv.style.backgroundColor = backgroundColor
+      }
+
+      console.log('✅ Editor container background set to:', backgroundColor)
+    }
+
+    // CRITICAL: Override Monaco's selection mode to ensure text is selectable
+    // Monaco has a .no-user-select class that blocks text selection
+    // We need to explicitly enable selection
+    editor.updateOptions({
+      readOnly: false,
+      domReadOnly: false,
+    })
 
     // Add click handler for breakpoints in glyph margin
     editor.onMouseDown((e) => {
@@ -564,19 +631,38 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     console.log('[EDITOR] Settings changed - applying theme:', targetTheme, 'UI theme:', uiTheme)
 
     try {
-      // Always register custom themes to ensure they're available
+      // CRITICAL: Re-register themes to ensure they're available
       const mochaTheme = createMonacoCatppuccinTheme('mocha')
       const latteTheme = createMonacoCatppuccinTheme('latte')
       const m = monacoRef.current
       if (m?.editor) {
         m.editor.defineTheme('catppuccin-mocha', mochaTheme)
         m.editor.defineTheme('catppuccin-latte', latteTheme)
-        console.log('✅ Themes registered in Monaco')
+        console.log('✅ Themes re-registered in Monaco')
+
+        // Log the theme configuration for debugging
+        console.log('[THEME] Mocha theme colors:', mochaTheme.colors)
       }
 
       // Apply the theme to Monaco editor
       monacoRef.current?.editor?.setTheme(targetTheme)
       console.log('✅ Monaco theme applied:', targetTheme)
+
+      // CRITICAL: Force a complete re-render of the editor
+      if (editorRef.current) {
+        const model = editorRef.current.getModel()
+        if (model) {
+          // Trigger re-tokenization which forces theme re-application
+          const value = editorRef.current.getValue()
+          editorRef.current.setValue('')
+          setTimeout(() => {
+            if (editorRef.current) {
+              editorRef.current.setValue(value)
+              console.log('✅ Editor content refreshed to apply theme')
+            }
+          }, 10)
+        }
+      }
 
       // Force editor wrapper background to match theme
       const editorContainer = editorRef.current.getContainerDomNode()
@@ -593,29 +679,6 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
         console.log('✅ Editor container background forced to:', backgroundColor)
       }
 
-      // Force layout refresh with delay to ensure theme is applied
-      setTimeout(() => {
-        if (editorRef.current) {
-          editorRef.current.layout()
-          console.log('✅ Layout refreshed')
-
-          // Force re-render by briefly setting a different theme then back
-          if (targetTheme === 'catppuccin-latte') {
-            monacoRef.current?.editor?.setTheme('catppuccin-mocha')
-            setTimeout(() => {
-              monacoRef.current?.editor?.setTheme('catppuccin-latte')
-              console.log('✅ Theme double-applied for Latte')
-            }, 50)
-          } else {
-            monacoRef.current?.editor?.setTheme('catppuccin-latte')
-            setTimeout(() => {
-              monacoRef.current?.editor?.setTheme('catppuccin-mocha')
-              console.log('✅ Theme double-applied for Mocha')
-            }, 50)
-          }
-        }
-      }, 100)
-
     } catch (error) {
       console.error('❌ Failed to apply theme:', error)
     }
@@ -628,7 +691,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
       case 'js': return 'javascript'
       case 'ts': return 'typescript'
       case 'json': return 'json'
-      case 'md': return 'markdown'
+      case 'md':
+      case 'markdown': return 'markdown'
+      case 'toml': return 'toml'
       case 'html': return 'html'
       case 'css': return 'css'
       default: return 'plaintext'
@@ -707,6 +772,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
             insertSpaces: settings?.editor?.insertSpaces ?? true,
             renderWhitespace: settings?.editor?.renderWhitespace ? 'all' : 'selection',
             scrollBeyondLastLine: false,
+            // Explicitly enable editing and selection
+            readOnly: false,
+            domReadOnly: false,
             // Line number styling
             lineNumbersMinChars: 3,
             glyphMargin: true,
@@ -732,7 +800,12 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
             guides: {
               bracketPairs: true,
               indentation: true
-            }
+            },
+            // Selection settings - ensure selection is visible
+            selectionHighlight: true,
+            occurrencesHighlight: 'singleFile',
+            renderLineHighlight: 'all',
+            renderLineHighlightOnlyWhenFocus: false
           }}
         />
       </div>

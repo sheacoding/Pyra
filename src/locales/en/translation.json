@@ -36,13 +36,17 @@
     "ready": "Ready",
     "settingUp": "Setting up…",
     "preparing": "Preparing environment…",
+    "debugging": "Debugging",
+    "showPanel": "Show Panel",
+    "showDebugPanel": "Click to show debug panel",
     "languages": {
       "python": "Python",
       "javascript": "JavaScript",
       "typescript": "TypeScript",
       "json": "JSON",
       "markdown": "Markdown",
-      "plainText": "Plain Text"
+      "plainText": "Plain Text",
+      "toml": "TOML"
     }
   },
   "projectPanel": {
@@ -330,6 +334,7 @@
     "projectOpened": "[PROJECT] Opened project: {{name}}",
     "projectLocation": "[PROJECT] Project location: {{path}}",
     "projectSwitched": "[PROJECT] Switched to project: {{name}}",
+    "noProjectOpen": "[PROJECT] No project open. Use \"Open Project\" or create one from templates first.",
     "projectCreated": "✅ Project '{{name}}' created successfully from template!",
     "venvCreating": "Creating virtual environment with Python {{version}}...",
     "venvCreated": "✅ Virtual environment created successfully",
@@ -371,19 +376,39 @@
   "debugPanel": {
     "title": "Debug",
     "close": "Hide debug panel (session continues)",
+    "closeHint": "Hide debug panel (session continues, click debug button to reopen)",
     "variables": "Variables",
-  "callStack": "Call Stack",
-  "scopes": "Scopes",
-  "breakpoints": "Breakpoints",
-  "output": "Output",
-  "noVariables": "No variables available",
-  "noCallStack": "No call stack information",
-  "noScopes": "No scopes available",
-  "noBreakpoints": "Click line numbers to add breakpoints",
-  "loadingVariables": "Loading variables…",
-  "noChildVariables": "No child variables",
-  "expensiveScope": "Expensive",
-  "currentLine": "Current Line: {{line}}",
-  "file": "File: {{file}}"
-}
+    "callStack": "Call Stack",
+    "scopes": "Scopes",
+    "breakpoints": "Breakpoints",
+    "output": "Output",
+    "noVariables": "No variables available",
+    "noCallStack": "No call stack information",
+    "noScopes": "No scopes available",
+    "noBreakpoints": "Click line numbers to add breakpoints",
+    "loadingVariables": "Loading variables…",
+    "noChildVariables": "No child variables",
+    "expensiveScope": "Expensive",
+    "currentLine": "Current Line: {{line}}",
+    "file": "File: {{file}}",
+
+    "statusIdle": "Debug session not started",
+    "statusRunning": "Debugger running",
+    "statusPaused": "Paused at breakpoint",
+    "waitingForBreakpoint": "Waiting for breakpoint...",
+    "thread": "Thread",
+    "buttonDisabledHint": "Buttons are enabled when debugger is paused",
+
+    "callStackRunning": "Program running, call stack will appear when breakpoint is hit",
+    "callStackEmpty": "No call stack (may be at module level)",
+    "callStackIdle": "Debugger not started",
+
+    "scopesRunning": "Program running, scopes will appear when breakpoint is hit",
+    "scopesEmpty": "No scopes for current frame",
+    "scopesIdle": "Debugger not started",
+
+    "variablesRunning": "Program running, variables will appear when breakpoint is hit",
+    "variablesNoScope": "Please select a scope to view variables",
+    "variablesIdle": "Debugger not started"
+  }
 }

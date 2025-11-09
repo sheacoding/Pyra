@@ -36,13 +36,17 @@
     "ready": "就绪",
     "settingUp": "配置中…",
     "preparing": "准备环境中…",
+    "debugging": "调试中",
+    "showPanel": "显示面板",
+    "showDebugPanel": "点击显示调试面板",
     "languages": {
       "python": "Python",
       "javascript": "JavaScript",
       "typescript": "TypeScript",
       "json": "JSON",
       "markdown": "Markdown",
-      "plainText": "纯文本"
+      "plainText": "纯文本",
+      "toml": "TOML"
     }
   },
   "projectPanel": {
@@ -330,6 +334,7 @@
     "projectOpened": "[项目] 已打开项目: {{name}}",
     "projectLocation": "[项目] 项目位置: {{path}}",
     "projectSwitched": "[项目] 已切换到项目: {{name}}",
+    "noProjectOpen": "[项目] 当前没有打开任何项目，请先通过“打开项目”或模板创建一个。",
     "projectCreated": "✅ 项目 '{{name}}' 已从模板成功创建!",
     "venvCreating": "正在使用 Python {{version}} 创建虚拟环境...",
     "venvCreated": "✅ 虚拟环境创建成功",
@@ -371,6 +376,7 @@
   "debugPanel": {
     "title": "调试",
     "close": "隐藏调试面板（调试会话继续运行）",
+    "closeHint": "隐藏调试面板（会话继续运行，点击调试按钮重新显示）",
     "variables": "变量",
     "callStack": "调用栈",
     "breakpoints": "断点",
@@ -384,6 +390,26 @@
     "noScopes": "暂无作用域信息",
     "loadingVariables": "正在加载变量…",
     "noChildVariables": "没有子变量",
-    "expensiveScope": "需延迟计算"
+    "expensiveScope": "需延迟计算",
+
+    "statusIdle": "未启动调试会话",
+    "statusRunning": "调试器运行中",
+    "statusPaused": "已在断点处暂停",
+    "waitingForBreakpoint": "等待命中断点...",
+    "thread": "线程",
+    "buttonDisabledHint": "按钮在调试器暂停时启用",
+
+    "callStackRunning": "程序运行中，命中断点后将显示调用栈",
+    "callStackEmpty": "当前无调用栈（可能在模块级代码）",
+    "callStackIdle": "调试器未启动",
+
+    "scopesRunning": "程序运行中，命中断点后将显示作用域",
+    "scopesEmpty": "当前栈帧无作用域信息",
+    "scopesIdle": "调试器未启动",
+
+    "variablesRunning": "程序运行中，命中断点后将显示变量",
+    "variablesNoScope": "请选择一个作用域查看变量",
+    "variablesIdle": "调试器未启动"
   }
 }
+

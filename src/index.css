@@ -33,7 +33,7 @@
   --ctp-teal: #94e2d5;
   --ctp-sky: #89dceb;
   --ctp-sapphire: #74c7ec;
-  --ctp-blue: #87ceeb;
+  --ctp-blue: #89b4fa;
   --ctp-lavender: #b4befe;
 }
 
@@ -216,7 +216,7 @@
   }
   
   .panel-header {
-    @apply px-4 py-3 border-b;
+    @apply px-4 py-1 border-b;
     background-color: var(--ctp-surface0);
     border-color: var(--ctp-surface1);
     color: var(--ctp-subtext1);
@@ -225,6 +225,23 @@
   /* Special overrides for light theme to improve contrast */
   [data-theme="catppuccin-latte"] .panel-header {
     color: var(--ctp-text);
+  }
+
+  /* Debug status indicator animation */
+  @keyframes debug-status-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  .debug-status-icon-pulse {
+    animation: debug-status-pulse 1.5s ease-in-out infinite;
+    display: inline-block;
   }
 
   /* Fix file tree text visibility in light theme */
@@ -508,3 +525,56 @@ body[data-theme="catppuccin-latte"] .monaco-editor .overflow-guard {
   background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23f38ba8' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' stroke='%23cba6f7' stroke-width='1'/%3E%3C/svg%3E") center center no-repeat !important;
   background-size: 16px 16px !important;
 }
+
+/* ========================================
+   Monaco Editor - Ensure Text Selectable
+   ======================================== */
+
+/* CRITICAL: Override Monaco's .no-user-select class with higher specificity */
+/* Ensure Monaco Editor content is selectable and copyable */
+.monaco-editor,
+.monaco-editor.no-user-select,
+.monaco-editor .no-user-select,
+.monaco-editor *,
+.monaco-editor .view-lines,
+.monaco-editor .view-line,
+.monaco-editor .lines-content,
+.monaco-editor .view-lines > .view-line > span,
+.monaco-editor .view-lines > .view-line > span > span {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/* Allow pointer events on editor content */
+.monaco-editor .view-lines,
+.monaco-editor .lines-content {
+  pointer-events: auto !important;
+}
+
+/* CRITICAL FIX: Force Monaco's selection layer to be visible
+   Monaco renders selection using div layers with specific classes */
+.monaco-editor .view-lines .view-line .cslr,
+.monaco-editor .selected-text,
+.monaco-editor .view-overlays .current-line,
+.monaco-editor .view-overlays .selections-layer .selection {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Force selection background color directly on Monaco's selection divs */
+[data-theme="catppuccin-mocha"] .monaco-editor .view-overlays .selections-layer > div,
+[data-theme="catppuccin-mocha"] .monaco-editor .selections-layer > div {
+  background-color: rgba(137, 180, 250, 0.40) !important;
+}
+
+[data-theme="catppuccin-latte"] .monaco-editor .view-overlays .selections-layer > div,
+[data-theme="catppuccin-latte"] .monaco-editor .selections-layer > div {
+  background-color: rgba(30, 102, 245, 0.35) !important;
+}
+
+/* Note: Monaco Editor uses its own internal selection rendering system.
+   Selection colors are controlled via the theme's colors object, not CSS.
+   CSS ::selection pseudo-elements do NOT work with Monaco Editor.
+   However, we can force styles on Monaco's selection layer divs. */

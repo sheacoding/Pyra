@@ -20,11 +20,37 @@ function App() {
   const { t } = useTranslation()
   const [currentFile, setCurrentFile] = useState<string | null>(null)
   const [openTabs, setOpenTabs] = useState<string[]>([])
-  const [projectPath, setProjectPath] = useState<string>('E:\\Code\\Pyra\\test-project')
+  const [projectPath, setProjectPath] = useState<string>('')
   const [consoleMessages, setConsoleMessages] = useState<Array<{id: string, content: string, type: 'stdout' | 'stderr' | 'error' | 'info', timestamp: Date}>>([])
   const [showProjectPanel, setShowProjectPanel] = useState(false)
   const [showSettingsPanel, setShowSettingsPanel] = useState(false)
   const [ideSettings, setIdeSettings] = useState<IDESettings | null>(null)
+
+  // Restore last opened project path
+  useEffect(() => {
+    try {
+      const storedPath = localStorage.getItem('pyra-last-project')
+      if (storedPath) {
+        console.log('[APP] Restoring last project path:', storedPath)
+        setProjectPath(storedPath)
+      }
+    } catch (error) {
+      console.warn('[APP] Failed to load stored project path:', error)
+    }
+  }, [])
+
+  // Persist project path whenever it changes
+  useEffect(() => {
+    try {
+      if (projectPath) {
+        localStorage.setItem('pyra-last-project', projectPath)
+      } else {
+        localStorage.removeItem('pyra-last-project')
+      }
+    } catch (error) {
+      console.warn('[APP] Failed to persist project path:', error)
+    }
+  }, [projectPath])
 
   // Load settings on app initialization
   useEffect(() => {
@@ -435,6 +461,11 @@ function App() {
     e?.preventDefault()
     e?.stopPropagation()
 
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+
     console.log('Toggle project panel clicked, current state:', showProjectPanel)
     setShowProjectPanel(prev => {
       const newState = !prev
@@ -456,9 +487,27 @@ function App() {
   }
 
   // Global toolbar actions
-  const explorerNewFile = () => fileTreeRef.current?.openNewFileDialog()
-  const explorerNewFolder = () => fileTreeRef.current?.openNewFolderDialog()
-  const explorerRefresh = () => fileTreeRef.current?.refresh()
+  const explorerNewFile = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    fileTreeRef.current?.openNewFileDialog()
+  }
+  const explorerNewFolder = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    fileTreeRef.current?.openNewFolderDialog()
+  }
+  const explorerRefresh = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    fileTreeRef.current?.refresh()
+  }
 
   // File operations
   const handleOpenFile = async () => {
@@ -508,7 +557,13 @@ function App() {
     }
   }
 
-  const editorRun = () => editorRef.current?.run()
+  const editorRun = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    editorRef.current?.run()
+  }
 
   // Stop debugging session
   const handleStopDebugging = async () => {
@@ -531,8 +586,20 @@ function App() {
       editorRef.current?.stop()
     }
   }
-  const editorFormat = () => editorRef.current?.format()
-  const editorLint = () => editorRef.current?.lint()
+  const editorFormat = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    editorRef.current?.format()
+  }
+  const editorLint = () => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+    editorRef.current?.lint()
+  }
 
   // Debug menu handlers
   const handleDebugMode = async (_mode: 'debug' | 'step' | 'visual') => {  // mode reserved for future use
@@ -545,13 +612,13 @@ function App() {
     }
 
     if (!projectPath) {
-      handleConsoleError('No project open')
+      handleConsoleError(t('messages.noProjectOpen'))
       return
     }
 
-    // If already debugging, just show the panel
+    // If already debugging, toggle the panel visibility
     if (isDebugging) {
-      setShowDebugPanel(true)
+      setShowDebugPanel(prev => !prev)
       return
     }
 
@@ -649,6 +716,11 @@ function App() {
   }
 
   const handleCreateVenv = async (pythonVersion: string = '3.11') => {
+    if (!projectPath) {
+      handleConsoleError(t('messages.noProjectOpen'))
+      return
+    }
+
     try {
       const { TauriAPI } = await import('./lib/tauri')
       handleConsoleOutput(t('messages.venvCreating', { version: pythonVersion }))
@@ -697,9 +769,8 @@ function App() {
   }
 
   useEffect(() => {
-    // In a real app, this would be set by opening a project
-    console.log('Pyra IDE initialized with project:', projectPath)
-  }, [])
+    console.log('[APP] Active project path:', projectPath || '(none)')
+  }, [projectPath])
 
   // Apply theme to document root when settings change
   useEffect(() => {
@@ -723,6 +794,10 @@ function App() {
     try { await getCurrentWindow().close() } catch (e) { console.error('Close failed', e) }
   }
 
+  const workspaceReady = Boolean(projectPath)
+  const pythonFileSelected = Boolean(currentFile && currentFile.endsWith('.py'))
+  const editorActionDisabled = !pythonFileSelected || !uvReady || uvInstalling || !workspaceReady
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--ctp-base)' }}>
       {/* Unified Header + Toolbar (draggable except controls) */}
@@ -734,18 +809,106 @@ function App() {
             <span className="text-xs font-semibold select-none" style={{ color: 'var(--ctp-text)' }}>{t('app.title')}</span>
           </div>
           <div className="flex items-center gap-1 ml-1">
-            <button data-tauri-drag-region="false" onClick={explorerNewFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-yellow)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }} type="button" title={t('toolbar.newFile')}><i className="fas fa-plus text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerNewFolder} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-sapphire)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} type="button" title={t('toolbar.newFolder')}><i className="fas fa-folder-plus text-sm"></i></button>
+            <button
+              data-tauri-drag-region="false"
+              onClick={explorerNewFile}
+              disabled={!workspaceReady}
+              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+              style={{
+                backgroundColor: workspaceReady ? 'var(--ctp-yellow)' : 'var(--ctp-surface2)',
+                color: workspaceReady ? 'var(--ctp-base)' : 'var(--ctp-subtext0)',
+                opacity: workspaceReady ? 1 : 0.6
+              }}
+              onMouseEnter={(e) => {
+                if (workspaceReady) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-peach)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = workspaceReady ? 'var(--ctp-yellow)' : 'var(--ctp-surface2)'
+              }}
+              type="button"
+              title={t('toolbar.newFile')}
+            >
+              <i className="fas fa-plus text-sm"></i>
+            </button>
+            <button
+              data-tauri-drag-region="false"
+              onClick={explorerNewFolder}
+              disabled={!workspaceReady}
+              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+              style={{
+                backgroundColor: workspaceReady ? 'var(--ctp-sapphire)' : 'var(--ctp-surface2)',
+                color: workspaceReady ? 'var(--ctp-base)' : 'var(--ctp-subtext0)',
+                opacity: workspaceReady ? 1 : 0.6
+              }}
+              onMouseEnter={(e) => {
+                if (workspaceReady) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-blue)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = workspaceReady ? 'var(--ctp-sapphire)' : 'var(--ctp-surface2)'
+              }}
+              type="button"
+              title={t('toolbar.newFolder')}
+            >
+              <i className="fas fa-folder-plus text-sm"></i>
+            </button>
             <button data-tauri-drag-region="false" onClick={handleOpenFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title={t('toolbar.openFile')}><i className="fas fa-folder-open text-sm"></i></button>
             <button data-tauri-drag-region="false" onClick={handleSaveFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-blue)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title={t('toolbar.save')}><i className="fas fa-save text-sm"></i></button>
             <button data-tauri-drag-region="false" onClick={handleSaveAsFile} disabled={!currentFile} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: !currentFile ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)', color: !currentFile ? 'var(--ctp-subtext0)' : 'var(--ctp-base)' }} onMouseEnter={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { if (currentFile) e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title={t('toolbar.saveAs')}><i className="fas fa-copy text-sm"></i></button>
-            <button data-tauri-drag-region="false" onClick={explorerRefresh} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-teal)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sky)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} type="button" title={t('toolbar.refresh')}><i className="fas fa-sync-alt text-sm"></i></button>
+            <button
+              data-tauri-drag-region="false"
+              onClick={explorerRefresh}
+              disabled={!workspaceReady}
+              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+              style={{
+                backgroundColor: workspaceReady ? 'var(--ctp-teal)' : 'var(--ctp-surface2)',
+                color: workspaceReady ? 'var(--ctp-base)' : 'var(--ctp-subtext0)',
+                opacity: workspaceReady ? 1 : 0.6
+              }}
+              onMouseEnter={(e) => {
+                if (workspaceReady) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-sky)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = workspaceReady ? 'var(--ctp-teal)' : 'var(--ctp-surface2)'
+              }}
+              type="button"
+              title={t('toolbar.refresh')}
+            >
+              <i className="fas fa-sync-alt text-sm"></i>
+            </button>
           </div>
         </div>
 
         {/* Center segment: editor actions */}
         <div className="flex-1 flex items-center px-2 gap-2">
-          <button data-tauri-drag-region="false" onClick={editorRun} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }} type="button" title={t('toolbar.run')}><i className="fas fa-play text-sm"></i></button>
+          <button
+            data-tauri-drag-region="false"
+            onClick={editorRun}
+            disabled={editorActionDisabled}
+            className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+            style={{
+              backgroundColor: editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-green)',
+              color: editorActionDisabled ? 'var(--ctp-subtext0)' : 'var(--ctp-base)',
+              opacity: editorActionDisabled ? 0.6 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!editorActionDisabled) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-teal)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-green)'
+            }}
+            type="button"
+            title={t('toolbar.run')}
+          >
+            <i className="fas fa-play text-sm"></i>
+          </button>
           <button data-tauri-drag-region="false" onClick={editorStop} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-red)', color: 'var(--ctp-base)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-maroon)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-red)' }} type="button" title={t('toolbar.stop')}><i className="fas fa-stop text-sm"></i></button>
 
           {/* Debug button with dropdown menu */}
@@ -753,15 +916,32 @@ function App() {
             <button
               data-tauri-drag-region="false"
               onClick={() => setShowDebugMenu(!showDebugMenu)}
-              disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling}
-              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
-              style={{ backgroundColor: 'var(--ctp-peach)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }}
-              onMouseEnter={(e) => { if (currentFile && currentFile.endsWith('.py') && uvReady && !uvInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)' }}
-              onMouseLeave={(e) => { if (currentFile && currentFile.endsWith('.py') && uvReady && !uvInstalling) e.currentTarget.style.backgroundColor = 'var(--ctp-peach)' }}
+              disabled={editorActionDisabled}
+              className="toolbar-button rounded font-medium transition-colors flex items-center justify-center relative"
+              style={{
+                backgroundColor: editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-peach)',
+                color: editorActionDisabled ? 'var(--ctp-subtext0)' : 'var(--ctp-base)',
+                opacity: editorActionDisabled ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!editorActionDisabled) {
+                  e.currentTarget.style.backgroundColor = 'var(--ctp-yellow)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-peach)'
+              }}
               type="button"
               title={t('toolbar.debug')}
             >
               <i className="fas fa-bug text-sm"></i>
+              {/* Debugging indicator */}
+              {isDebugging && (
+                <span
+                  className="absolute top-0 right-0 w-2 h-2 rounded-full animate-pulse"
+                  style={{ backgroundColor: 'var(--ctp-green)' }}
+                />
+              )}
             </button>
 
             {/* Debug dropdown menu */}
@@ -805,8 +985,52 @@ function App() {
             )}
           </div>
 
-          <button data-tauri-drag-region="false" onClick={editorFormat} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }} type="button" title={t('toolbar.format')}><i className="fas fa-palette text-sm"></i></button>
-          <button data-tauri-drag-region="false" onClick={editorLint} disabled={!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling} className="toolbar-button rounded font-medium transition-colors flex items-center justify-center" style={{ backgroundColor: 'var(--ctp-mauve)', color: 'var(--ctp-base)', opacity: (!currentFile || !currentFile.endsWith('.py') || !uvReady || uvInstalling) ? 0.6 : 1 }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }} type="button" title={t('toolbar.lint')}><i className="fas fa-search text-sm"></i></button>
+          <button
+            data-tauri-drag-region="false"
+            onClick={editorFormat}
+            disabled={editorActionDisabled}
+            className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+            style={{
+              backgroundColor: editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-blue)',
+              color: editorActionDisabled ? 'var(--ctp-subtext0)' : 'var(--ctp-base)',
+              opacity: editorActionDisabled ? 0.6 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!editorActionDisabled) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-blue)'
+            }}
+            type="button"
+            title={t('toolbar.format')}
+          >
+            <i className="fas fa-palette text-sm"></i>
+          </button>
+          <button
+            data-tauri-drag-region="false"
+            onClick={editorLint}
+            disabled={editorActionDisabled}
+            className="toolbar-button rounded font-medium transition-colors flex items-center justify-center"
+            style={{
+              backgroundColor: editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)',
+              color: editorActionDisabled ? 'var(--ctp-subtext0)' : 'var(--ctp-base)',
+              opacity: editorActionDisabled ? 0.6 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!editorActionDisabled) {
+                e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = editorActionDisabled ? 'var(--ctp-surface2)' : 'var(--ctp-mauve)'
+            }}
+            type="button"
+            title={t('toolbar.lint')}
+          >
+            <i className="fas fa-search text-sm"></i>
+          </button>
 
           {/* 拖拽区域 - 中央空白区域 */}
           <div className="flex-1 min-w-[100px] h-full" title={t('app.dragHint')}></div>
@@ -834,10 +1058,26 @@ function App() {
             title={t('toolbar.openProject')}><i className="fas fa-folder-open text-sm"></i></button>
           <button data-tauri-drag-region="false"
             onClick={(e) => handleToggleProjectPanel(e)}
+            disabled={!workspaceReady}
             className="toolbar-button rounded font-medium transition-colors cursor-pointer select-none flex items-center justify-center"
-            style={{ backgroundColor: showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)', color: showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)' }}
+            style={{
+              backgroundColor: !workspaceReady
+                ? 'var(--ctp-surface2)'
+                : (showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)'),
+              color: !workspaceReady
+                ? 'var(--ctp-subtext0)'
+                : (showProjectPanel ? 'var(--ctp-base)' : 'var(--ctp-text)'),
+              opacity: workspaceReady ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (!workspaceReady) return
+              e.currentTarget.style.backgroundColor = showProjectPanel ? 'var(--ctp-sapphire)' : 'var(--ctp-overlay0)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = !workspaceReady
+                ? 'var(--ctp-surface2)'
+                : (showProjectPanel ? 'var(--ctp-blue)' : 'var(--ctp-surface2)')
+            }}
             type="button"
             aria-pressed={showProjectPanel}
             title={showProjectPanel ? t('toolbar.hideProjectPanel') : t('toolbar.showProjectPanel')}
@@ -893,11 +1133,35 @@ function App() {
       <div className="flex-1 flex min-h-0">
         {/* Sidebar */}
         <div className="w-48 sm:w-56 md:w-64 border-r flex-shrink-0" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
-          <FileTree 
-            ref={fileTreeRef}
-            projectPath={projectPath}
-            onFileSelect={openFileInTab}
-          />
+          {workspaceReady ? (
+            <FileTree 
+              ref={fileTreeRef}
+              projectPath={projectPath}
+              onFileSelect={openFileInTab}
+            />
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center gap-3 px-4 text-center" style={{ color: 'var(--ctp-subtext1)' }}>
+              <p className="text-sm">{t('fileTree.noProject')}</p>
+              <button
+                onClick={handleOpenProject}
+                className="w-full px-3 py-2 text-sm rounded font-medium transition-colors"
+                style={{ backgroundColor: 'var(--ctp-blue)', color: 'var(--ctp-base)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-sapphire)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-blue)' }}
+              >
+                {t('fileTree.openProject')}
+              </button>
+              <button
+                onClick={() => setShowTemplateDialog(true)}
+                className="w-full px-3 py-2 text-sm rounded font-medium transition-colors"
+                style={{ backgroundColor: 'var(--ctp-green)', color: 'var(--ctp-base)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-teal)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-green)' }}
+              >
+                {t('toolbar.newProject')}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Editor Area */}
@@ -940,7 +1204,7 @@ function App() {
           )}
 
           {/* Project Panel */}
-          {showProjectPanel && (
+          {showProjectPanel && workspaceReady && (
             <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-base)', borderColor: 'var(--ctp-surface1)' }}>
               <ProjectPanel
                 projectPath={projectPath}
@@ -954,7 +1218,14 @@ function App() {
 
       {/* Status Bar */}
       <div className="flex-shrink-0">
-        <StatusBar currentFile={currentFile} uvReady={uvReady} uvInstalling={uvInstalling} />
+        <StatusBar
+          currentFile={currentFile}
+          uvReady={uvReady}
+          uvInstalling={uvInstalling}
+          isDebugging={isDebugging}
+          debugPanelVisible={showDebugPanel}
+          onShowDebugPanel={() => setShowDebugPanel(true)}
+        />
       </div>
 
       {/* Settings Panel */}

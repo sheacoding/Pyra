@@ -60,6 +60,7 @@ pids
 
 # Test files
 test-project/.venv/
+test-project/test/
 
 # Temporary files
 *.tmp

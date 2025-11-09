@@ -8,10 +8,13 @@ interface DebugPanelProps {
   onClose: () => void
 }
 
+type DebugState = 'idle' | 'running' | 'paused'
+
 export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
   const { t } = useTranslation()
   const [isPaused, setIsPaused] = useState(false)
   const [currentThreadId, setCurrentThreadId] = useState<number | null>(null)
+  const [debugState, setDebugState] = useState<DebugState>('idle')
   const [stackFrames, setStackFrames] = useState<StackFrame[]>([])
   const [selectedFrameId, setSelectedFrameId] = useState<number | null>(null)
   const [scopes, setScopes] = useState<Scope[]>([])
@@ -21,6 +24,19 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
   const [variableChildren, setVariableChildren] = useState<Map<number, Variable[]>>(new Map())
   const [loadingChildRefs, setLoadingChildRefs] = useState<Set<number>>(new Set())
   const [isScopeLoading, setIsScopeLoading] = useState(false)
+
+  // Determine initial debug state when panel becomes visible
+  useEffect(() => {
+    if (isVisible) {
+      if (isPaused && currentThreadId !== null) {
+        setDebugState('paused')
+      } else if (currentThreadId !== null) {
+        setDebugState('running')
+      } else {
+        setDebugState('idle')
+      }
+    }
+  }, [isVisible, isPaused, currentThreadId])
 
   const resetVariableTree = useCallback(() => {
     setVariables([])
@@ -65,6 +81,50 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
     }
   }, [loadScopeVariables, resetVariableTree])
 
+  const handleContinue = useCallback(async () => {
+    if (currentThreadId !== null) {
+      try {
+        await TauriAPI.debugContinue(currentThreadId)
+        setIsPaused(false)
+      } catch (error) {
+        console.error('Failed to continue:', error)
+      }
+    }
+  }, [currentThreadId])
+
+  const handleStepOver = useCallback(async () => {
+    if (currentThreadId !== null) {
+      try {
+        await TauriAPI.debugStepOver(currentThreadId)
+        setIsPaused(false)
+      } catch (error) {
+        console.error('Failed to step over:', error)
+      }
+    }
+  }, [currentThreadId])
+
+  const handleStepInto = useCallback(async () => {
+    if (currentThreadId !== null) {
+      try {
+        await TauriAPI.debugStepInto(currentThreadId)
+        setIsPaused(false)
+      } catch (error) {
+        console.error('Failed to step into:', error)
+      }
+    }
+  }, [currentThreadId])
+
+  const handleStepOut = useCallback(async () => {
+    if (currentThreadId !== null) {
+      try {
+        await TauriAPI.debugStepOut(currentThreadId)
+        setIsPaused(false)
+      } catch (error) {
+        console.error('Failed to step out:', error)
+      }
+    }
+  }, [currentThreadId])
+
   useEffect(() => {
     let unlistenStopped: (() => void) | undefined
     let unlistenContinued: (() => void) | undefined
@@ -74,6 +134,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
       unlistenStopped = await listen<{ reason: string; threadId: number }>('debug-stopped', async (event) => {
         console.log('[DEBUG UI] Stopped:', event.payload)
         setIsPaused(true)
+        setDebugState('paused')
         setCurrentThreadId(event.payload.threadId)
 
         try {
@@ -101,11 +162,13 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
       unlistenContinued = await listen('debug-continued', () => {
         console.log('[DEBUG UI] Continued')
         setIsPaused(false)
+        setDebugState('running')
       })
 
       unlistenTerminated = await listen('debug-terminated', () => {
         console.log('[DEBUG UI] Terminated')
         setIsPaused(false)
+        setDebugState('idle')
         setStackFrames([])
         setCurrentThreadId(null)
         setSelectedFrameId(null)
@@ -123,49 +186,39 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
     }
   }, [loadFrameData, resetVariableTree])
 
-  const handleContinue = async () => {
-    if (currentThreadId !== null) {
-      try {
-        await TauriAPI.debugContinue(currentThreadId)
-        setIsPaused(false)
-      } catch (error) {
-        console.error('Failed to continue:', error)
+  // Keyboard shortcuts for debugging
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when panel is visible and paused
+      if (!isVisible || !isPaused || currentThreadId === null) {
+        return
       }
-    }
-  }
 
-  const handleStepOver = async () => {
-    if (currentThreadId !== null) {
-      try {
-        await TauriAPI.debugStepOver(currentThreadId)
-        setIsPaused(false)
-      } catch (error) {
-        console.error('Failed to step over:', error)
+      // F5: Continue
+      if (event.key === 'F5' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        void handleContinue()
+      }
+      // F10: Step Over
+      else if (event.key === 'F10' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        void handleStepOver()
+      }
+      // F11: Step Into
+      else if (event.key === 'F11' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        void handleStepInto()
+      }
+      // Shift+F11: Step Out
+      else if (event.key === 'F11' && event.shiftKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        void handleStepOut()
       }
     }
-  }
 
-  const handleStepInto = async () => {
-    if (currentThreadId !== null) {
-      try {
-        await TauriAPI.debugStepInto(currentThreadId)
-        setIsPaused(false)
-      } catch (error) {
-        console.error('Failed to step into:', error)
-      }
-    }
-  }
-
-  const handleStepOut = async () => {
-    if (currentThreadId !== null) {
-      try {
-        await TauriAPI.debugStepOut(currentThreadId)
-        setIsPaused(false)
-      } catch (error) {
-        console.error('Failed to step out:', error)
-      }
-    }
-  }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isVisible, isPaused, currentThreadId, handleContinue, handleStepOver, handleStepInto, handleStepOut])
 
   const handleFrameClick = async (frame: StackFrame) => {
     setSelectedFrameId(frame.id)
@@ -289,6 +342,38 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
 
   const controlsEnabled = isPaused && currentThreadId !== null
 
+  // Get status indicator properties based on debug state
+  const getStatusProps = () => {
+    switch (debugState) {
+      case 'idle':
+        return {
+          icon: '⚪',
+          text: t('debugPanel.statusIdle'),
+          bgColor: 'var(--ctp-surface0)',
+          textColor: 'var(--ctp-overlay1)'
+        }
+      case 'running':
+        return {
+          icon: '🟢',
+          text: t('debugPanel.statusRunning'),
+          subText: t('debugPanel.waitingForBreakpoint'),
+          bgColor: 'var(--ctp-surface0)',
+          textColor: 'var(--ctp-green)',
+          animate: true
+        }
+      case 'paused':
+        return {
+          icon: '⏸️',
+          text: t('debugPanel.statusPaused'),
+          subText: currentThreadId ? `${t('debugPanel.thread')} ${currentThreadId}` : undefined,
+          bgColor: 'var(--ctp-surface0)',
+          textColor: 'var(--ctp-peach)'
+        }
+    }
+  }
+
+  const statusProps = getStatusProps()
+
   if (!isVisible) return null
 
   return (
@@ -303,10 +388,33 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
           onClick={onClose}
           className="p-1 rounded hover:bg-opacity-80 transition-colors"
           style={{ color: 'var(--ctp-text)' }}
-          title={t('debugPanel.close')}
+          title={t('debugPanel.closeHint')}
         >
           <i className="fas fa-times"></i>
         </button>
+      </div>
+
+      {/* Debug Status Indicator */}
+      <div
+        className="px-3 py-2 border-b flex items-center gap-2"
+        style={{
+          borderColor: 'var(--ctp-surface1)',
+          backgroundColor: statusProps.bgColor
+        }}
+      >
+        <span className={statusProps.animate ? 'debug-status-icon-pulse' : undefined}>
+          {statusProps.icon}
+        </span>
+        <div className="flex-1">
+          <div className="text-sm font-medium" style={{ color: statusProps.textColor }}>
+            {statusProps.text}
+          </div>
+          {statusProps.subText && (
+            <div className="text-xs" style={{ color: 'var(--ctp-overlay1)' }}>
+              {statusProps.subText}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Debug controls */}
@@ -320,7 +428,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
             color: controlsEnabled ? 'var(--ctp-base)' : 'var(--ctp-overlay0)',
             opacity: controlsEnabled ? 1 : 0.5
           }}
-          title="Continue (F5)"
+          title={controlsEnabled ? "Continue (F5)" : t('debugPanel.buttonDisabledHint')}
         >
           <i className="fas fa-play"></i>
         </button>
@@ -333,7 +441,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
             color: controlsEnabled ? 'var(--ctp-base)' : 'var(--ctp-overlay0)',
             opacity: controlsEnabled ? 1 : 0.5
           }}
-          title="Step Over (F10)"
+          title={controlsEnabled ? "Step Over (F10)" : t('debugPanel.buttonDisabledHint')}
         >
           <i className="fas fa-arrow-right"></i>
         </button>
@@ -346,7 +454,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
             color: controlsEnabled ? 'var(--ctp-base)' : 'var(--ctp-overlay0)',
             opacity: controlsEnabled ? 1 : 0.5
           }}
-          title="Step Into (F11)"
+          title={controlsEnabled ? "Step Into (F11)" : t('debugPanel.buttonDisabledHint')}
         >
           <i className="fas fa-arrow-down"></i>
         </button>
@@ -359,7 +467,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
             color: controlsEnabled ? 'var(--ctp-base)' : 'var(--ctp-overlay0)',
             opacity: controlsEnabled ? 1 : 0.5
           }}
-          title="Step Out (Shift+F11)"
+          title={controlsEnabled ? "Step Out (Shift+F11)" : t('debugPanel.buttonDisabledHint')}
         >
           <i className="fas fa-arrow-up"></i>
         </button>
@@ -374,7 +482,9 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
           <div className="px-2 pb-2">
             {stackFrames.length === 0 ? (
               <div className="text-sm px-2 py-1" style={{ color: 'var(--ctp-overlay0)' }}>
-                {t('debugPanel.noCallStack')}
+                {debugState === 'idle' && t('debugPanel.callStackIdle')}
+                {debugState === 'running' && t('debugPanel.callStackRunning')}
+                {debugState === 'paused' && t('debugPanel.callStackEmpty')}
               </div>
             ) : (
               stackFrames.map(frame => (
@@ -405,7 +515,9 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
           <div className="px-2 pb-2 flex flex-col gap-1">
             {scopes.length === 0 ? (
               <div className="text-sm px-2 py-1" style={{ color: 'var(--ctp-overlay0)' }}>
-                {t('debugPanel.noScopes')}
+                {debugState === 'idle' && t('debugPanel.scopesIdle')}
+                {debugState === 'running' && t('debugPanel.scopesRunning')}
+                {debugState === 'paused' && t('debugPanel.scopesEmpty')}
               </div>
             ) : (
               scopes.map(scope => {
@@ -447,7 +559,9 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
               </div>
             ) : variables.length === 0 ? (
               <div className="text-sm px-2 py-1" style={{ color: 'var(--ctp-overlay0)' }}>
-                {t('debugPanel.noVariables')}
+                {debugState === 'idle' && t('debugPanel.variablesIdle')}
+                {debugState === 'running' && t('debugPanel.variablesRunning')}
+                {debugState === 'paused' && (selectedScopeRef ? t('debugPanel.noVariables') : t('debugPanel.variablesNoScope'))}
               </div>
             ) : (
               variables.map(variable => renderVariable(variable))

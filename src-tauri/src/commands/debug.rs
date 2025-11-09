@@ -174,10 +174,54 @@ impl DebugSession {
                 println!("[DEBUG] Skipping event during response read: {}", message["event"].as_str().unwrap_or("unknown"));
                 // Continue loop to read the next message
             } else {
-                // Unknown message type
+                // Unknown message type or just return any message
                 return Ok(message);
             }
         }
+    }
+
+    async fn read_message(&mut self) -> Result<serde_json::Value, String> {
+        let stream = self
+            .stream
+            .as_mut()
+            .ok_or("Not connected to debug adapter")?;
+
+        let mut reader = BufReader::new(stream);
+
+        // Read Content-Length header
+        let mut header = String::new();
+        loop {
+            let mut line = String::new();
+            reader
+                .read_line(&mut line)
+                .await
+                .map_err(|e| format!("Failed to read header: {}", e))?;
+
+            if line == "\r\n" {
+                break;
+            }
+            header.push_str(&line);
+        }
+
+        // Parse Content-Length
+        let content_length: usize = header
+            .lines()
+            .find(|l| l.starts_with("Content-Length:"))
+            .and_then(|l| l.split(':').nth(1))
+            .and_then(|s| s.trim().parse().ok())
+            .ok_or("Missing Content-Length header")?;
+
+        // Read JSON body
+        let mut body = vec![0u8; content_length];
+        reader
+            .read_exact(&mut body)
+            .await
+            .map_err(|e| format!("Failed to read body: {}", e))?;
+
+        let message: serde_json::Value =
+            serde_json::from_slice(&body).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+
+        Ok(message)
     }
 
     pub fn set_process(&mut self, process: Child) {
@@ -596,7 +640,7 @@ async fn debug_event_loop(manager: DebugSessionManager, window: Window) {
         let event_result = {
             let mut mgr = manager.lock().await;
             if let Some(session) = mgr.as_mut() {
-                session.read_response().await
+                session.read_message().await
             } else {
                 break;
             }

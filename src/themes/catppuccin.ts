@@ -34,7 +34,7 @@ export const catppuccin = {
     teal: "#94e2d5",
     sky: "#89dceb",      // Light blue
     sapphire: "#74c7ec",
-    blue: "#87ceeb",
+    blue: "#89b4fa",     // Blue
     lavender: "#b4befe", // Light purple
   },
   
@@ -154,10 +154,16 @@ export const createCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha') => {
 export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'): any => {
   const colors = catppuccin[flavor]
   const isDark = flavor === 'mocha'
-  
+
   // Helper function to convert hex color to Monaco format (without #)
   const toMonacoColor = (hexColor: string) => hexColor.replace('#', '')
-  
+
+  // Helper function to convert decimal opacity to hex (0-1 to 00-FF)
+  const opacityToHex = (opacity: number): string => {
+    const hex = Math.round(opacity * 255).toString(16).padStart(2, '0')
+    return hex
+  }
+
   // Create theme definition following Monaco Editor API specification
   return {
     base: isDark ? 'vs-dark' : 'vs',
@@ -167,14 +173,14 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: '', foreground: toMonacoColor(colors.text) },
       { token: 'source', foreground: toMonacoColor(colors.text) },
       { token: 'text', foreground: toMonacoColor(colors.text) },
-      
+
       // Comments - Gray, italic
       { token: 'comment', foreground: toMonacoColor(colors.overlay1), fontStyle: 'italic' },
       { token: 'comment.line', foreground: toMonacoColor(colors.overlay1), fontStyle: 'italic' },
       { token: 'comment.block', foreground: toMonacoColor(colors.overlay1), fontStyle: 'italic' },
       { token: 'comment.line.double-slash', foreground: toMonacoColor(colors.overlay1), fontStyle: 'italic' },
       { token: 'comment.block.documentation', foreground: toMonacoColor(colors.overlay1), fontStyle: 'italic' },
-      
+
       // Strings - Green
       { token: 'string', foreground: toMonacoColor(colors.green) },
       { token: 'string.quoted', foreground: toMonacoColor(colors.green) },
@@ -184,7 +190,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'string.template', foreground: toMonacoColor(colors.green) },
       { token: 'string.interpolated', foreground: toMonacoColor(colors.green) },
       { token: 'string.regexp', foreground: toMonacoColor(colors.green) },
-      
+
       // Numbers - Peach (orange)
       { token: 'number', foreground: toMonacoColor(colors.peach) },
       { token: 'number.float', foreground: toMonacoColor(colors.peach) },
@@ -195,7 +201,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'constant.numeric.integer', foreground: toMonacoColor(colors.peach) },
       { token: 'constant.numeric.float', foreground: toMonacoColor(colors.peach) },
       { token: 'constant.numeric.hex', foreground: toMonacoColor(colors.peach) },
-      
+
       // Keywords - Mauve (purple), bold
       { token: 'keyword', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
       { token: 'keyword.control', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
@@ -209,7 +215,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'storage', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
       { token: 'storage.type', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
       { token: 'storage.modifier', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
-      
+
       // Operators - Sky (light blue)
       { token: 'operator', foreground: toMonacoColor(colors.sky) },
       { token: 'keyword.operator', foreground: toMonacoColor(colors.sky) },
@@ -217,7 +223,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'keyword.operator.assignment', foreground: toMonacoColor(colors.sky) },
       { token: 'keyword.operator.comparison', foreground: toMonacoColor(colors.sky) },
       { token: 'punctuation.operator', foreground: toMonacoColor(colors.sky) },
-      
+
       // Functions - Blue
       { token: 'entity.name.function', foreground: toMonacoColor(colors.blue) },
       { token: 'support.function', foreground: toMonacoColor(colors.blue) },
@@ -225,7 +231,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'entity.name.function.constructor', foreground: toMonacoColor(colors.blue) },
       { token: 'entity.name.function.member', foreground: toMonacoColor(colors.blue) },
       { token: 'variable.function', foreground: toMonacoColor(colors.blue) },
-      
+
       // Classes and types - Yellow
       { token: 'entity.name.class', foreground: toMonacoColor(colors.yellow) },
       { token: 'entity.name.type', foreground: toMonacoColor(colors.yellow) },
@@ -233,7 +239,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'entity.name.namespace', foreground: toMonacoColor(colors.yellow) },
       { token: 'entity.other.inherited-class', foreground: toMonacoColor(colors.yellow) },
       { token: 'support.class', foreground: toMonacoColor(colors.yellow) },
-      
+
       // Constants and language constants - Peach
       { token: 'constant', foreground: toMonacoColor(colors.peach) },
       { token: 'constant.language', foreground: toMonacoColor(colors.peach) },
@@ -242,7 +248,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'constant.language.undefined', foreground: toMonacoColor(colors.peach) },
       { token: 'constant.other', foreground: toMonacoColor(colors.peach) },
       { token: 'support.constant', foreground: toMonacoColor(colors.peach) },
-      
+
       // Variables - Text color (default)
       { token: 'variable', foreground: toMonacoColor(colors.text) },
       { token: 'variable.other', foreground: toMonacoColor(colors.text) },
@@ -250,11 +256,11 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'variable.language.self', foreground: toMonacoColor(colors.red) },
       { token: 'variable.language.this', foreground: toMonacoColor(colors.red) },
       { token: 'variable.other.readwrite', foreground: toMonacoColor(colors.text) },
-      
+
       // Identifiers
       { token: 'identifier', foreground: toMonacoColor(colors.text) },
       { token: 'entity.name.variable', foreground: toMonacoColor(colors.text) },
-      
+
       // Python-specific tokens
       { token: 'keyword.control.python', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
       { token: 'keyword.control.flow.python', foreground: toMonacoColor(colors.mauve), fontStyle: 'bold' },
@@ -265,7 +271,7 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'support.function.magic.python', foreground: toMonacoColor(colors.pink) },
       { token: 'meta.function.decorator.python', foreground: toMonacoColor(colors.pink) },
       { token: 'entity.name.function.decorator', foreground: toMonacoColor(colors.pink) },
-      
+
       // Punctuation and delimiters
       { token: 'punctuation', foreground: toMonacoColor(colors.overlay2) },
       { token: 'punctuation.separator', foreground: toMonacoColor(colors.overlay2) },
@@ -279,11 +285,11 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'delimiter.curly', foreground: toMonacoColor(colors.overlay2) },
       { token: 'punctuation.bracket', foreground: toMonacoColor(colors.overlay2) },
       { token: 'punctuation.parenthesis', foreground: toMonacoColor(colors.overlay2) },
-      
+
       // Tags (for markup languages)
       { token: 'entity.name.tag', foreground: toMonacoColor(colors.mauve) },
       { token: 'entity.other.attribute-name', foreground: toMonacoColor(colors.blue) },
-      
+
       // Invalid/Error tokens
       { token: 'invalid', foreground: toMonacoColor(colors.red), fontStyle: 'underline' },
       { token: 'invalid.illegal', foreground: toMonacoColor(colors.red), fontStyle: 'underline' },
@@ -296,19 +302,19 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       'editorLineNumber.foreground': colors.overlay0,
       'editorLineNumber.activeForeground': colors.text,
       'editorCursor.foreground': colors.rosewater,
-      
-      // Selection colors
-      'editor.selectionBackground': colors.surface2,
-      'editor.selectionHighlightBackground': colors.surface1,
-      'editor.inactiveSelectionBackground': colors.surface1,
-      'editor.lineHighlightBackground': colors.surface0,
+
+      // Selection colors - using 8-digit hex format (#RRGGBBAA) for Monaco
+      'editor.selectionBackground': colors.blue + opacityToHex(0.40), // 40% opacity
+      'editor.selectionHighlightBackground': colors.blue + opacityToHex(0.20), // 20% opacity
+      'editor.inactiveSelectionBackground': colors.surface2 + opacityToHex(0.30), // 30% opacity
+      'editor.lineHighlightBackground': colors.surface0 + opacityToHex(0.50), // 50% opacity
       'editor.lineHighlightBorder': colors.surface1,
-      
+
       // Scrollbar
-      'scrollbarSlider.background': colors.surface2,
+      'scrollbarSlider.background': colors.surface2 + opacityToHex(0.50),
       'scrollbarSlider.hoverBackground': colors.overlay0,
       'scrollbarSlider.activeBackground': colors.overlay1,
-      
+
       // Widgets
       'editorWidget.background': colors.surface0,
       'editorWidget.foreground': colors.text,
@@ -316,26 +322,26 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       'editorHoverWidget.background': colors.surface0,
       'editorHoverWidget.foreground': colors.text,
       'editorHoverWidget.border': colors.surface1,
-      
+
       // Bracket matching
       'editorBracketMatch.background': colors.surface2,
       'editorBracketMatch.border': colors.overlay2,
-      
+
       // Find widget
-      'editorFindMatch.background': colors.yellow + '40', // Add alpha
-      'editorFindMatchHighlight.background': colors.yellow + '20',
-      'editorFindRangeHighlight.background': colors.surface1,
-      
+      'editorFindMatch.background': colors.yellow + opacityToHex(0.50), // 50% opacity
+      'editorFindMatchHighlight.background': colors.yellow + opacityToHex(0.20), // 20% opacity
+      'editorFindRangeHighlight.background': colors.surface1 + opacityToHex(0.30), // 30% opacity
+
       // Minimap
       'minimap.background': colors.mantle,
       'minimap.foregroundOpacity': isDark ? '#ffffff30' : '#00000030',
-      
+
       // Gutter
       'editorGutter.background': colors.base,
       'editorGutter.modifiedBackground': colors.yellow,
       'editorGutter.addedBackground': colors.green,
       'editorGutter.deletedBackground': colors.red,
-      
+
       // Overview ruler
       'editorOverviewRuler.border': colors.surface1,
       'editorOverviewRuler.findMatchForeground': colors.yellow,

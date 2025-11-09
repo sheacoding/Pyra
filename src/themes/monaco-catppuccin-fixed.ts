@@ -8,6 +8,12 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
   // Remove # from hex colors for Monaco
   const clean = (color: string) => color.replace('#', '')
 
+  // Helper function to convert decimal opacity to hex (0-1 to 00-FF)
+  const opacityToHex = (opacity: number): string => {
+    const hex = Math.round(opacity * 255).toString(16).padStart(2, '0')
+    return hex
+  }
+
   return {
     base: isDark ? 'vs-dark' : 'vs',
     inherit: true,
@@ -84,6 +90,15 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
       { token: 'constant', foreground: clean(colors.peach) },
       { token: 'annotation', foreground: clean(colors.pink) },
       { token: 'decorator', foreground: clean(colors.pink) },
+      { token: 'attribute.name', foreground: clean(colors.blue) },
+      { token: 'metatag', foreground: clean(colors.peach), fontStyle: 'bold' },
+      { token: 'delimiter', foreground: clean(colors.sky) },
+      { token: 'delimiter.square', foreground: clean(colors.sky) },
+      { token: 'delimiter.curly', foreground: clean(colors.sky) },
+      { token: 'delimiter.parenthesis', foreground: clean(colors.sky) },
+      { token: 'string.quote', foreground: clean(colors.green) },
+      { token: 'string.escape', foreground: clean(colors.peach) },
+      { token: 'string.escape.invalid', foreground: clean(colors.red), fontStyle: 'bold' },
 
       // Default
       { token: '', foreground: clean(colors.text) },
@@ -91,8 +106,16 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
     colors: {
       'editor.foreground': colors.text,
       'editor.background': colors.base,
-      'editor.selectionBackground': colors.surface2,
-      'editor.lineHighlightBackground': colors.surface0 + '50',
+
+      // Selection colors - using 8-digit hex format (#RRGGBBAA) for Monaco
+      'editor.selectionBackground': colors.blue + opacityToHex(0.40), // 40% opacity = 0x66
+      'editor.selectionHighlightBackground': colors.blue + opacityToHex(0.20), // 20% opacity = 0x33
+      'editor.inactiveSelectionBackground': colors.surface2 + opacityToHex(0.60), // 60% opacity = 0x99
+      'editor.findMatchBackground': colors.yellow + opacityToHex(0.50), // 50% opacity = 0x80
+      'editor.findMatchHighlightBackground': colors.yellow + opacityToHex(0.30), // 30% opacity = 0x4D
+      'editor.findRangeHighlightBackground': colors.surface2 + opacityToHex(0.40),
+
+      'editor.lineHighlightBackground': colors.surface0 + opacityToHex(0.50), // 50% opacity
       'editorCursor.foreground': colors.rosewater,
       'editorWhitespace.foreground': isDark ? colors.surface1 : colors.surface2,
 
@@ -106,9 +129,13 @@ export const createMonacoCatppuccinTheme = (flavor: CatppuccinFlavor = 'mocha'):
 
       // Scrollbar
       'scrollbar.shadow': colors.base,
-      'scrollbarSlider.background': colors.surface1 + '80',
+      'scrollbarSlider.background': colors.surface1 + opacityToHex(0.50),
       'scrollbarSlider.hoverBackground': colors.surface2,
       'scrollbarSlider.activeBackground': colors.surface2,
+
+      // Word highlight
+      'editor.wordHighlightBackground': colors.surface2 + opacityToHex(0.60),
+      'editor.wordHighlightStrongBackground': colors.surface2 + opacityToHex(0.80), // 80% opacity
     }
   }
 }
