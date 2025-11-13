@@ -1,16 +1,26 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { listen } from '@tauri-apps/api/event'
-import { TauriAPI, type StackFrame, type Variable, type Scope } from '../lib/tauri'
+import { TauriAPI, type StackFrame, type Variable, type Scope, type Breakpoint } from '../lib/tauri'
 
 interface DebugPanelProps {
   isVisible: boolean
+  isDebugging: boolean
   onClose: () => void
+  breakpoints: Breakpoint[]
+  outputMessages: DebugOutputMessage[]
+  onNavigateToLocation?: (file: string, line: number, column?: number) => void
 }
 
 type DebugState = 'idle' | 'running' | 'paused'
 
-export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
+export interface DebugOutputMessage {
+  id: string
+  category: string
+  content: string
+}
+
+export function DebugPanel({ isVisible, isDebugging, onClose, breakpoints, outputMessages, onNavigateToLocation }: DebugPanelProps) {
   const { t } = useTranslation()
   const [isPaused, setIsPaused] = useState(false)
   const [currentThreadId, setCurrentThreadId] = useState<number | null>(null)
@@ -27,16 +37,20 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
 
   // Determine initial debug state when panel becomes visible
   useEffect(() => {
-    if (isVisible) {
-      if (isPaused && currentThreadId !== null) {
-        setDebugState('paused')
-      } else if (currentThreadId !== null) {
-        setDebugState('running')
-      } else {
-        setDebugState('idle')
-      }
+    if (!isVisible) return
+
+    if (isPaused && currentThreadId !== null) {
+      setDebugState('paused')
+      return
     }
-  }, [isVisible, isPaused, currentThreadId])
+
+    if (isDebugging) {
+      setDebugState('running')
+      return
+    }
+
+    setDebugState('idle')
+  }, [isVisible, isPaused, currentThreadId, isDebugging])
 
   const resetVariableTree = useCallback(() => {
     setVariables([])
@@ -223,6 +237,9 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
   const handleFrameClick = async (frame: StackFrame) => {
     setSelectedFrameId(frame.id)
     await loadFrameData(frame.id)
+    if (frame.file) {
+      onNavigateToLocation?.(frame.file, frame.line, frame.column)
+    }
   }
 
   const handleScopeClick = async (scope: Scope) => {
@@ -341,6 +358,29 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
   }
 
   const controlsEnabled = isPaused && currentThreadId !== null
+  const formatFileLabel = (path: string) => {
+    if (!path) return t('debugPanel.unknownFile')
+    const segments = path.split(/[/\\]/)
+    return segments[segments.length - 1] || path
+  }
+
+  const handleBreakpointClick = (breakpoint: Breakpoint) => {
+    if (!breakpoint.file) {
+      return
+    }
+    onNavigateToLocation?.(breakpoint.file, breakpoint.line, 1)
+  }
+
+  const getOutputMeta = (category?: string) => {
+    switch (category) {
+      case 'stderr':
+        return { label: t('debugPanel.outputStderr'), bg: 'rgba(230, 69, 83, 0.25)', color: 'var(--ctp-red)' }
+      case 'stdout':
+        return { label: t('debugPanel.outputStdout'), bg: 'rgba(166, 227, 161, 0.2)', color: 'var(--ctp-green)' }
+      default:
+        return { label: t('debugPanel.outputInfo'), bg: 'var(--ctp-surface1)', color: 'var(--ctp-overlay1)' }
+    }
+  }
 
   // Get status indicator properties based on debug state
   const getStatusProps = () => {
@@ -374,12 +414,13 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
 
   const statusProps = getStatusProps()
 
-  if (!isVisible) return null
-
   return (
     <div
       className="h-full flex flex-col"
-      style={{ backgroundColor: 'var(--ctp-mantle)' }}
+      style={{
+        backgroundColor: 'var(--ctp-mantle)',
+        display: isVisible ? 'flex' : 'none'
+      }}
     >
       {/* Header */}
       <div className="panel-header flex items-center justify-between">
@@ -548,7 +589,7 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
         </div>
 
         {/* Variables */}
-        <div>
+        <div className="border-b" style={{ borderColor: 'var(--ctp-surface1)' }}>
           <div className="px-3 py-2 font-semibold text-sm" style={{ color: 'var(--ctp-subtext1)' }}>
             {t('debugPanel.variables')}
           </div>
@@ -565,6 +606,79 @@ export function DebugPanel({ isVisible, onClose }: DebugPanelProps) {
               </div>
             ) : (
               variables.map(variable => renderVariable(variable))
+            )}
+          </div>
+        </div>
+
+        {/* Breakpoints */}
+        <div className="border-b" style={{ borderColor: 'var(--ctp-surface1)' }}>
+          <div className="px-3 py-2 font-semibold text-sm" style={{ color: 'var(--ctp-subtext1)' }}>
+            {t('debugPanel.breakpoints')}
+          </div>
+          <div className="px-2 pb-2 flex flex-col gap-1">
+            {breakpoints.length === 0 ? (
+              <div className="text-sm px-2 py-1" style={{ color: 'var(--ctp-overlay0)' }}>
+                {t('debugPanel.noBreakpoints')}
+              </div>
+            ) : (
+              breakpoints.map(bp => (
+                <button
+                  key={`${bp.file}:${bp.line}:${bp.id ?? 'n/a'}`}
+                  onClick={() => handleBreakpointClick(bp)}
+                  className="w-full text-left px-2 py-1 rounded text-sm transition-colors flex gap-2 items-start"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: 'var(--ctp-text)'
+                  }}
+                >
+                  <i
+                    className={`fas ${bp.verified ? 'fa-check-circle' : 'fa-clock'}`}
+                    style={{ color: bp.verified ? 'var(--ctp-green)' : 'var(--ctp-yellow)' }}
+                  ></i>
+                  <div className="flex-1">
+                    <div className="font-medium break-words">{formatFileLabel(bp.file)}</div>
+                    <div className="text-xs" style={{ color: 'var(--ctp-overlay1)' }}>
+                      {bp.file}:{bp.line}
+                    </div>
+                    <div className="text-xs" style={{ color: bp.verified ? 'var(--ctp-green)' : 'var(--ctp-yellow)' }}>
+                      {bp.verified ? t('debugPanel.breakpointVerified') : t('debugPanel.breakpointPending')}
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Debug Output */}
+        <div>
+          <div className="px-3 py-2 font-semibold text-sm" style={{ color: 'var(--ctp-subtext1)' }}>
+            {t('debugPanel.output')}
+          </div>
+          <div className="px-2 pb-2 flex flex-col gap-1 max-h-48 overflow-auto pr-1">
+            {outputMessages.length === 0 ? (
+              <div className="text-sm px-2 py-1" style={{ color: 'var(--ctp-overlay0)' }}>
+                {t('debugPanel.outputEmpty')}
+              </div>
+            ) : (
+              outputMessages.map(message => {
+                const meta = getOutputMeta(message.category)
+                return (
+                  <div
+                    key={message.id}
+                    className="px-2 py-1 rounded text-xs flex items-start gap-2"
+                    style={{ backgroundColor: 'var(--ctp-surface0)', color: 'var(--ctp-text)' }}
+                  >
+                    <span
+                      className="px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide uppercase"
+                      style={{ backgroundColor: meta.bg, color: meta.color }}
+                    >
+                      {meta.label}
+                    </span>
+                    <span className="flex-1 break-words">{message.content}</span>
+                  </div>
+                )
+              })
             )}
           </div>
         </div>

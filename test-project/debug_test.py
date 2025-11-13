@@ -5,9 +5,11 @@
 # 3. Use Continue/Step Over/Step Into to navigate
 # 4. Check variable values in the debug panel
 
+
 def calculate(a, b):
     result = a + b  # Breakpoint here (line 8)
     return result
+
 
 def main():
     print("Starting debugger test")
@@ -26,16 +28,14 @@ def main():
         "name": "Pyra IDE",
         "version": "1.0",
         "features": ["debugging", "syntax highlighting", "linting"],
-        "config": {
-            "theme": "catppuccin-mocha",
-            "fontSize": 14
-        }
+        "config": {"theme": "catppuccin-mocha", "fontSize": 14},
     }
 
     print(f"Sum of x and y: {result}")
     print(f"Sum of numbers: {total}")
     print(f"Project: {data['name']}")
     print("Debug test completed successfully!")
+
 
 if __name__ == "__main__":
     main()

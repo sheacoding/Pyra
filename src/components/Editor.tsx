@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Editor as MonacoEditor } from '@monaco-editor/react'
 import { TauriAPI, RuffCheckResult, RuffDiagnostic } from '../lib/tauri'
@@ -26,6 +26,8 @@ export interface EditorHandle {
   lint: () => void
   getContent: () => string
   getBreakpoints: () => number[]
+  revealLocation: (line: number, column?: number) => boolean
+  refreshLayout: () => void
 }
 
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ filePath, projectPath, settings, onConsoleOutput, onConsoleError, onScriptStart, onScriptStop }: EditorProps, ref) {
@@ -41,6 +43,27 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<any>(null)
   const breakpointDecorationsRef = useRef<string[]>([])
+  const revealEditorLocation = useCallback((lineNumber: number, columnNumber = 1) => {
+    const editorInstance = editorRef.current
+
+    if (!editorInstance) {
+      return false
+    }
+
+    const line = Math.max(1, lineNumber)
+    const column = Math.max(1, columnNumber)
+    const targetPosition = { lineNumber: line, column }
+
+    editorInstance.revealPositionInCenter(targetPosition)
+    editorInstance.setSelection({
+      startLineNumber: line,
+      startColumn: column,
+      endLineNumber: line,
+      endColumn: column
+    })
+    editorInstance.focus()
+    return true
+  }, [])
 
   // Handle breakpoint change console output as a side effect
   useEffect(() => {
@@ -706,8 +729,14 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor({ fi
     format: () => { formatCurrentFile() },
     lint: () => { if (filePath) runRuffLinting(filePath) },
     getContent: () => { return editorRef.current?.getValue() || content },
-    getBreakpoints: () => { return Array.from(breakpoints) }
-  }), [filePath, projectPath, isRunning, settings, content, breakpoints])
+    getBreakpoints: () => { return Array.from(breakpoints) },
+    revealLocation: (line: number, column = 1) => revealEditorLocation(line, column),
+    refreshLayout: () => {
+      if (editorRef.current) {
+        editorRef.current.layout()
+      }
+    }
+  }), [breakpoints, content, filePath, projectPath, revealEditorLocation, settings, isRunning])
 
   if (!filePath) {
     return (

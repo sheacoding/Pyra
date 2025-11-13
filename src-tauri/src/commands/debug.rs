@@ -706,6 +706,17 @@ async fn debug_event_loop(manager: DebugSessionManager, window: Window) {
                                 }
                             }
                         }
+                        "breakpoint" => {
+                            if let Err(e) = window.emit(
+                                "debug-breakpoint",
+                                serde_json::json!({
+                                    "reason": event["body"]["reason"].as_str().unwrap_or(""),
+                                    "breakpoint": event["body"]["breakpoint"].clone()
+                                }),
+                            ) {
+                                eprintln!("[DEBUG] Failed to emit debug-breakpoint event: {}", e);
+                            }
+                        }
                         "initialized" => {
                             println!("[DEBUG] Debugger initialized");
                         }

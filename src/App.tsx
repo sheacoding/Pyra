@@ -13,8 +13,23 @@ import { SettingsPanel } from './components/SettingsPanel'
 import type { IDESettings } from './components/SettingsPanel'
 import { ProjectTemplateDialog } from './components/ProjectTemplateDialog'
 import { TabsBar } from './components/TabsBar'
-import { DebugPanel } from './components/DebugPanel'
-import { TauriAPI } from './lib/tauri'
+import { DebugPanel, type DebugOutputMessage } from './components/DebugPanel'
+import { TauriAPI, type Breakpoint } from './lib/tauri'
+
+interface DebugBreakpointEventPayload {
+  reason?: string
+  breakpoint?: {
+    id?: number
+    verified?: boolean
+    line?: number
+    column?: number
+    source?: {
+      path?: string
+    }
+  }
+}
+
+const DEBUG_OUTPUT_LIMIT = 200
 
 function App() {
   const { t } = useTranslation()
@@ -202,10 +217,17 @@ function App() {
   const [showDebugMenu, setShowDebugMenu] = useState(false)
   const [showDebugPanel, setShowDebugPanel] = useState(false)
   const [isDebugging, setIsDebugging] = useState(false)
+  const [debugBreakpoints, setDebugBreakpoints] = useState<Breakpoint[]>([])
+  const [debugOutputMessages, setDebugOutputMessages] = useState<DebugOutputMessage[]>([])
+  const [pendingDebugLocation, setPendingDebugLocation] = useState<{ file: string; line: number } | null>(null)
   const editorRef = useRef<EditorHandle | null>(null)
   const fileTreeRef = useRef<FileTreeHandle | null>(null)
   const debugMenuRef = useRef<HTMLDivElement | null>(null)
   const debugStopRequestedRef = useRef(false)
+
+  useEffect(() => {
+    editorRef.current?.refreshLayout?.()
+  }, [showDebugPanel, showProjectPanel])
 
   // Disable browser shortcuts and context menu for desktop app experience
   useEffect(() => {
@@ -397,11 +419,27 @@ function App() {
     setConsoleMessages(prev => [...prev, message])
   }, [])
 
+  const appendDebugOutput = useCallback((category: string, content: string) => {
+    setDebugOutputMessages(prev => {
+      const entry: DebugOutputMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+        category,
+        content
+      }
+      const next = [...prev, entry]
+      if (next.length > DEBUG_OUTPUT_LIMIT) {
+        return next.slice(next.length - DEBUG_OUTPUT_LIMIT)
+      }
+      return next
+    })
+  }, [])
+
   useEffect(() => {
     let unlistenStopped: UnlistenFn | undefined
     let unlistenContinued: UnlistenFn | undefined
     let unlistenTerminated: UnlistenFn | undefined
     let unlistenOutput: UnlistenFn | undefined
+    let unlistenBreakpoint: UnlistenFn | undefined
 
     const setupDebugListeners = async () => {
       try {
@@ -418,11 +456,15 @@ function App() {
         unlistenTerminated = await listen('debug-terminated', () => {
           setIsDebugging(false)
           setShowDebugPanel(false)
+          setDebugBreakpoints([])
+          setPendingDebugLocation(null)
 
           if (debugStopRequestedRef.current) {
             debugStopRequestedRef.current = false
           } else {
-            handleConsoleOutput(t('messages.debugStopped') + '\n')
+            const message = t('messages.debugStopped')
+            handleConsoleOutput(message + '\n')
+            appendDebugOutput('info', message)
           }
         })
 
@@ -440,6 +482,64 @@ function App() {
           } else {
             handleConsoleOutput(normalized)
           }
+
+          appendDebugOutput(category ?? 'stdout', normalized)
+        })
+
+        unlistenBreakpoint = await listen<DebugBreakpointEventPayload>('debug-breakpoint', (event) => {
+          const payload = event.payload
+          const breakpoint = payload?.breakpoint
+          if (!breakpoint) {
+            return
+          }
+
+          const file = breakpoint.source?.path
+          const line = typeof breakpoint.line === 'number' ? breakpoint.line : undefined
+          const id = typeof breakpoint.id === 'number' ? breakpoint.id : undefined
+          const verified = breakpoint.verified ?? false
+          const reason = payload?.reason
+
+          if (reason === 'removed' && (file || id !== undefined)) {
+            setDebugBreakpoints(prev =>
+              prev.filter(bp => {
+                if (id !== undefined && bp.id !== undefined) {
+                  return bp.id !== id
+                }
+                if (file && line !== undefined) {
+                  return !(bp.file === file && bp.line === line)
+                }
+                return true
+              })
+            )
+            return
+          }
+
+          if (!file || line === undefined) {
+            return
+          }
+
+          setDebugBreakpoints(prev => {
+            const index = prev.findIndex(bp => {
+              if (id !== undefined && bp.id !== undefined) {
+                return bp.id === id
+              }
+              return bp.file === file && bp.line === line
+            })
+
+            if (index === -1) {
+              return [...prev, { file, line, verified, id }]
+            }
+
+            const next = [...prev]
+            next[index] = {
+              ...next[index],
+              file,
+              line,
+              verified,
+              id: id ?? next[index].id
+            }
+            return next
+          })
         })
       } catch (error) {
         console.error('Failed to set up debug listeners:', error)
@@ -453,25 +553,50 @@ function App() {
       unlistenContinued?.()
       unlistenTerminated?.()
       unlistenOutput?.()
+      unlistenBreakpoint?.()
     }
-  }, [handleConsoleError, handleConsoleOutput, t])
+  }, [appendDebugOutput, handleConsoleError, handleConsoleOutput, t])
+
+  useEffect(() => {
+    if (!pendingDebugLocation) return
+    const target = pendingDebugLocation
+    let frameId = 0
+    let cancelled = false
+
+    const attemptReveal = () => {
+      if (cancelled) {
+        return
+      }
+
+      if (currentFile !== target.file) {
+        frameId = requestAnimationFrame(attemptReveal)
+        return
+      }
+
+      const editorHandle = editorRef.current
+      if (editorHandle && editorHandle.revealLocation(target.line)) {
+        setPendingDebugLocation(null)
+        return
+      }
+
+      frameId = requestAnimationFrame(attemptReveal)
+    }
+
+    frameId = requestAnimationFrame(attemptReveal)
+
+    return () => {
+      cancelled = true
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+      }
+    }
+  }, [currentFile, pendingDebugLocation])
 
   const handleToggleProjectPanel = (e?: React.MouseEvent) => {
-    // 确保阻止事件冒泡和默认行为
     e?.preventDefault()
     e?.stopPropagation()
 
-    if (!projectPath) {
-      handleConsoleError(t('messages.noProjectOpen'))
-      return
-    }
-
-    console.log('Toggle project panel clicked, current state:', showProjectPanel)
-    setShowProjectPanel(prev => {
-      const newState = !prev
-      console.log('Setting showProjectPanel to:', newState)
-      return newState
-    })
+    setShowProjectPanel(prev => !prev)
   }
 
   const handleClearConsole = () => {
@@ -572,10 +697,15 @@ function App() {
       await TauriAPI.stopDebugSession()
       setIsDebugging(false)
       setShowDebugPanel(false)
-      handleConsoleOutput(t('messages.debugStopped') + '\n')
+      setDebugBreakpoints([])
+      setPendingDebugLocation(null)
+      const message = t('messages.debugStopped')
+      handleConsoleOutput(message + '\n')
+      appendDebugOutput('info', message)
     } catch (error) {
       debugStopRequestedRef.current = false
       console.error('Failed to stop debugging:', error)
+      appendDebugOutput('stderr', t('messages.debugError', { error: String(error) }))
     }
   }
 
@@ -623,13 +753,20 @@ function App() {
     }
 
     try {
-      handleConsoleOutput(t('messages.debugStarting') + '\n')
+      setDebugOutputMessages([])
+      setShowDebugPanel(true)
+      setIsDebugging(true)
+      const startingMessage = t('messages.debugStarting')
+      handleConsoleOutput(startingMessage + '\n')
+      appendDebugOutput('info', startingMessage)
 
       // Get breakpoints from editor
       const breakpoints = editorRef.current?.getBreakpoints?.() || []
 
       if (breakpoints.length === 0) {
-        handleConsoleOutput(t('messages.noBreakpoints') + '\n')
+        const warning = t('messages.noBreakpoints')
+        handleConsoleOutput(warning + '\n')
+        appendDebugOutput('info', warning)
       }
 
       // Convert to API format
@@ -638,6 +775,7 @@ function App() {
         line,
         verified: false
       }))
+      setDebugBreakpoints(apiBreakpoints)
 
       console.debug('[APP] Starting debug session with', {
         projectPath,
@@ -655,14 +793,20 @@ function App() {
 
       setIsDebugging(true)
       setShowDebugPanel(true)
-      handleConsoleOutput(t('messages.debugStarted') + '\n')
+      const startedMessage = t('messages.debugStarted')
+      handleConsoleOutput(startedMessage + '\n')
+      appendDebugOutput('info', startedMessage)
 
     } catch (error) {
-      handleConsoleError(t('messages.debugError', { error: String(error) }) + '\n')
+      const errorMessage = t('messages.debugError', { error: String(error) })
+      handleConsoleError(errorMessage + '\n')
       console.error('Debug error:', error)
+      appendDebugOutput('stderr', errorMessage)
       // Reset states on error
       setIsDebugging(false)
       setShowDebugPanel(false)
+      setDebugBreakpoints([])
+      setDebugOutputMessages([])
     }
   }
 
@@ -684,10 +828,20 @@ function App() {
   }, [showDebugMenu])
 
   // Tab management
-  const openFileInTab = (path: string) => {
+  const openFileInTab = useCallback((path: string) => {
     setOpenTabs(prev => (prev.includes(path) ? prev : [...prev, path]))
     setCurrentFile(path)
-  }
+  }, [])
+
+  const handleNavigateToLocation = useCallback((file: string, line: number) => {
+    if (!file) {
+      return
+    }
+    openFileInTab(file)
+    setShowDebugPanel(true)
+    setPendingDebugLocation({ file, line })
+  }, [openFileInTab])
+
 
   const closeTab = (path: string) => {
     setOpenTabs(prev => prev.filter(p => p !== path))
@@ -1193,26 +1347,48 @@ function App() {
             </div>
           </div>
 
-          {/* Debug Panel */}
-          {showDebugPanel && (
-            <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
+          {/* Debug Panel (persistent container) */}
+          <div
+            className="flex-shrink-0 border-l transition-[width,opacity] duration-200 ease-in-out"
+            style={{
+              width: showDebugPanel ? '20rem' : 0,
+              opacity: showDebugPanel ? 1 : 0,
+              pointerEvents: showDebugPanel ? 'auto' : 'none',
+              backgroundColor: 'var(--ctp-mantle)',
+              borderColor: 'var(--ctp-surface1)'
+            }}
+          >
+            <div style={{ display: showDebugPanel ? 'block' : 'none', height: '100%' }}>
               <DebugPanel
                 isVisible={showDebugPanel}
+                isDebugging={isDebugging}
                 onClose={() => setShowDebugPanel(false)}
+                breakpoints={debugBreakpoints}
+                outputMessages={debugOutputMessages}
+                onNavigateToLocation={handleNavigateToLocation}
               />
             </div>
-          )}
+          </div>
 
           {/* Project Panel */}
-          {showProjectPanel && workspaceReady && (
-            <div className="w-80 border-l flex-shrink-0" style={{ backgroundColor: 'var(--ctp-base)', borderColor: 'var(--ctp-surface1)' }}>
+          <div
+            className="flex-shrink-0 border-l transition-[width,opacity] duration-200 ease-in-out"
+            style={{
+              width: showProjectPanel ? '20rem' : 0,
+              opacity: showProjectPanel ? 1 : 0,
+              pointerEvents: showProjectPanel ? 'auto' : 'none',
+              backgroundColor: 'var(--ctp-base)',
+              borderColor: 'var(--ctp-surface1)'
+            }}
+          >
+            <div style={{ display: showProjectPanel ? 'block' : 'none', height: '100%' }}>
               <ProjectPanel
                 projectPath={projectPath}
                 onConsoleOutput={handleConsoleOutput}
                 onConsoleError={handleConsoleError}
               />
             </div>
-          )}
+          </div>
         </div>
       </div>
 
