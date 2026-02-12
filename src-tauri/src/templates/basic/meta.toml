@@ -1,0 +1,13 @@
+id = "basic"
+name = "Basic Python Project"
+description = "A simple Python project with main.py"
+category = "General"
+dependencies = []
+
+[[files]]
+path = "main.py"
+is_directory = false
+
+[[files]]
+path = "README.md"
+is_directory = false

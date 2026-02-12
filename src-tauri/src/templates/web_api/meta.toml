@@ -1,0 +1,21 @@
+id = "web-api"
+name = "FastAPI Web API"
+description = "REST API with FastAPI framework"
+category = "Web"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.4.0",
+]
+
+[[files]]
+path = "main.py"
+is_directory = false
+
+[[files]]
+path = "requirements.txt"
+is_directory = false
+
+[[files]]
+path = "README.md"
+is_directory = false

@@ -1,0 +1,13 @@
+id = "cli-app"
+name = "CLI Application"
+description = "Command-line application with argparse"
+category = "Applications"
+dependencies = []
+
+[[files]]
+path = "main.py"
+is_directory = false
+
+[[files]]
+path = "README.md"
+is_directory = false

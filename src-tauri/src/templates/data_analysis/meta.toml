@@ -1,0 +1,35 @@
+id = "data-analysis"
+name = "Data Analysis"
+description = "Data science project with pandas and matplotlib"
+category = "Data Science"
+dependencies = [
+    "pandas>=2.1.0",
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+    "seaborn>=0.12.0",
+    "jupyter>=1.0.0",
+]
+
+[[files]]
+path = "data/"
+is_directory = true
+
+[[files]]
+path = "notebooks/"
+is_directory = true
+
+[[files]]
+path = "src/"
+is_directory = true
+
+[[files]]
+path = "main.py"
+is_directory = false
+
+[[files]]
+path = "requirements.txt"
+is_directory = false
+
+[[files]]
+path = "README.md"
+is_directory = false
