@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 're
 import { useTranslation } from 'react-i18next'
 import { TauriAPI, FileItem } from '../lib/tauri'
 import { ask, message } from '@tauri-apps/plugin-dialog'
+import { Icon } from './Icon'
 
 interface FileTreeProps {
   projectPath: string
@@ -262,21 +263,26 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
 
   const getFileIcon = (fileName: string, isDirectory: boolean, isExpanded?: boolean) => {
     if (isDirectory) {
-      return isExpanded ? <i className="fas fa-folder-open text-yellow-600"></i> : <i className="fas fa-folder text-yellow-600"></i>
+      return isExpanded
+        ? <Icon name="folder-open" size={14} color="var(--ctp-yellow)" />
+        : <Icon name="folder" size={14} color="var(--ctp-yellow)" />
     }
 
     const ext = fileName.split('.').pop()?.toLowerCase()
     switch (ext) {
-      case 'py': return <i className="fab fa-python text-blue-500"></i>
-      case 'js': return <i className="fab fa-js-square text-yellow-500"></i>
-      case 'ts': return <i className="fas fa-code text-blue-600"></i>
-      case 'json': return <i className="fas fa-file-code text-orange-500"></i>
-      case 'md': return <i className="fab fa-markdown text-gray-600"></i>
-      case 'txt': return <i className="fas fa-file-alt text-gray-500"></i>
-      case 'toml': return <i className="fas fa-cog text-gray-600"></i>
+      case 'py': return <Icon name="python" size={14} color="var(--ctp-blue)" />
+      case 'js': return <Icon name="javascript" size={14} color="var(--ctp-yellow)" />
+      case 'ts':
+      case 'tsx': return <Icon name="typescript" size={14} color="var(--ctp-blue)" />
+      case 'json': return <Icon name="json" size={14} color="var(--ctp-peach)" />
+      case 'md': return <Icon name="markdown" size={14} color="var(--ctp-sapphire)" />
+      case 'txt': return <Icon name="file-lines" size={14} color="var(--ctp-subtext0)" />
+      case 'toml': return <Icon name="config" size={14} color="var(--ctp-mauve)" />
       case 'yml':
-      case 'yaml': return <i className="fas fa-file-alt text-red-500"></i>
-      default: return <i className="fas fa-file text-gray-500"></i>
+      case 'yaml': return <Icon name="config" size={14} color="var(--ctp-red)" />
+      case 'html': return <Icon name="html" size={14} color="var(--ctp-peach)" />
+      case 'css': return <Icon name="css" size={14} color="var(--ctp-blue)" />
+      default: return <Icon name="file" size={14} color="var(--ctp-subtext0)" />
     }
   }
 
@@ -405,26 +411,26 @@ export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(function FileT
             onClick={() => { refreshFiles(); setContextMenu(null) }}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-sync-alt"></i> {t('fileTree.refresh')}
+            <Icon name="refresh" size={14} /> {t('fileTree.refresh')}
           </button>
           <button
             onClick={handleCreateNewFile}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-file-plus"></i> {t('fileTree.newFile')}
+            <Icon name="file-plus" size={14} /> {t('fileTree.newFile')}
           </button>
           <button
             onClick={handleCreateNewFolder}
             className="w-full text-left px-3 py-1 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-folder-plus"></i> {t('fileTree.newFolder')}
+            <Icon name="folder-plus" size={14} /> {t('fileTree.newFolder')}
           </button>
           <div className="border-t border-gray-600 my-1"></div>
           <button
             onClick={() => handleDeleteFile(contextMenu.targetPath)}
             className="w-full text-left px-3 py-1 text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"
           >
-            <i className="fas fa-trash"></i> {t('fileTree.delete')}
+            <Icon name="trash" size={14} /> {t('fileTree.delete')}
           </button>
         </div>
       )}

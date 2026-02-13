@@ -1,4 +1,5 @@
 @import '@fortawesome/fontawesome-free/css/all.css';
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -69,9 +70,15 @@
 
 @layer base {
   body {
-    @apply font-mono;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: var(--ctp-base);
     color: var(--ctp-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
   }
 
   /* ENSURE PROPER THEME APPLICATION */
@@ -119,13 +126,164 @@
     -webkit-app-region: drag;
   }
 
-  /* Unified button sizing for all toolbar and window control buttons */
-  .toolbar-button, .window-controls button {
+  /* Modern toolbar container */
+  .toolbar-container {
+    background: var(--ctp-mantle);
+  }
+
+  /* macOS transparent titlebar - the sidebar section needs left padding for traffic lights */
+  .macos-titlebar .sidebar-toolbar {
+    padding-left: 72px;
+  }
+
+  /* Toolbar section grouping */
+  .toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px;
+  }
+
+  /* Toolbar divider */
+  .toolbar-divider {
+    width: 1px;
+    height: 16px;
+    background-color: var(--ctp-surface1);
+    margin: 0 4px;
+  }
+
+  /* Minimal icon button */
+  .toolbar-icon-btn {
     width: 26px;
-    height: 22px;
-    line-height: 18px;
-    padding: 0;
-    text-align: center;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+
+  .toolbar-icon-btn:hover:not(:disabled) {
+    background-color: var(--ctp-surface0);
+  }
+
+  .toolbar-icon-btn:active:not(:disabled) {
+    background-color: var(--ctp-surface1);
+  }
+
+  .toolbar-icon-btn:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Run button - special styling */
+  .toolbar-run-btn {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 10px;
+    background-color: var(--ctp-green);
+    color: var(--ctp-crust);
+    border: none;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  .toolbar-run-btn:hover:not(:disabled) {
+    background-color: var(--ctp-teal);
+    transform: scale(1.05);
+  }
+
+  .toolbar-run-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .toolbar-run-btn:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Legacy toolbar button styles (keep for compatibility) */
+  .toolbar-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .toolbar-btn:hover:not(:disabled) {
+    background-color: var(--ctp-surface1);
+  }
+
+  .toolbar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Accent button (Run button) */
+  .toolbar-btn-accent {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 11px;
+    transition: all 0.15s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .toolbar-btn-accent:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(166, 227, 161, 0.3);
+  }
+
+  .toolbar-btn-accent:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* Dropdown item */
+  .dropdown-item {
+    width: 100%;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ctp-text);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+  }
+
+  .dropdown-item:hover {
+    background-color: var(--ctp-surface1);
+  }
+
+  /* Toolbar group styling */
+  .toolbar-group {
+    transition: background-color 0.15s ease;
+  }
+
+  .toolbar-group:hover {
+    background-color: var(--ctp-surface1) !important;
   }
 
   /* Exclude interactive regions from drag
@@ -227,6 +385,94 @@
     color: var(--ctp-text);
   }
 
+  /* Tab bar styles */
+  .tabs-bar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ctp-surface2) transparent;
+  }
+
+  .tabs-bar::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .tabs-bar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .tabs-bar::-webkit-scrollbar-thumb {
+    background: var(--ctp-surface2);
+    border-radius: 2px;
+  }
+
+  .tab-item:hover:not(.tab-active) {
+    background-color: var(--ctp-surface0);
+  }
+
+  .tab-item .tab-close:hover {
+    background-color: var(--ctp-surface2);
+    color: var(--ctp-red);
+  }
+
+  .tab-active .tab-close {
+    opacity: 0.5;
+  }
+
+  .tab-active:hover .tab-close {
+    opacity: 1;
+  }
+
+  /* Status bar gradient animation */
+  .status-bar {
+    background-size: 200% 100%;
+    animation: statusbar-gradient 8s ease infinite;
+  }
+
+  @keyframes statusbar-gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Smooth panel transitions */
+  .panel-transition {
+    transition: width 0.2s ease, opacity 0.2s ease;
+  }
+
+  /* Focus ring for accessibility */
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--ctp-mauve);
+    outline-offset: 2px;
+  }
+
+  /* Animate-in utility classes */
+  .animate-in {
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+    animation-duration: 0.15s;
+  }
+
+  .slide-in-from-top-2 {
+    animation-name: slideInFromTop;
+    animation-duration: 0.15s;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInFromTop {
+    from { transform: translateY(-8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Glow effect for active elements */
+  .glow-green {
+    box-shadow: 0 0 10px var(--ctp-green), 0 0 20px rgba(166, 227, 161, 0.3);
+  }
+
   /* Debug status indicator animation */
   @keyframes debug-status-pulse {
     0%, 100% {
@@ -272,6 +518,85 @@
   /* Fix specific inline styles in light theme */
   [data-theme="catppuccin-latte"] [style*="color: var(--ctp-overlay0)"] {
     color: var(--ctp-overlay1) !important;
+  }
+
+  /* ================================================================
+   * Settings Panel - CSS hover/focus 替代 JS handler
+   * ================================================================ */
+
+  .settings-input {
+    background-color: var(--ctp-surface0);
+    border-color: var(--ctp-surface1);
+    color: var(--ctp-text);
+  }
+
+  .settings-input:focus {
+    border-color: var(--ctp-blue);
+    outline: none;
+  }
+
+  .settings-close-btn:hover {
+    color: var(--ctp-text);
+  }
+
+  .settings-nav-btn:hover {
+    background-color: var(--ctp-surface0);
+  }
+
+  .settings-reset-btn:hover {
+    background-color: var(--ctp-maroon);
+  }
+
+  .settings-theme-card:hover {
+    border-color: var(--ctp-surface1);
+  }
+
+  /* ================================================================
+   * Catppuccin 按钮 - CSS hover 替代 JS handler
+   * ================================================================ */
+
+  .btn-ctp-blue {
+    background-color: var(--ctp-blue);
+    color: var(--ctp-base);
+  }
+  .btn-ctp-blue:hover {
+    background-color: var(--ctp-sapphire);
+  }
+
+  .btn-ctp-green {
+    background-color: var(--ctp-green);
+    color: var(--ctp-base);
+  }
+  .btn-ctp-green:hover {
+    background-color: var(--ctp-teal);
+  }
+
+  .btn-ctp-mauve {
+    background-color: var(--ctp-mauve);
+    color: var(--ctp-base);
+  }
+  .btn-ctp-mauve:hover {
+    background-color: var(--ctp-lavender);
+  }
+
+  .btn-ctp-red {
+    background-color: var(--ctp-red);
+    color: var(--ctp-base);
+  }
+  .btn-ctp-red:hover {
+    background-color: var(--ctp-maroon);
+  }
+
+  .btn-ctp-surface2 {
+    background-color: var(--ctp-surface2);
+    color: var(--ctp-text);
+  }
+  .btn-ctp-surface2:hover {
+    background-color: var(--ctp-overlay0);
+  }
+
+  .hover-text-bright:hover {
+    color: var(--ctp-text);
   }
 }
 

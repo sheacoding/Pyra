@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TauriAPI, ProjectTemplate } from '../lib/tauri'
 import { message } from '@tauri-apps/plugin-dialog'
+import { Icon } from './Icon'
 
 interface ProjectTemplateDialogProps {
   isOpen: boolean
@@ -91,12 +92,12 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
       <div className="bg-gray-800 rounded-lg shadow-xl w-5/6 max-w-6xl h-5/6 max-h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white"><i className="fas fa-rocket"></i> {t('templateDialog.title')}</h2>
+          <h2 className="text-xl font-bold text-white"><Icon name="rocket" size={20} /> {t('templateDialog.title')}</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-white p-1 rounded"
           >
-            <i className="fas fa-times"></i>
+            <Icon name="times" size={16} />
           </button>
         </div>
 
@@ -176,7 +177,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
               {selectedTemplateObj && (
                 <div className="mb-6 p-4 bg-gray-700/50 rounded-lg">
                   <h4 className="font-medium text-white mb-2">
-                    <i className="fas fa-clipboard-list"></i> {t(`templateDialog.templates.${selectedTemplateObj.id}.name`, { defaultValue: selectedTemplateObj.name })}
+                    <Icon name="clipboard-list" size={16} /> {t(`templateDialog.templates.${selectedTemplateObj.id}.name`, { defaultValue: selectedTemplateObj.name })}
                   </h4>
                   <p className="text-sm text-gray-300 mb-3">
                     {t(`templateDialog.templates.${selectedTemplateObj.id}.description`, { defaultValue: selectedTemplateObj.description })}
@@ -190,7 +191,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                         .slice(0, 8)
                         .map((file, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <span><i className="fas fa-file"></i></span>
+                            <span><Icon name="file" size={12} /></span>
                             <span>{file.path}</span>
                           </div>
                         ))}
@@ -253,7 +254,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
                       className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded"
                       disabled={creating}
                     >
-                      <i className="fas fa-folder"></i>
+                      <Icon name="folder" size={14} />
                     </button>
                   </div>
                   {projectName && projectPath && (
@@ -305,7 +306,7 @@ export function ProjectTemplateDialog({ isOpen, onClose, onCreateProject }: Proj
               </>
             ) : (
               <>
-                <i className="fas fa-rocket"></i> {t('templateDialog.createProject')}
+                <Icon name="rocket" size={14} /> {t('templateDialog.createProject')}
               </>
             )}
           </button>

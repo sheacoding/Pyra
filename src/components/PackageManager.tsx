@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TauriAPI, type Package, type DependencyTree, type PackageWithDeps } from '../lib/tauri'
+import { Icon } from './Icon'
 
 interface PackageManagerProps {
   projectPath: string
@@ -178,7 +179,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               }}
               title={t('packageManager.viewOnPyPI')}
             >
-              <i className="fas fa-external-link-alt"></i>
+              <Icon name="external-link" size={12} />
             </button>
             <button
               onClick={() => handleUninstallPackage(pkg.name)}
@@ -200,7 +201,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               }}
               title={t('packageManager.uninstall')}
             >
-              <i className="fas fa-trash"></i>
+              <Icon name="trash" size={12} />
             </button>
           </div>
         </div>
@@ -229,7 +230,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                     }}
                     title={t('packageManager.viewOnPyPI')}
                   >
-                    <i className="fas fa-external-link-alt"></i>
+                    <Icon name="external-link" size={12} />
                   </button>
                 </div>
               </div>
@@ -270,7 +271,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   }
                 }}
               >
-                <i className="fas fa-list"></i> {t('packageManager.viewList')}
+                <Icon name="list" size={12} /> {t('packageManager.viewList')}
               </button>
               <button
                 onClick={() => setViewMode('tree')}
@@ -290,7 +291,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                   }
                 }}
               >
-                <i className="fas fa-sitemap"></i> {t('packageManager.viewTree')}
+                <Icon name="sitemap" size={12} /> {t('packageManager.viewTree')}
               </button>
             </div>
             <button
@@ -392,7 +393,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ctp-text)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ctp-subtext1)'}
               >
-                <i className="fas fa-times"></i>
+                <Icon name="times" size={12} />
               </button>
             )}
           </div>
@@ -415,7 +416,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
               }
             }}
           >
-            {isInstalling ? <><i className="fas fa-spinner fa-spin"></i> {t('packageManager.installing')}</> : <><i className="fas fa-download"></i> {t('packageManager.install')}</>}
+            {isInstalling ? <><Icon name="spinner" size={14} className="animate-spin" /> {t('packageManager.installing')}</> : <><Icon name="download" size={14} /> {t('packageManager.install')}</>}
           </button>
         </form>
         
@@ -478,7 +479,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
           color: 'var(--ctp-subtext0)',
           backgroundColor: 'var(--ctp-surface0)'
         }}>
-          <i className="fas fa-lightbulb"></i> {t('packageManager.tips')} <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.exactVersion')}</code> {t('packageManager.forExact')}
+          <Icon name="lightbulb" size={12} color="var(--ctp-yellow)" /> {t('packageManager.tips')} <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.exactVersion')}</code> {t('packageManager.forExact')}
           <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.minVersion')}</code> {t('packageManager.forMin')}
           {t('packageManager.orGit')} <code className="px-1 rounded" style={{ backgroundColor: 'var(--ctp-surface1)' }}>{t('packageManager.gitRepo')}</code> {t('packageManager.forGitRepos')}
         </div>
@@ -490,7 +491,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
           <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext1)' }}>{t('packageManager.loading')}</div>
         ) : packages.length === 0 ? (
           <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
-            <div className="text-6xl mb-4"><i className="fas fa-box" style={{ color: 'var(--ctp-peach)' }}></i></div>
+            <div className="text-6xl mb-4"><Icon name="box" size={64} color="var(--ctp-peach)" /></div>
             <div className="text-lg mb-2">{t('packageManager.noPackages')}</div>
             <div className="text-sm">{t('packageManager.installFirst')}</div>
           </div>
@@ -502,7 +503,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                 filteredDependencyTree.packages.map(renderPackageTree)
               ) : (
                 <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
-                  <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
+                  <div className="text-4xl mb-4"><Icon name="search" size={48} color="var(--ctp-subtext0)" /></div>
                   <div className="text-lg mb-2">{t('packageManager.noMatches')}</div>
                   <div className="text-sm">{t('packageManager.adjustFilter')}</div>
                 </div>
@@ -545,7 +546,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                         }}
                         title={t('packageManager.viewOnPyPI')}
                       >
-                        <i className="fas fa-external-link-alt"></i>
+                        <Icon name="external-link" size={12} />
                       </button>
                       <button
                         onClick={() => handleUninstallPackage(pkg.name)}
@@ -567,14 +568,14 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
                         }}
                         title={t('packageManager.uninstall')}
                       >
-                        <i className="fas fa-trash"></i>
+                        <Icon name="trash" size={12} />
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="p-4 text-center" style={{ color: 'var(--ctp-subtext0)' }}>
-                  <div className="text-4xl mb-4"><i className="fas fa-search" style={{ color: 'var(--ctp-subtext0)' }}></i></div>
+                  <div className="text-4xl mb-4"><Icon name="search" size={48} color="var(--ctp-subtext0)" /></div>
                   <div className="text-lg mb-2">{t('packageManager.noMatches')}</div>
                   <div className="text-sm">{t('packageManager.adjustFilter')}</div>
                 </div>
@@ -591,7 +592,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         color: 'var(--ctp-subtext1)'
       }}>
         <div className="flex items-center justify-between">
-          <span><i className="fas fa-bolt" style={{ color: 'var(--ctp-yellow)' }}></i> {t('packageManager.usingUV')}</span>
+          <span><Icon name="bolt" size={12} color="var(--ctp-yellow)" /> {t('packageManager.usingUV')}</span>
           <div className="flex items-center gap-2">
             <span>{packages.length} {packages.length !== 1 ? t('packageManager.packages') : t('packageManager.package')}</span>
             {viewMode === 'tree' && dependencyTree && (
@@ -603,7 +604,7 @@ export function PackageManager({ projectPath, onConsoleOutput, onConsoleError }:
         </div>
         {packages.length > 0 && (
           <div className="mt-1 text-xs" style={{ color: 'var(--ctp-subtext0)' }}>
-            <i className="fas fa-lightbulb"></i> {viewMode === 'tree' ? t('packageManager.expandTip') : t('packageManager.treeTip')}
+            <Icon name="lightbulb" size={12} color="var(--ctp-yellow)" /> {viewMode === 'tree' ? t('packageManager.expandTip') : t('packageManager.treeTip')}
           </div>
         )}
       </div>

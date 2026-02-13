@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TauriAPI, type PyProjectToml, type ProjectMetadata } from '../lib/tauri'
+import { Icon } from './Icon'
 
 interface PyProjectManagerProps {
   projectPath: string
@@ -130,7 +131,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
   if (!config) {
     return (
       <div className="p-4 text-center text-gray-500">
-        <div className="text-4xl mb-4"><i className="fas fa-file-alt"></i></div>
+        <div className="text-4xl mb-4"><Icon name="file-alt" size={48} /></div>
         <div className="text-lg mb-2">{t('pyProjectManager.loadFailed')}</div>
         <button
           onClick={loadConfig}
@@ -148,9 +149,9 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       <div className="px-4 py-3 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-            <i className="fas fa-file-alt"></i> {t('pyProjectManager.title')}
-            {exists && <span className="text-green-400 text-xs"><i className="fas fa-check"></i></span>}
-            {!exists && <span className="text-yellow-400 text-xs"><i className="fas fa-exclamation-triangle"></i> {t('pyProjectManager.notSaved')}</span>}
+            <Icon name="file-alt" size={14} /> {t('pyProjectManager.title')}
+            {exists && <span className="text-green-400 text-xs"><Icon name="check" size={10} /></span>}
+            {!exists && <span className="text-yellow-400 text-xs"><Icon name="exclamation-triangle" size={10} /> {t('pyProjectManager.notSaved')}</span>}
           </div>
           <button
             onClick={saveConfig}
@@ -161,7 +162,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                 : 'bg-green-600 hover:bg-green-700 text-white'
             }`}
           >
-            {saving ? <><i className="fas fa-clock"></i> {t('pyProjectManager.saving')}</> : <><i className="fas fa-save"></i> {t('pyProjectManager.save')}</>}
+            {saving ? <><Icon name="clock" size={12} /> {t('pyProjectManager.saving')}</> : <><Icon name="save" size={12} /> {t('pyProjectManager.save')}</>}
           </button>
         </div>
       </div>
@@ -170,7 +171,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Project Metadata */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-clipboard-list"></i> {t('pyProjectManager.projectInfo')}</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><Icon name="clipboard-list" size={16} /> {t('pyProjectManager.projectInfo')}</h3>
           
           <div className="space-y-4">
             {/* First row - Project Name and Version */}
@@ -262,7 +263,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
 
         {/* Dependencies */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-box"></i> {t('pyProjectManager.dependencies')}</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><Icon name="box" size={16} /> {t('pyProjectManager.dependencies')}</h3>
 
           <div className="mb-4">
             <div className="flex gap-2">
@@ -292,7 +293,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                   onClick={() => removeDependency(index)}
                   className="flex-shrink-0 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                 >
-                  <i className="fas fa-times"></i>
+                  <Icon name="times" size={12} />
                 </button>
               </div>
             ))}
@@ -304,7 +305,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
 
         {/* Dev Dependencies */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-tools"></i> {t('pyProjectManager.devDependencies')}</h3>
+          <h3 className="text-lg font-semibold text-gray-200 mb-4"><Icon name="tools" size={16} /> {t('pyProjectManager.devDependencies')}</h3>
 
           <div className="mb-4">
             <div className="flex gap-2">
@@ -334,7 +335,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                   onClick={() => removeDevDependency(index)}
                   className="flex-shrink-0 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                 >
-                  <i className="fas fa-times"></i>
+                  <Icon name="times" size={12} />
                 </button>
               </div>
             ))}
@@ -347,7 +348,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
         {/* Build System */}
         {config.build_system && (
           <div className="bg-gray-800 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-200 mb-4"><i className="fas fa-cog"></i> {t('pyProjectManager.buildSystem')}</h3>
+            <h3 className="text-lg font-semibold text-gray-200 mb-4"><Icon name="cog" size={16} /> {t('pyProjectManager.buildSystem')}</h3>
 
             <div className="space-y-4">
               <div>
@@ -391,7 +392,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
                         }}
                         className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                       >
-                        <i className="fas fa-times"></i>
+                        <Icon name="times" size={12} />
                       </button>
                     </div>
                   ))}
@@ -405,7 +406,7 @@ export function PyProjectManager({ projectPath, onConsoleOutput, onConsoleError 
       {/* Footer */}
       <div className="px-4 py-2 bg-gray-800 border-t border-gray-700 text-xs text-gray-400">
         <div className="flex items-center justify-between">
-          <span><i className="fas fa-lightbulb"></i> {t('pyProjectManager.saveWarning')}</span>
+          <span><Icon name="lightbulb" size={12} /> {t('pyProjectManager.saveWarning')}</span>
           <span>{t('pyProjectManager.formatInfo')}</span>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { TauriAPI } from '../lib/tauri'
 import { PackageManager } from './PackageManager'
 import { PyProjectManager } from './PyProjectManager'
+import { Icon } from './Icon'
 
 interface ProjectPanelProps {
   projectPath: string
@@ -108,7 +109,7 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
         }
       }}
     >
-      <i className={`${icon} text-sm`}></i>
+      <Icon name={icon} size={14} />
       <span className="font-medium">{label}</span>
     </button>
   )
@@ -122,34 +123,34 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
               {/* Project Info */}
               <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
-                  <i className="fas fa-info-circle text-blue-400"></i>
+                  <Icon name="info-circle" size={16} color="var(--ctp-blue)" />
                   {t('projectPanel.overview.title')}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
-                      <i className="fas fa-folder text-xs"></i>
+                      <Icon name="folder" size={12} />
                       {t('projectPanel.overview.projectPath')}
                     </span>
                     <span className="font-mono text-xs" style={{ color: 'var(--ctp-text)' }}>{projectPath}</span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
-                      <i className="fas fa-cube text-xs"></i>
+                      <Icon name="cube" size={12} />
                       {t('projectPanel.overview.virtualEnv')}
                     </span>
                     <span style={{ color: venvExists ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
-                      <i className={venvExists ? 'fas fa-check' : 'fas fa-times'}></i>
+                      <Icon name={venvExists ? 'check' : 'times'} size={12} />
                       {venvExists ? t('projectPanel.overview.active') : t('projectPanel.overview.notFound')}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--ctp-overlay1)' }} className="flex items-center gap-2">
-                      <i className="fas fa-package text-xs"></i>
+                      <Icon name="package" size={12} />
                       {t('projectPanel.overview.uvPackageManager')}
                     </span>
                     <span style={{ color: uvInstalled ? 'var(--ctp-green)' : 'var(--ctp-red)' }} className="flex items-center gap-1">
-                      <i className={uvInstalled ? 'fas fa-check' : 'fas fa-times'}></i>
+                      <Icon name={uvInstalled ? 'check' : 'times'} size={12} />
                       {uvInstalled ? t('projectPanel.overview.installed') : t('projectPanel.overview.notFound')}
                     </span>
                   </div>
@@ -159,7 +160,7 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
               {/* Quick Actions */}
               <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
-                  <i className="fas fa-bolt text-yellow-400"></i>
+                  <Icon name="bolt" size={16} color="var(--ctp-yellow)" />
                   {t('projectPanel.overview.quickActions')}
                 </h3>
                 <div className="space-y-2">
@@ -171,13 +172,13 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-lavender)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--ctp-mauve)' }}
                     >
-                      <i className="fas fa-rocket"></i> {t('projectPanel.overview.initUvProject')}
+                      <Icon name="rocket" size={14} /> {t('projectPanel.overview.initUvProject')}
                     </button>
                   )}
                   {!uvInstalled && (
                     <div className="p-3 border rounded text-sm" style={{ backgroundColor: 'var(--ctp-yellow)' + '20', borderColor: 'var(--ctp-yellow)' + '50', color: 'var(--ctp-yellow)' }}>
                       <div className="font-semibold mb-1 flex items-center gap-2">
-                        <i className="fas fa-exclamation-triangle"></i>
+                        <Icon name="exclamation-triangle" size={14} />
                         {t('projectPanel.overview.uvNotInstalled')}
                       </div>
                       <div>{t('projectPanel.overview.uvInstallHint')}</div>
@@ -191,7 +192,7 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
               {venvExists && (
                 <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
-                    <i className="fas fa-server text-green-400"></i>
+                    <Icon name="server" size={16} color="var(--ctp-green)" />
                     {t('projectPanel.overview.environmentStatus')}
                   </h3>
                   <div className="text-sm" style={{ color: 'var(--ctp-text)' }}>
@@ -217,20 +218,20 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
           <div className="p-4">
             <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--ctp-mantle)' }}>
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--ctp-subtext1)' }}>
-                <i className="fab fa-python text-blue-400"></i>
+                <Icon name="python" size={16} color="var(--ctp-blue)" />
                 {t('projectPanel.python.title')}
               </h3>
 
               {!uvInstalled ? (
                 <div className="text-center py-8" style={{ color: 'var(--ctp-overlay1)' }}>
-                  <div className="text-4xl mb-4"><i className="fab fa-python text-blue-500"></i></div>
+                  <div className="text-4xl mb-4"><Icon name="python" size={48} color="var(--ctp-blue)" /></div>
                   <div>{t('projectPanel.python.uvRequired')}</div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 flex items-center gap-2" style={{ color: 'var(--ctp-text)' }}>
-                      <i className="fas fa-list-ul text-sm"></i>
+                      <Icon name="list-ul" size={14} />
                       {t('projectPanel.python.availableVersions')}
                     </label>
                     {pythonVersions.length === 0 ? (
@@ -291,10 +292,10 @@ export function ProjectPanel({ projectPath, onConsoleOutput, onConsoleError }: P
       {/* Navigation */}
       <div className="px-3 py-3 border-b" style={{ backgroundColor: 'var(--ctp-mantle)', borderColor: 'var(--ctp-surface1)' }}>
         <div className="flex justify-between gap-1">
-          <NavButton view="overview" label={t('projectPanel.tabs.overview')} icon="fas fa-home" />
-          <NavButton view="packages" label={t('projectPanel.tabs.packages')} icon="fas fa-box" />
-          <NavButton view="python" label={t('projectPanel.tabs.python')} icon="fab fa-python" />
-          <NavButton view="settings" label={t('projectPanel.tabs.settings')} icon="fas fa-cog" />
+          <NavButton view="overview" label={t('projectPanel.tabs.overview')} icon="home" />
+          <NavButton view="packages" label={t('projectPanel.tabs.packages')} icon="box" />
+          <NavButton view="python" label={t('projectPanel.tabs.python')} icon="python" />
+          <NavButton view="settings" label={t('projectPanel.tabs.settings')} icon="cog" />
         </div>
       </div>
 
